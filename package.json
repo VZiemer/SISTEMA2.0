@@ -1,18 +1,11 @@
 {
-  "name": "angular-electron",
-  "version": "6.1.0",
-  "description": "Angular 8 with Electron (Typescript + SASS + Hot Reload)",
-  "homepage": "https://github.com/maximegris/angular-electron",
+  "name": "sistema-loja",
+  "version": "0.0.1",
+  "description": "",
   "author": {
-    "name": "Maxime GRIS",
-    "email": "maxime.gris@gmail.com"
+    "name": "Vanius"
   },
   "keywords": [
-    "angular",
-    "angular 8",
-    "electron",
-    "typescript",
-    "sass"
   ],
   "main": "main.js",
   "private": true,
@@ -36,7 +29,10 @@
     "test": "npm run postinstall:web && ng test",
     "e2e": "npm run build:prod && mocha --timeout 300000 --require ts-node/register e2e/**/*.spec.ts",
     "version": "conventional-changelog -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "compodoc": "compodoc",
+    "generate-docs": "compodoc -p src/tsconfig.app.json",
+    "serve-docs": "compodoc -s src/tsconfig.app.json"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "0.802.2",
@@ -50,6 +46,7 @@
     "@angular/platform-browser": "8.2.2",
     "@angular/platform-browser-dynamic": "8.2.2",
     "@angular/router": "8.2.2",
+    "@compodoc/compodoc": "^1.1.10",
     "@ngx-translate/core": "11.0.1",
     "@ngx-translate/http-loader": "4.0.0",
     "@types/jasmine": "3.3.16",
