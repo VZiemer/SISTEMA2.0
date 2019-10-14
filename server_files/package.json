@@ -1,0 +1,31 @@
+{
+  "name": "sistema",
+  "main": "server_files/server.js",
+  "version": "0.1.1",
+  "author": "VZiemer",
+  "contributors": [
+    "Vanius Ziemer <vanius@live.com> (https://github.com/vziemer)"
+  ],
+  "devDependencies": {},
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "body-parser-xml": "^1.1.0",
+    "cookie-parser": "^1.4.3",
+    "encoding": "^0.1.12",
+    "express": "^4.16.3",
+    "express-formidable": "^1.0.0",
+    "express-session": "^1.15.6",
+    "font-awesome": "^4.7.0",
+    "html-pdf": "^2.2.0",
+    "iconv-lite": "^0.4.21",
+    "jsonwebtoken": "^5.7.0",
+    "multer": "^1.3.0",
+    "node-firebird": "^0.7.6",
+    "nodemailer": "^4.6.5",
+    "request": "^2.85.0",
+    "socket.io": "^2.1.0",
+    "urlencode": "^1.1.0",
+    "xml2js": "^0.4.19",
+    "xmlbuilder": "^8.2.2"
+  }
+}

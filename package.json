@@ -5,8 +5,7 @@
   "author": {
     "name": "Vanius"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -18,7 +17,7 @@
     "build": "npm run postinstall:electron && npm run electron:serve-tsc && ng build",
     "build:dev": "npm run build -- -c dev",
     "build:prod": "npm run build -- -c production",
-    "ng:serve": "ng serve",
+    "ng:serve": "ng serve --proxy-config proxy.conf.js",
     "ng:serve:web": "npm run postinstall:web && ng serve -o",
     "electron:serve-tsc": "tsc -p tsconfig-serve.json",
     "electron:serve": "wait-on http-get://localhost:4200/ && npm run electron:serve-tsc && electron . --serve",
@@ -32,7 +31,8 @@
     "lint": "ng lint",
     "compodoc": "compodoc",
     "generate-docs": "compodoc -p src/tsconfig.app.json",
-    "serve-docs": "compodoc -s src/tsconfig.app.json"
+    "serve-docs": "compodoc -s src/tsconfig.app.json",
+    "nodemon:server": "nodemon ./server_files/server"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "0.802.2",
@@ -68,6 +68,7 @@
     "karma-jasmine": "2.0.1",
     "karma-jasmine-html-reporter": "1.4.2",
     "mocha": "6.2.0",
+    "nodemon": "^1.19.3",
     "npm-run-all": "4.1.5",
     "rxjs": "6.5.2",
     "spectron": "8.0.0",
@@ -80,5 +81,12 @@
   },
   "engines": {
     "node": ">=10.9.0"
+  },
+  "dependencies": {
+    "@angular/animations": "^8.0.0 || ^9.0.0-0",
+    "@angular/cdk": "~8.2.2",
+    "@angular/forms": "^8.0.0 || ^9.0.0-0",
+    "@angular/material": "^8.2.2",
+    "angular2-hotkeys": "^2.1.5"
   }
 }

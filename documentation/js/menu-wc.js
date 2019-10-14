@@ -16,7 +16,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
         <nav>
             <ul class="list">
                 <li class="title">
-                    <a href="index.html" data-type="index-link">angular-electron documentation</a>
+                    <a href="index.html" data-type="index-link">sistema-loja documentation</a>
                 </li>
 
                 <li class="divider"></li>
@@ -60,13 +60,13 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                 <a href="modules/AppModule.html" data-type="entity-link">AppModule</a>
                                     <li class="chapter inner">
                                         <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ?
-                                            'data-target="#components-links-module-AppModule-a1fd3776f53c9d9a299021ee7a0ec94b"' : 'data-target="#xs-components-links-module-AppModule-a1fd3776f53c9d9a299021ee7a0ec94b"' }>
+                                            'data-target="#components-links-module-AppModule-db68fd2c2f540ba6b9c9556e6290c2e1"' : 'data-target="#xs-components-links-module-AppModule-db68fd2c2f540ba6b9c9556e6290c2e1"' }>
                                             <span class="icon ion-md-cog"></span>
                                             <span>Components</span>
                                             <span class="icon ion-ios-arrow-down"></span>
                                         </div>
-                                        <ul class="links collapse" ${ isNormalMode ? 'id="components-links-module-AppModule-a1fd3776f53c9d9a299021ee7a0ec94b"' :
-                                            'id="xs-components-links-module-AppModule-a1fd3776f53c9d9a299021ee7a0ec94b"' }>
+                                        <ul class="links collapse" ${ isNormalMode ? 'id="components-links-module-AppModule-db68fd2c2f540ba6b9c9556e6290c2e1"' :
+                                            'id="xs-components-links-module-AppModule-db68fd2c2f540ba6b9c9556e6290c2e1"' }>
                                             <li class="link">
                                                 <a href="components/AppComponent.html"
                                                     data-type="entity-link" data-context="sub-entity" data-context-id="modules">AppComponent</a>
@@ -78,7 +78,49 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                 <a href="modules/AppRoutingModule.html" data-type="entity-link">AppRoutingModule</a>
                             </li>
                             <li class="link">
+                                <a href="modules/CaixaModule.html" data-type="entity-link">CaixaModule</a>
+                                    <li class="chapter inner">
+                                        <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ?
+                                            'data-target="#components-links-module-CaixaModule-7c770cebc82bc47f0f27b923ec2f2990"' : 'data-target="#xs-components-links-module-CaixaModule-7c770cebc82bc47f0f27b923ec2f2990"' }>
+                                            <span class="icon ion-md-cog"></span>
+                                            <span>Components</span>
+                                            <span class="icon ion-ios-arrow-down"></span>
+                                        </div>
+                                        <ul class="links collapse" ${ isNormalMode ? 'id="components-links-module-CaixaModule-7c770cebc82bc47f0f27b923ec2f2990"' :
+                                            'id="xs-components-links-module-CaixaModule-7c770cebc82bc47f0f27b923ec2f2990"' }>
+                                            <li class="link">
+                                                <a href="components/CaixaComponent.html"
+                                                    data-type="entity-link" data-context="sub-entity" data-context-id="modules">CaixaComponent</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                            </li>
+                            <li class="link">
+                                <a href="modules/CaixaRoutingModule.html" data-type="entity-link">CaixaRoutingModule</a>
+                            </li>
+                            <li class="link">
                                 <a href="modules/CoreModule.html" data-type="entity-link">CoreModule</a>
+                            </li>
+                            <li class="link">
+                                <a href="modules/FinanceiroModule.html" data-type="entity-link">FinanceiroModule</a>
+                                    <li class="chapter inner">
+                                        <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ?
+                                            'data-target="#components-links-module-FinanceiroModule-699d84a1ddf52e41b0a0c577f8619b79"' : 'data-target="#xs-components-links-module-FinanceiroModule-699d84a1ddf52e41b0a0c577f8619b79"' }>
+                                            <span class="icon ion-md-cog"></span>
+                                            <span>Components</span>
+                                            <span class="icon ion-ios-arrow-down"></span>
+                                        </div>
+                                        <ul class="links collapse" ${ isNormalMode ? 'id="components-links-module-FinanceiroModule-699d84a1ddf52e41b0a0c577f8619b79"' :
+                                            'id="xs-components-links-module-FinanceiroModule-699d84a1ddf52e41b0a0c577f8619b79"' }>
+                                            <li class="link">
+                                                <a href="components/FinanceiroComponent.html"
+                                                    data-type="entity-link" data-context="sub-entity" data-context-id="modules">FinanceiroComponent</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                            </li>
+                            <li class="link">
+                                <a href="modules/FinanceiroRoutingModule.html" data-type="entity-link">FinanceiroRoutingModule</a>
                             </li>
                             <li class="link">
                                 <a href="modules/HomeModule.html" data-type="entity-link">HomeModule</a>
@@ -162,6 +204,19 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                 </li>
                             </ul>
                         </li>
+                    <li class="chapter">
+                        <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ? 'data-target="#classes-links"' :
+                            'data-target="#xs-classes-links"' }>
+                            <span class="icon ion-ios-paper"></span>
+                            <span>Classes</span>
+                            <span class="icon ion-ios-arrow-down"></span>
+                        </div>
+                        <ul class="links collapse " ${ isNormalMode ? 'id="classes-links"' : 'id="xs-classes-links"' }>
+                            <li class="link">
+                                <a href="classes/Frete.html" data-type="entity-link">Frete</a>
+                            </li>
+                        </ul>
+                    </li>
                         <li class="chapter">
                             <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ? 'data-target="#injectables-links"' :
                                 'data-target="#xs-injectables-links"' }>

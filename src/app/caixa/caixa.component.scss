@@ -1,22 +1,23 @@
 /* global styles */
 
-
-
-* { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
-.clr {clear:both;}
-
-/* Variables & Mixins */
-$bg: rgb(252, 252, 252);  /* Changes Entire Color Scheme */
-// $text: lighten($bg,35%);
-$text: darken($bg,75%);
-
-.roundedborder {
-  border-radius: .2em;
-  border: 2px solid darken($bg, 60%);
+* {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.clr {
+  clear: both;
 }
 
+/* Variables & Mixins */
+$bg: rgb(252, 252, 252); /* Changes Entire Color Scheme */
+// $text: lighten($bg,35%);
+$text: darken($bg, 75%);
 
-
+.roundedborder {
+  border-radius: 0.2em;
+  border: 2px solid darken($bg, 60%);
+}
 
 body {
   background-color: LavenderBlush;
@@ -34,7 +35,6 @@ body {
 ::before {
   box-sizing: border-box;
 }
-
 
 .container {
   width: 100vw;
@@ -60,73 +60,123 @@ body {
   width: 100vw;
   height: 8vh;
   display: flex;
-  align-content: space-around;
+  align-content: space-between;
   justify-content: space-between;
   padding: 15px;
+  div {
+    display: flex;
+    align-content: flex-start;
+  }
+
+  input[type="text"] {
+    @extend .roundedborder;
+    background-color: darken($bg, 1%);
+    color: lighten($text, 10%);
+    font-size: 1em;
+    // margin: 0.1em 0 1em;
+    padding: 0.25em;
+    width: 6vw;
+    text-align: center;
+  }
 }
 
 .content {
-  width: 70vw;
+  width: 100vw;
   height: 82vh;
   display: flex;
   flex-wrap: wrap;
+  align-content: space-between;
+  justify-content: space-between;
+  span {
+    line-height: 6;
+  }
+
+  input,
+  select,
+  textarea {
+    outline: none;
+  }
+  label {
+    padding: 0 0.5em 0 0.5em;
+  }
+
+  /* Text Input */
+  input[type="text"] {
+    @extend .roundedborder;
+    background-color: darken($bg, 1%);
+    color: lighten($text, 10%);
+    font-size: 2em;
+    margin: 0.1em 0 1em;
+    padding: 0.25em;
+    width: 100%;
+    text-align: center;
+  }
 }
-.barReader{
-  width: 79%;
+.barReader {
+  width: 18%;
 }
-.multQtd{
-  width: 20%;
-  margin-left: 1%;
+.multQtd {
+  width: 7%;
+
+}
+.description {
+  width: 73%;
 }
 .ticket {
   overflow-y: scroll;
-  width: 60%;
+  width: 70%;
   background-color: lightgoldenrodyellow;
   padding: 10px;
   display: block;
   height: 60vh;
-
 }
 .item {
-  width: 40%;
-  padding: 30px;
+  width: 30%;
+  padding-left: 5vh;
 }
 .sidebar {
-  width: 30vw;
+  width: 20vw;
   height: 82vh;
 }
 .footer {
   width: 100vw;
   height: 10vh;
+  display: flex;
+  align-content: space-around;
+  justify-content: space-between;
+  // padding: 15px;
+  div {
+    width: 60%;
+    height: 100%;
+    display: flex;
+    align-content: space-around;
+    justify-content: space-between;
+    // vertical-align: middle;
+    span {
+      vertical-align: top;
+    }
+  }
 }
 
-table.table { width: 100%; }
+table.table {
+  width: 100%;
+  display: block;
+}
 
-.table th, .table td {
+.table th,
+.table td.text {
   text-align: left;
   padding: 0.25em;
 }
+.table td.number {
+  text-align: right;
+  padding: 0.25em;
+  width:7%;
+}
 
 .table tr {
-  border-bottom: 1px solid #DDD;
+  border-bottom: 1px solid #ddd;
 }
 .table tr .center {
-  text-align: center;
-}
-
-
-input, select, textarea {outline:none;}
-label {padding:0 .5em 0 .5em;}
-
-
-/* Text Input */
-input[type='text'] {
-  @extend .roundedborder;
-  background-color: darken($bg, 1%);
-  color: lighten($text, 10%);
-  font-size:2em;
-  margin:.1em 0 1em;
-  padding: .25em;
-  width:100%;
   text-align: center;
 }

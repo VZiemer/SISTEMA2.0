@@ -1,55 +1,68 @@
 <div class="container">
   <header class="header column">
-    <div>FLORESTAL FERRAGENS</div>
-    <div>VANIUS ZIEMER</div>
+    <div>Venda:</div>
+    <div><span>Vendedor:</span><input type="text" id="inputVend" [(ngModel)]="Vendedor.CODIGO"
+        (keydown.enter)="getVendedor(Vendedor.CODIGO)" /><span>{{Vendedor.NOME}}</span></div>
+    <div><span>Cliente:</span><input type="text" id="inputCli" [(ngModel)]="Cliente.CODIGO"
+        (keydown.enter)="getCliente(Cliente.CODIGO)" /><span>{{Cliente.RAZAO}}</span></div>
     <div>07/08/2019 10:40:38</div>
 
   </header>
   <main class="content column">
+    <div class="multQtd">
+      <div>
+        <label for="codbar">QTD</label>
+        <input type="text" name="multqtd" (keydown.enter)="inputReturn()" [(ngModel)]="input.qtd" id="multqtd"
+          placeholder="qtd" />
+      </div>
+    </div>
+    <span>X</span>
     <div class="barReader">
       <div>
         <label for="codbar">CODBAR</label>
-        <input type="text" name="codbar" id="codbar" placeholder="21312312321333" />
+        <input autofocus type="text" name="codbar" [(ngModel)]="input.codbar" #codbar id="codbar"
+          (keydown.enter)="getProduto(input.codbar,input.qtd)" (keydown.F3)="clicaProduto()" (keydown.F4)="clicaCliente()"
+          (keydown.F5)="clicaVendedor()" />
       </div>
     </div>
-    <div class="multQtd">
+    <div class="description">
       <div>
-        <label for="codbar">MULTIPLICADOR</label>
-        <input type="text" name="multqtd" id="multqtd" placeholder="x 1" />
+        <label for="descricao">DESCRIÇÃO</label>
+        <input type="text" name="descricao" placeholder="{{selectedFunction.text}}" [value]="ultimoProduto.DESCRICAO" />
       </div>
     </div>
     <div class="ticket ">
       <table class="table">
         <thead>
           <tr>
-            <td colspan="7" class="center">
-              CUPOM NÃO FISCAL
+            <td colspan="14" class="center">
+              DOCUMENTO NÃO FISCAL
             </td>
           </tr>
           <tr>
-            <td colspan="7" class="center">
+            <td colspan="14" class="center">
               <hr>
             </td>
           </tr>
           <tr>
-            <td>ITEM</td>
-            <td>CÓDIGO</td>
-            <td>DESCRICAO</td>
-            <td>QTD</td>
-            <td>UN</td>
-            <td>VL UNIT(R$)</td>
-            <td>VL ITEM(R$)</td>
+            <td class="number">Item</td>
+            <td class="text">Cód</td>
+            <td class="text" colspan="7" width="49%">Descrição</td>
+            <td class="number">Qtd</td>
+            <td class="text">Un</td>
+            <td class="number">VlrUnit(R$)</td>
+            <td class="number">VlrTot(R$)</td>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of venda">
-            <td>{{item.item}}</td>
-            <td>{{item.codigo}}</td>
-            <td>{{item.descricao}}</td>
-            <td>{{item.qtd}}</td>
-            <td>{{item.unidade}}</td>
-            <td>{{item.valor}}</td>
-            <td>{{item.valor*item.qtd}}</td>
+          <tr *ngFor="let item of venda;let i = index">
+            <td class="number">{{i+1}}</td>
+            <td class="text">{{item.CODIGO}}</td>
+            <td class="text" colspan="7">{{item.DESCRICAO}}</td>
+            <td class="number">{{item.QTD}}</td>
+            <td class="text">{{item.UNIDADE}}</td>
+            <td class="number">{{item.VALOR}}</td>
+            <td class="number">{{item.VALOR * item.QTD}}</td>
           </tr>
         </tbody>
       </table>
@@ -61,26 +74,41 @@
     <div class="item">
       <div>
         <label for="vlunit">VALOR UNITÁRIO:</label>
-        <input type="text" name="vlunit" id="vlunit" placeholder="R$ 1.99" />
+        <input type="text" name="vlunit" [value]="ultimoProduto.VALOR" id="vlunit" />
       </div>
 
       <div>
         <label for="qtd">QUANTIDADE:</label>
-        <input type="text" name="qtd" id="qtd" placeholder="2 PC" />
+        <input type="text" name="qtd" [value]="ultimoProduto.QTD + ' ' + ultimoProduto.UNIDADE" id="qtd" />
       </div>
 
       <div>
         <label for="subtotal">SUBTOTAL:</label>
-        <input type="text" name="qtd" id="qtd" placeholder="2 PC" />
+        <input type="text" name="subtotal" [value]="ultimoProduto.VALOR * ultimoProduto.QTD" id="qtd" />
       </div>
 
-
+      <div>
+        <label for="total">TOTAL VENDA:</label>
+        <input type="text" name="total" [value]="ultimoProduto.VALOR * ultimoProduto.QTD" id="qtd" />
+      </div>
     </div>
   </main>
-  <aside class="sidebar column">
+  <!-- <aside class="sidebar column">
     sidebar
-  </aside>
+  </aside> -->
   <footer class="footer column">
-    <button (click)=addItem(itemTeste)>teste</button>
+    <div class="column">
+      <span>F2 - Nova venda</span>
+      <span>F3 - Produto</span>
+      <span>F4 - Cliente</span>
+      <span>F5 - Vendedor</span>
+      <span>F6 - Vendas</span>
+    </div>
+
+    <!-- <button mat-raised-button (click)=getProduto(441)>teste</button>
+    <button mat-raised-button (click)="openDialog()">Pick one</button>
+    You selected: <p style="font-weight: bold">{{color}}</p>
+    <button mat-raised-button (click)="clicaCliente()">Cliente</button>
+    <button mat-raised-button (click)="clicaProduto()">Produto</button> -->
   </footer>
 </div>
