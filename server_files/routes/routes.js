@@ -235,5 +235,43 @@ routes.route('/vendedor/:id')
   });
 
 
+
+  routes.route('/deus')
+  //buscas
+  .get((req, res) => {
+var sql = `select * from deus`
+    estoque.get(function (err, db) {
+      if (err)
+        throw err;
+      db.query(sql, function (err, result) {
+        if (err)
+          throw err;
+        db.detach(function () {
+          console.log('buscou deus')
+          res.send(result);
+        });
+      });
+    });
+  });
+
+  routes.route('/deus/:id')
+  //buscas
+  .get((req, res) => {
+    //Consulta ao firebird
+    estoque.get(function (err, db) {
+      if (err)
+        throw err;
+      // db = DATABASE
+      db.query(`select * from deus where codigo = ${req.params.id}`, function (err, result) {
+        // IMPORTANT: close the connection
+        db.detach(function () {
+          console.log('retornou', result)
+          res.status(200).json(result[0]);
+        });
+      });
+    });
+  });
+
+
 module.exports = routes;
 

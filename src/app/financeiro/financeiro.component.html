@@ -1,1 +1,30 @@
-<p>financeiro works!</p>
+<div class="container">
+  <header class="header column">
+      <input type="number" [(ngModel)]="busca" placeholder="código" (keydown.enter)="getClientes(busca.codigo,busca.razao)">
+  </header>
+  <aside class="sidebar column">
+    sidebar
+  </aside>
+  <main class="content column">
+    <table class="table">
+      <thead>
+        <tr>
+          <td class="text">Cód</td>
+          <td class="number">Valor</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of lista">
+          <td class="text">{{item.CODIGO}}</td>
+          <td class="number">{{item.VALOR}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+  <aside class="sidebar column">
+    sidebar
+  </aside>
+  <footer class="footer column">
+    footer
+  </footer>
+</div>

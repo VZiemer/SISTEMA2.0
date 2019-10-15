@@ -5,7 +5,7 @@ import { FinanceiroComponent } from './financeiro.component';
 
 const routes: Routes = [
   {
-    path: 'financeiro',
+    path: '',
     component: FinanceiroComponent
   }
 ];
