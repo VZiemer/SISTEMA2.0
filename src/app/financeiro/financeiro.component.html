@@ -3,7 +3,7 @@
       <input type="number" [(ngModel)]="busca" placeholder="código" (keydown.enter)="getClientes(busca.codigo,busca.razao)">
   </header>
   <aside class="sidebar column">
-    sidebar
+    sidebares
   </aside>
   <main class="content column">
     <table class="table">
@@ -12,6 +12,7 @@
           <td class="text">Cód</td>
           <td class="number">Valor</td>
         </tr>
+
       </thead>
       <tbody>
         <tr *ngFor="let item of lista">

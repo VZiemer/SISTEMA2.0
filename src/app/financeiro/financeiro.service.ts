@@ -31,6 +31,10 @@ export class FinanceiroService {
     return this.http.get<Deus>(this.apiURL + 'deus/' + id)
       .pipe();
   }
+ 
+
+
+
 }
 
 

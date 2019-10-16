@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Deus } from '../shared/models/deus';
+import { Contas } from '../shared/models/contas';
 import { FinanceiroService } from './financeiro.service';
 @Component({
   selector: 'app-financeiro',
@@ -10,6 +11,7 @@ export class FinanceiroComponent implements OnInit {
   busca: number;
   lista: Deus[];
   linhaDeus: Deus;
+  listaContas: Contas[];
 
   constructor(private financeiroService: FinanceiroService) {
 
