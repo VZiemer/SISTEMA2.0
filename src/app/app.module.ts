@@ -18,7 +18,7 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { HomeModule } from './home/home.module';
-// import { CaixaModule } from './caixa/caixa.module';
+import { CaixaModule } from './caixa/caixa.module';
 import { FinanceiroModule } from './financeiro/financeiro.module';
 
 import { AppComponent } from './app.component';
@@ -36,8 +36,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     CoreModule,
     SharedModule,
     FinanceiroModule,
-    // HomeModule,
-    // CaixaModule,
+    HomeModule,
+    CaixaModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     AngularMaterialModule,

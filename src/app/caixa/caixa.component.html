@@ -1,10 +1,10 @@
 <div class="container">
   <header class="header column">
     <div>Venda:</div>
-    <div><span>Vendedor:</span><input type="text" id="inputVend" [(ngModel)]="Vendedor.CODIGO"
-        (keydown.enter)="getVendedor(Vendedor.CODIGO)" /><span>{{Vendedor.NOME}}</span></div>
-    <div><span>Cliente:</span><input type="text" id="inputCli" [(ngModel)]="Cliente.CODIGO"
-        (keydown.enter)="getCliente(Cliente.CODIGO)" /><span>{{Cliente.RAZAO}}</span></div>
+    <div><span>Vendedor:</span><input type="text" id="inputVend" [(ngModel)]="vendedor.CODIGO"
+        (keydown.enter)="getVendedor(vendedor.CODIGO)" /><span>{{vendedor.NOME}}</span></div>
+    <div><span>Cliente:</span><input type="text" id="inputCli" [(ngModel)]="cliente.CODIGO"
+        (keydown.enter)="getCliente(cliente.CODIGO)" /><span>{{cliente.RAZAO}}</span></div>
     <div>07/08/2019 10:40:38</div>
 
   </header>
@@ -55,7 +55,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of venda;let i = index">
+          <tr *ngFor="let item of prodvenda;let i = index">
             <td class="number">{{i+1}}</td>
             <td class="text">{{item.CODIGO}}</td>
             <td class="text" colspan="7">{{item.DESCRICAO}}</td>

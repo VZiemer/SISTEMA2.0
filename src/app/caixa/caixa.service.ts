@@ -38,7 +38,10 @@ export class CaixaService {
     return this.http.get<Vendedor>(this.apiURL + 'vendedor/' + id)
       .pipe();
   }
-
+  newVenda(codcli: number, codvend: number): Observable<Venda> {
+    return this.http.post<Venda>(this.apiURL + 'venda/', { CODCLI: codcli, CODVEND: codvend })
+      .pipe();
+  }
   // getVenda(cliente: void): Observable<Produto> {
   //   // return this.http.get<Produto>(this.apiURL + 'venda/'+ `?CODIGO=${codigo}`)
   //     // .pipe();
