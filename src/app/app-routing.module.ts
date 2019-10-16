@@ -4,24 +4,9 @@ import { PageNotFoundComponent } from './shared/components';
 
 const routes: Routes = [
   {
-    path: 'financeiro',
-    loadChildren: () => import('./financeiro/financeiro.module')
-      .then(m => m.FinanceiroModule),
-  },
-  {
-    path: 'home',
-    loadChildren: () => import('./home/home.module')
-      .then(m => m.HomeModule),
-  },
-  {
     path: '',
     redirectTo: 'financeiro',
     pathMatch: 'full'
-  },
-  {
-    path: 'caixa',
-    loadChildren: () => import('./caixa/caixa.module')
-      .then(m => m.CaixaModule),
   },
   {
     path: '**',

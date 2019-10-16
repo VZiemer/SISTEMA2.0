@@ -1,5 +1,6 @@
 export class Venda {
   public LCTO: number;
+  public DATA: Date;
   public CODCLI: number;
   public CODVEND: number;
   public STATUS: number;

@@ -7,6 +7,7 @@ import { Produto } from '../shared/models/produto';
 import { Cliente } from '../shared/models/Cliente';
 import { Vendedor } from '../shared/models/Vendedor';
 import { elementAt } from 'rxjs/operators';
+import { Venda } from '../shared/models/venda';
 
 
 
@@ -24,8 +25,19 @@ export class CaixaComponent implements OnInit {
     'codbar': null,
     'qtd': 1
   };
-  venda: Produto[] = [];
-  Cliente: Cliente = {
+  venda: Venda = {
+    LCTO: null,
+    DATA: null,
+    CODCLI: null,
+    CODVEND: null,
+    STATUS: null,
+    TOTAL: null,
+    CDCONDPAGTO: null,
+    NOMECLI: '',
+    EMPRESA: null
+  };
+  prodvenda: Produto[] = [];
+  cliente: Cliente = {
     CODIGO: null,
     RAZAO: '',
     CGC: null,
@@ -33,7 +45,7 @@ export class CaixaComponent implements OnInit {
     LIBERAFAT: null,
     LIBERANP: null
   };
-  Vendedor: Vendedor = {
+  vendedor: Vendedor = {
     CODIGO: null,
     NOME: ''
   };
@@ -101,7 +113,7 @@ export class CaixaComponent implements OnInit {
       .subscribe(produto => {
         produto.QTD = qtd;
         this.ultimoProduto = produto;
-        this.venda.push(produto);
+        this.prodvenda.push(produto);
       }, error => (console.log(error)));
   }
   // insere um novo produto com pelo id (alterar para codbar)
@@ -111,7 +123,7 @@ export class CaixaComponent implements OnInit {
     if (id) {
       this.caixaService.getCliente(id)
         .subscribe(cliente => {
-          this.Cliente = cliente;
+          this.cliente = cliente;
           this.clicaProduto();
         }, error => (console.log(error)));
     } else {
@@ -120,13 +132,23 @@ export class CaixaComponent implements OnInit {
 
   }
 
+  newVenda() {
+
+    this.input.codbar = null;
+    this.input.qtd = 1;
+    this.caixaService.newVenda(this.cliente.CODIGO, this.vendedor.CODIGO)
+      .subscribe(venda => {
+        this.venda = venda;
+      }, error => (console.log(error)));
+  }
+
   getVendedor(id): void {
     this.input.codbar = null;
     this.input.qtd = 1;
     if (id) {
       this.caixaService.getVendedor(id)
         .subscribe(vendedor => {
-          this.Vendedor = vendedor;
+          this.vendedor = vendedor;
           this.clicaProduto();
         }, error => (console.log(error)));
     } else {
@@ -150,7 +172,7 @@ export class CaixaComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       console.log('retorno', res);
-      this.Cliente = res[0];
+      this.cliente = res[0];
     });
   }
 
