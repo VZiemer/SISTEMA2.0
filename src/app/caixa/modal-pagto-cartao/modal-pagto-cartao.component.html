@@ -1,0 +1,37 @@
+<h1 mat-dialog-title class="tittle">Pagamento com Cartão</h1>
+<hr>
+<div mat-dialog-content class='container'>
+  <div class="painel-valor">
+    <label>Valor a Pagar {{Total}}</label>
+    <input type="text" [(ngModel)]="Pagar" (keyup)="limpa()" />
+
+    <select *ngIf="cartaoSelecionado" [(ngModel)]="selecionado">
+      <ng-template ngFor let-item [ngForOf]="Cartao" let-i="index">
+        <option [value]="i" *ngIf="item.BANDEIRA===cartaoSelecionado"> {{item.PARCELAS==0?'DEBITO':'CRÉDITO'}}
+          {{item.BANDEIRA}}
+          {{item.PARCELAS==0? 'R$ ' + Pagar + ' á vista': item.PARCELAS+' x de R$ '+ (Pagar/item.PARCELAS).toFixed(2)}}
+        </option>
+      </ng-template>
+    </select>
+  </div>
+  <div class="painel">
+    <ng-template ngFor let-cartao [ngForOf]="Bandeiras" let-i="index" let-odd="odd" [ngForTrackBy]="trackById">
+      <button mat-raised-button color="primary" (click)="escolheCartao(cartao)">{{cartao}}</button>
+    </ng-template>
+  </div>
+  <!-- <div class="painel">
+    <select *ngIf="cartaoSelecionado" [(ngModel)]="selecionado">
+      <ng-template ngFor let-item [ngForOf]="Cartao" let-i="index">
+        <option [value]="i" *ngIf="item.BANDEIRA===cartaoSelecionado"> {{item.PARCELAS==0?'DEBITO':'CRÉDITO'}}
+          {{item.BANDEIRA}}
+          {{item.PARCELAS==0? 'R$ ' + Pagar + ' á vista': item.PARCELAS+' x de R$ '+ (Pagar/item.PARCELAS).toFixed(2)}}</option>
+      </ng-template>
+    </select>
+  </div> -->
+</div>
+<hr>
+<div mat-dialog-actions class="footer">
+  <button mat-raised-button (click)="onNoClick()">cancela</button>
+  <button mat-raised-button color="primary" [mat-dialog-close]="{'fPagto':Cartao[selecionado],'valor':Pagar}"
+    [disabled]="!selecionado" cdkFocusInitial>Confirma</button>
+</div>

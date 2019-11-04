@@ -2,20 +2,18 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { MatTableDataSource } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
-import { ModalData } from '../../modal-data';
 
 
-import { CaixaService } from '../caixa.service';
+import { CaixaService } from '../../../caixa/caixa.service';
 
 
 @Component({
   selector: 'app-my-modal',
-  templateUrl: './my-modal.component.html',
-  styleUrls: ['./my-modal.component.scss']
+  templateUrl: './busca-generico.component.html',
+  styleUrls: ['./busca-generico.component.scss']
 })
-export class MyModalComponent implements OnInit {
+export class ModalBuscaGenericoComponent implements OnInit {
   Clientes: any[];
-  // Vendas: Cliente[];
   busca = {
     codigo: '',
     razao: ''
@@ -27,7 +25,7 @@ export class MyModalComponent implements OnInit {
   selection = new SelectionModel<any[]>(false, []);
 
   constructor(
-    public dialogRef: MatDialogRef<MyModalComponent>,
+    public dialogRef: MatDialogRef<ModalBuscaGenericoComponent>,
     private caixaService: CaixaService,
     @Inject(MAT_DIALOG_DATA) public data: string) {
 
@@ -43,24 +41,29 @@ export class MyModalComponent implements OnInit {
   }
 
 
-  getClientes(codigo, razao): void {
-    this.caixaService.getClientes(codigo, razao)
-      .subscribe(cliente => {
-        this.Clientes = cliente;
-        console.log(cliente);
-        this.dataSource = new MatTableDataSource<any[]>(this.Clientes);
-        this.selection = new SelectionModel<any[]>(false, []);
-      }, error => (console.log(error)));
+  buscaGenerico(codigo, razao): void {
+
+    if (this.data === 'cliente') {
+      this.caixaService.getClientes(codigo, razao)
+        .subscribe(cliente => {
+          this.Clientes = cliente;
+          console.log(cliente);
+          this.dataSource = new MatTableDataSource<any[]>(this.Clientes);
+          this.selection = new SelectionModel<any[]>(false, []);
+        }, error => (console.log(error)));
+    }
+
+    if (this.data === 'vendedor') {
+      this.caixaService.getVendedores(codigo, razao)
+        .subscribe(cliente => {
+          this.Clientes = cliente;
+          console.log(cliente);
+          this.dataSource = new MatTableDataSource<any[]>(this.Clientes);
+          this.selection = new SelectionModel<any[]>(false, []);
+        }, error => (console.log(error)));
+    }
   }
-  getVendas(status): void {
-    this.caixaService.getVendas(status)
-      .subscribe(vendas => {
-        this.Clientes = vendas;
-        console.log(vendas);
-        this.dataSource = new MatTableDataSource<any[]>(this.Clientes);
-        this.selection = new SelectionModel<any[]>(false, []);
-      }, error => (console.log(error)));
-  }
+
 
 
   /** Whether the number of selected elements matches the total number of rows. */

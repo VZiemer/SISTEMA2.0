@@ -1,0 +1,22 @@
+<h1 mat-dialog-title class="titte">Pagamento com Dinheiro</h1>
+<hr>
+<div mat-dialog-content class='container'>
+  <div class="painel-valor">
+    <fieldset>
+      <label>Valor a Pagar</label>
+      <input type="text" [(ngModel)]="Pagar" />
+    </fieldset>
+  </div>
+  <div class="painel-valor">
+    <fieldset>
+      <label>Troco</label>
+      <input type="text" [value]="Total-Pagar" />
+    </fieldset>
+  </div>
+</div>
+<hr>
+<div mat-dialog-actions class="footer">
+  <button mat-raised-button (click)="onNoClick()">cancela</button>
+  <button mat-raised-button [mat-dialog-close]="{'fPagto':DINHEIRO,'valor':Pagar}"
+    cdkFocusInitial>Confirma</button>
+</div>

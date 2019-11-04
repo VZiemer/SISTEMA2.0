@@ -1,0 +1,35 @@
+.container {
+  height: 45vh;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  .painel-valor {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    input {
+      height: 20px;
+    }
+  }
+  .painel {
+    width: 50%;
+    display: flex;
+    justify-content: flex-start;
+    align-content: flex-start;
+    flex-direction: column;
+    fieldset {
+      button {
+        height: 40px;
+        width: 180px;
+      }
+      select,
+      input {
+        height: 30px;
+        width: 350px;
+      }
+    }
+
+  }
+}

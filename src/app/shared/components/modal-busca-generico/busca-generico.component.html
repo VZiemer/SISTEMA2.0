@@ -4,12 +4,12 @@
     <tr>
       <td>
         <mat-form-field>
-          <input matInput [(ngModel)]="busca.codigo" placeholder="código" (keydown.enter)="getClientes(busca.codigo,busca.razao)">
+          <input matInput [(ngModel)]="busca.codigo" placeholder="código" (keydown.enter)="buscaGenerico(busca.codigo,busca.razao)">
         </mat-form-field>
       </td>
       <td>
         <mat-form-field>
-          <input matInput [(ngModel)]="busca.razao" placeholder="nome" (keydown.enter)="getClientes(busca.codigo,busca.razao)">
+          <input matInput [(ngModel)]="busca.razao" placeholder="nome" (keydown.enter)="buscaGenerico(busca.codigo,busca.razao)">
         </mat-form-field>
       </td>
     </tr>

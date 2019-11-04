@@ -81,7 +81,7 @@ body {
 }
 
 .content {
-  width: 100vw;
+  width: 85vw;
   height: 82vh;
   display: flex;
   flex-wrap: wrap;
@@ -105,8 +105,8 @@ body {
     @extend .roundedborder;
     background-color: darken($bg, 1%);
     color: lighten($text, 10%);
-    font-size: 2em;
-    margin: 0.1em 0 1em;
+    font-size: 1.8em;
+    margin: 0.1em 0 0.5em;
     padding: 0.25em;
     width: 100%;
     text-align: center;
@@ -117,7 +117,6 @@ body {
 }
 .multQtd {
   width: 7%;
-
 }
 .description {
   width: 73%;
@@ -128,15 +127,23 @@ body {
   background-color: lightgoldenrodyellow;
   padding: 10px;
   display: block;
-  height: 60vh;
+  height: 62vh;
 }
 .item {
   width: 30%;
   padding-left: 5vh;
 }
 .sidebar {
-  width: 20vw;
+  width: 15vw;
   height: 82vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-content:  space-around;
+  button {
+    height: 60px;
+    margin: 10px;
+  }
 }
 .footer {
   width: 100vw;
@@ -171,7 +178,7 @@ table.table {
 .table td.number {
   text-align: right;
   padding: 0.25em;
-  width:7%;
+  width: 7%;
 }
 
 .table tr {

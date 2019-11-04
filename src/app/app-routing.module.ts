@@ -5,7 +5,7 @@ import { PageNotFoundComponent } from './shared/components';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'financeiro',
+    redirectTo: 'caixa',
     pathMatch: 'full'
   },
   {

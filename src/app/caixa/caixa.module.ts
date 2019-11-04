@@ -7,10 +7,18 @@ import { SharedModule } from '../shared/shared.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AngularMaterialModule } from '../angular-material.module';
 import { MyModalComponent } from './my-modal/my-modal.component';
-import {MatTableModule} from '@angular/material/table';
-import {MatCheckboxModule} from '@angular/material/checkbox';
+import { ModalPagtoCartaoComponent } from './modal-pagto-cartao/modal-pagto-cartao.component';
+import { ModalPagtoDiComponent } from './modal-pagto-di/modal-pagto-di.component';
+import { ModalPagtoBoletoComponent } from './modal-pagto-boleto/modal-pagto-boleto.component';
+
+
+import { ModalBuscaGenericoComponent } from '../shared/components/modal-busca-generico/busca-generico.component';
+import { MatTableModule } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 @NgModule({
-  declarations: [CaixaComponent, MyModalComponent],
+  declarations: [CaixaComponent, MyModalComponent,
+    ModalBuscaGenericoComponent, ModalPagtoCartaoComponent,
+    ModalPagtoDiComponent, ModalPagtoBoletoComponent],
   imports: [
     CommonModule,
     SharedModule,
@@ -23,6 +31,6 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
     MatCheckboxModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  entryComponents: [MyModalComponent]
+  entryComponents: [MyModalComponent, ModalBuscaGenericoComponent, ModalPagtoCartaoComponent, ModalPagtoDiComponent,ModalPagtoBoletoComponent]
 })
 export class CaixaModule { }

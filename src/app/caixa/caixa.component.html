@@ -1,10 +1,11 @@
 <div class="container">
   <header class="header column">
-    <div>Venda:</div>
+    <div><span>Venda:</span><input type="text" id="inputVenda" [(ngModel)]="venda.LCTO"
+      (keydown.enter)="getVenda(cliente.CODIGO)" [disabled]="pagamento.length" /><span>{{cliente.RAZAO}}</span></div>
     <div><span>Vendedor:</span><input type="text" id="inputVend" [(ngModel)]="vendedor.CODIGO"
-        (keydown.enter)="getVendedor(vendedor.CODIGO)" /><span>{{vendedor.NOME}}</span></div>
+        (keydown.enter)="getVendedor(vendedor.CODIGO)" [disabled]="pagamento.length" /><span>{{vendedor.NOME}}</span></div>
     <div><span>Cliente:</span><input type="text" id="inputCli" [(ngModel)]="cliente.CODIGO"
-        (keydown.enter)="getCliente(cliente.CODIGO)" /><span>{{cliente.RAZAO}}</span></div>
+        (keydown.enter)="getCliente(cliente.CODIGO)" [disabled]="pagamento.length" /><span>{{cliente.RAZAO}}</span></div>
     <div>07/08/2019 10:40:38</div>
 
   </header>
@@ -12,7 +13,7 @@
     <div class="multQtd">
       <div>
         <label for="codbar">QTD</label>
-        <input type="text" name="multqtd" (keydown.enter)="inputReturn()" [(ngModel)]="input.qtd" id="multqtd"
+        <input type="text" name="multqtd" [disabled]="pagamento.length" (keydown.enter)="inputReturn()" [(ngModel)]="input.qtd" id="multqtd"
           placeholder="qtd" />
       </div>
     </div>
@@ -21,14 +22,14 @@
       <div>
         <label for="codbar">CODBAR</label>
         <input autofocus type="text" name="codbar" [(ngModel)]="input.codbar" #codbar id="codbar"
-          (keydown.enter)="getProduto(input.codbar,input.qtd)" (keydown.F3)="clicaProduto()" (keydown.F4)="clicaCliente()"
+          (keydown.enter)="getProduto(input.codbar,input.qtd)" [disabled]="pagamento.length" (keydown.F2)="novaVenda()" (keydown.F3)="clicaProduto()" (keydown.F4)="clicaCliente()"
           (keydown.F5)="clicaVendedor()" />
       </div>
     </div>
     <div class="description">
       <div>
         <label for="descricao">DESCRIÇÃO</label>
-        <input type="text" name="descricao" placeholder="{{selectedFunction.text}}" [value]="ultimoProduto.DESCRICAO" />
+        <input type="text" name="descricao" disabled placeholder="{{selectedFunction.text}}" [value]="ultimoProduto.DESCRICAO" />
       </div>
     </div>
     <div class="ticket ">
@@ -47,7 +48,7 @@
           <tr>
             <td class="number">Item</td>
             <td class="text">Cód</td>
-            <td class="text" colspan="7" width="49%">Descrição</td>
+            <td class="text" colspan="8" width="49%">Descrição</td>
             <td class="number">Qtd</td>
             <td class="text">Un</td>
             <td class="number">VlrUnit(R$)</td>
@@ -58,44 +59,83 @@
           <tr *ngFor="let item of prodvenda;let i = index">
             <td class="number">{{i+1}}</td>
             <td class="text">{{item.CODIGO}}</td>
-            <td class="text" colspan="7">{{item.DESCRICAO}}</td>
+            <td class="text" colspan="8">{{item.DESCRICAO}}</td>
             <td class="number">{{item.QTD}}</td>
             <td class="text">{{item.UNIDADE}}</td>
             <td class="number">{{item.VALOR}}</td>
-            <td class="number">{{item.VALOR * item.QTD}}</td>
+            <td class="number">{{item.VALOR * item.QTD | currency:' '}}</td>
           </tr>
         </tbody>
+        <tbody *ngIf="cartao.length || boleto.length">
+            <tr><td colspan="14"><hr></td></tr>
+            <tr><td></td><td colspan="4">TOTAL:</td><td colspan="4"></td><td colspan="5" class="number">{{venda.TOTAL | currency:'R$ '}}</td></tr>
+            <tr><td colspan="14"><hr></td></tr>
+            <tr>
+                <td colspan="9"></td>
+                <td class="text" colspan="3">Pagamento</td>
+                <td class="number"></td>
+                <td class="number">VlrTot(R$)</td>
+              </tr>
+          <tr *ngFor="let item of cartao;let i = index">
+              <td colspan="9"></td>
+              <td class="text" colspan="3">{{item.PARCELAS===0 ? 'DEBITO' : 'CREDITO' }} {{item.BANDEIRA}}</td>
+              <td class="number">{{item.PARCELAS}}x</td>
+              <td class="number">{{(item.VALOR/item.PARCELAS).toFixed(2)}}</td>
+          </tr>
+          <tr *ngFor="let item of boleto;let i = index">
+            <td colspan="9"></td>
+            <td class="text" colspan="3">{{item.BANDEIRA}}-{{(item.VENCIMENTOS)}}</td>
+            <td class="number">{{item.PARCELAS}}x</td>
+            <td class="number">{{(item.VALOR/item.PARCELAS).toFixed(2)}}</td>
+        </tr>
+        </tbody>
+
       </table>
-
-
-
-
     </div>
+
     <div class="item">
       <div>
         <label for="vlunit">VALOR UNITÁRIO:</label>
-        <input type="text" name="vlunit" [value]="ultimoProduto.VALOR" id="vlunit" />
+        <input type="text" disabled name="vlunit" [value]="ultimoProduto.VALOR" id="vlunit" />
       </div>
 
       <div>
         <label for="qtd">QUANTIDADE:</label>
-        <input type="text" name="qtd" [value]="ultimoProduto.QTD + ' ' + ultimoProduto.UNIDADE" id="qtd" />
+        <input type="text" disabled name="qtd" [value]="ultimoProduto.QTD + ' ' + ultimoProduto.UNIDADE" id="qtd" />
       </div>
 
       <div>
         <label for="subtotal">SUBTOTAL:</label>
-        <input type="text" name="subtotal" [value]="ultimoProduto.VALOR * ultimoProduto.QTD" id="qtd" />
+        <input type="text" disabled name="subtotal" [value]="ultimoProduto.VALOR * ultimoProduto.QTD" id="qtd" />
       </div>
 
       <div>
         <label for="total">TOTAL VENDA:</label>
-        <input type="text" name="total" [value]="ultimoProduto.VALOR * ultimoProduto.QTD" id="qtd" />
+        <input type="text" disabled name="total" [value]="venda.TOTAL | currency:'R$ '" id="qtd" />
+      </div>
+      <div>
+        <label for="restante">RESTANTE À PAGAR:</label>
+        <input type="text" disabled name="restante" [value]="Pagar | currency:'R$ '" id="qtd" />
       </div>
     </div>
   </main>
-  <!-- <aside class="sidebar column">
-    sidebar
-  </aside> -->
+  <aside class="sidebar column">
+    <button [disabled]='!Pagar' mat-raised-button color="primary" (click)="inserePagtoCartao('cartão')" class="">
+      CARTÃO
+    </button>
+    <button [disabled]='!Pagar' mat-raised-button color="Accent" (click)="inserePagtoDi('dinheiro')" class="">
+      DINHEIRO
+    </button>
+    <button [disabled]='!Pagar' mat-raised-button color="warn" (click)="inserePagtoBoleto('boleto')" class="">
+      BOLETO
+    </button>
+    <button [disabled]='Pagar > 0' mat-raised-button color="warn" (click)="confirmaVenda()" class="">
+      CONFIRMA
+    </button>
+    <button [disabled]='!pagamento.length' mat-raised-button color="warn" (click)="cancelaPagto()" class="">
+        CANCELA PAGTO
+      </button>
+  </aside>
   <footer class="footer column">
     <div class="column">
       <span>F2 - Nova venda</span>
