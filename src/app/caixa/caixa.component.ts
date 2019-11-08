@@ -11,7 +11,7 @@ import { Cliente } from '../shared/models/Cliente';
 import { Vendedor } from '../shared/models/Vendedor';
 import { Venda } from '../shared/models/venda';
 import { Deus } from '../shared/models/deus';
-// import * as bemafi from '../../Bemafi32.js';
+import * as bemafi from '../../../Bemafi32.js';
 @Component({
   selector: 'app-caixa',
   templateUrl: './caixa.component.html',
@@ -497,9 +497,9 @@ export class CaixaComponent implements OnInit {
   }
 
   // funções do cupom fiscal
-  // leiturax = function (ev) {
-  //   console.log(bemafi.leituraX());
-  // };
+  leiturax = function (ev) {
+    console.log(bemafi.leituraX());
+  };
   // reducaoZ = function (ev) {
   //   console.log(bemafi.reducaoZ());
   // };
