@@ -1,11 +1,11 @@
 <div class="container">
   <header class="header column">
     <div><span>Venda:</span><input type="text" id="inputVenda" [(ngModel)]="venda.LCTO"
-      (keydown.enter)="getVenda(cliente.CODIGO)" [disabled]="pagamento.length" /><span>{{cliente.RAZAO}}</span></div>
+      (keydown.enter)="getVenda(cliente.CODIGO)" [disabled]="venda.PAGAMENTO.length" /></div>
     <div><span>Vendedor:</span><input type="text" id="inputVend" [(ngModel)]="vendedor.CODIGO"
-        (keydown.enter)="getVendedor(vendedor.CODIGO)" [disabled]="pagamento.length" /><span>{{vendedor.NOME}}</span></div>
+        (keydown.enter)="getVendedor(vendedor.CODIGO)" [disabled]="venda.PAGAMENTO.length" /><span>{{vendedor.NOME}}</span></div>
     <div><span>Cliente:</span><input type="text" id="inputCli" [(ngModel)]="cliente.CODIGO"
-        (keydown.enter)="getCliente(cliente.CODIGO)" [disabled]="pagamento.length" /><span>{{cliente.RAZAO}}</span></div>
+        (keydown.enter)="getCliente(cliente.CODIGO)" [disabled]="venda.PAGAMENTO.length" /><span>{{cliente.RAZAO}}</span></div>
     <div>07/08/2019 10:40:38</div>
 
   </header>
@@ -13,7 +13,7 @@
     <div class="multQtd">
       <div>
         <label for="codbar">QTD</label>
-        <input type="text" name="multqtd" [disabled]="pagamento.length" (keydown.enter)="inputReturn()" [(ngModel)]="input.qtd" id="multqtd"
+        <input type="text" name="multqtd" [disabled]="venda.PAGAMENTO.length" (keydown.enter)="inputReturn()" [(ngModel)]="input.qtd" id="multqtd"
           placeholder="qtd" />
       </div>
     </div>
@@ -22,8 +22,8 @@
       <div>
         <label for="codbar">CODBAR</label>
         <input autofocus type="text" name="codbar" [(ngModel)]="input.codbar" #codbar id="codbar"
-          (keydown.enter)="getProduto(input.codbar,input.qtd)" [disabled]="pagamento.length" (keydown.F2)="novaVenda()" (keydown.F3)="clicaProduto()" (keydown.F4)="clicaCliente()"
-          (keydown.F5)="clicaVendedor()" />
+          (keydown.enter)="getProduto(input.codbar,input.qtd)" [disabled]="venda.PAGAMENTO.length" (keydown.F2)="novaVenda()" (keydown.F3)="clicaProduto()"  (keydown.F4)="clicaCliente()"
+          (keydown.F5)="clicaVendedor()" (keydown.F6)="clicaAbreVenda()"/>
       </div>
     </div>
     <div class="description">
@@ -56,7 +56,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of prodvenda;let i = index">
+          <tr *ngFor="let item of venda.PRODUTOS;let i = index">
             <td class="number">{{i+1}}</td>
             <td class="text">{{item.CODIGO}}</td>
             <td class="text" colspan="8">{{item.DESCRICAO}}</td>
@@ -68,7 +68,7 @@
         </tbody>
         <tbody *ngIf="cartao.length || boleto.length">
             <tr><td colspan="14"><hr></td></tr>
-            <tr><td></td><td colspan="4">TOTAL:</td><td colspan="4"></td><td colspan="5" class="number">{{venda.TOTAL | currency:'R$ '}}</td></tr>
+            <tr><td></td><td colspan="4">TOTAL:</td><td colspan="4"></td><td colspan="5" class="number">{{venda.TOTAL}}</td></tr>
             <tr><td colspan="14"><hr></td></tr>
             <tr>
                 <td colspan="9"></td>
@@ -111,29 +111,32 @@
 
       <div>
         <label for="total">TOTAL VENDA:</label>
-        <input type="text" disabled name="total" [value]="venda.TOTAL | currency:'R$ '" id="qtd" />
+        <input type="text" disabled name="total" [value]="venda.TOTALPRODUTOS" id="qtd" />
       </div>
       <div>
         <label for="restante">RESTANTE À PAGAR:</label>
-        <input type="text" disabled name="restante" [value]="Pagar | currency:'R$ '" id="qtd" />
+        <input type="text" disabled name="restante" [value]="venda.PAGAR" id="qtd" />
       </div>
     </div>
   </main>
   <aside class="sidebar column">
-    <button [disabled]='!Pagar' mat-raised-button color="primary" (click)="inserePagtoCartao('cartão')" class="">
+    <button [disabled]='!venda.PAGAR' mat-raised-button color="primary" (click)="inserePagtoCartao('cartão')" class="">
       CARTÃO
     </button>
-    <button [disabled]='!Pagar' mat-raised-button color="Accent" (click)="inserePagtoDi('dinheiro')" class="">
+    <button [disabled]='!venda.PAGAR' mat-raised-button color="Accent" (click)="inserePagtoDi('dinheiro')" class="">
       DINHEIRO
     </button>
-    <button [disabled]='!Pagar' mat-raised-button color="warn" (click)="inserePagtoBoleto('boleto')" class="">
+    <button [disabled]='!venda.PAGAR' mat-raised-button color="warn" (click)="inserePagtoBoleto('boleto')" class="">
       BOLETO
     </button>
-    <button [disabled]='Pagar > 0' mat-raised-button color="warn" (click)="confirmaVenda()" class="">
+    <button [disabled]='venda.PAGAR > 0' mat-raised-button color="warn" (click)="confirmaVenda()" class="">
       CONFIRMA
     </button>
-    <button [disabled]='!pagamento.length' mat-raised-button color="warn" (click)="cancelaPagto()" class="">
+    <button [disabled]='!venda.PAGAMENTO.length' mat-raised-button color="warn" (click)="cancelaPagto()" class="">
         CANCELA PAGTO
+      </button>
+      <button mat-raised-button color="warn" (click)="gerarNfe()" class="">
+        NFE
       </button>
   </aside>
   <footer class="footer column">

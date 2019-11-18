@@ -226,7 +226,7 @@ routes
       if (err) throw err;
       // db = DATABASE
       db.query(
-        `select LCTO,CODCLI,DATA,CODVEND,NOMECLI,TOTAL from VENDA WHERE LCTO= ${req.params.id}`,
+        `select v.lcto,v.data,v.codcli,v.nomecli,v.empresa,v.codvend,v.frete,v.total,f.nome,tr.id_transito,tr.status, tr.peso,tr.volumes,tr.outra_desp,tr.desconto,tr.total_nota,tr.tipofrete,c.liberafat,c.liberanp,c.cgc,c.razao,c.insc,c.endereco,c.numero,c.bairro,c.complemento,c.cidade,c.cep,c.fone,c.email,ci.codibge,c.codcidade,ci.estado,ci.cod_estado,f.nome as nomevend,prazocompra.descricao as faturamento from venda v join transito tr on v.lcto = tr.documento join cliente c on c.codigo=v.codcli join func f on f.codigo = v.codvend left join cidade ci on c.codcidade = ci.cod_cidade left join transp on tr.codtransp = transp.codigo left join prazocompra on v.cdcondpagto = prazocompra.codigo where lcto =${req.params.id} order by tr.id_transito`,
         function(err, result) {
           // IMPORTANT: close the connection
           db.detach(function() {
@@ -306,7 +306,7 @@ routes
       if (err) throw err;
       // db = DATABASE
       db.query(
-        `select CODPRO AS CODIGO,QTD,VALOR,DESCRICAO, un as UNIDADE FROM PRODVENDA WHERE CODVENDA= ${req.params.id}`,
+        `select * from LISTAPRODVENDAS(${req.params.id})`,
         function(err, result) {
           // IMPORTANT: close the connection
           db.detach(function() {
@@ -464,6 +464,42 @@ routes
           res.send(result);
         });
       });
+    });
+  });
+
+routes
+  .route("/emitente")
+  //buscas
+  .get((req, res) => {
+    var sql = `select p.crt,c.razao,c.cgc,c.insc,c.endereco,c.bairro,c.cep,c.fone,c.email,ci.nom_cidade as cidade,ci.codibge,ci.estado,p.icms_simples from param p  join cliente c on p.codparc = c.codigo  join cidade ci on c.codcidade = ci.cod_cidade where p.codigo=${req.query.empresa}`;
+    estoque.get(function(err, db) {
+      if (err) throw err;
+      db.query(sql,
+        function(err, result) {
+          if (err) throw err;
+          db.detach(function() {
+            res.send(result[0]);
+          });
+        }
+      );
+    });
+  });
+
+  routes
+  .route("/destinatario")
+  //buscas
+  .get((req, res) => {
+    var sql = `select p.crt,c.razao,c.cgc,c.insc,c.endereco,c.bairro,c.cep,c.fone,c.email,ci.nom_cidade as cidade,ci.codibge,ci.estado,p.icms_simples from param p  join cliente c on p.codparc = c.codigo  join cidade ci on c.codcidade = ci.cod_cidade where p.codigo=${req.query.empresa}`;
+    estoque.get(function(err, db) {
+      if (err) throw err;
+      db.query(
+        function(err, result) {
+          if (err) throw err;
+          db.detach(function() {
+            res.send(result[0]);
+          });
+        }
+      );
     });
   });
 

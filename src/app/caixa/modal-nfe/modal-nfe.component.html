@@ -1,0 +1,442 @@
+<h1 mat-dialog-title>buscar {{ titulo }}</h1>
+<div mat-dialog-content>
+  <mat-tab-group>
+    <mat-tab label="Venda">
+      <div>
+        <form name="cabecalhoForm">
+          <fieldset>
+            <legend>Destinatário</legend>
+            <div layout-gt-xs="row">
+              <mat-form-field>
+                <!-- <label>Código</label> -->
+                <input matInput name="codcli" [value]="venda.CODCLI" placeholder="Código" />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs>
+                <label>Razão Social</label>
+                <input matInput name="nome" [value]="venda.RAZAO" type="text" />
+              </mat-form-field>
+            </div>
+            <div layout-gt-xs="row">
+              <mat-form-field class="md-block" flex-gt-xs="15">
+                <label>CNPJ / CPF</label>
+                <input matInput name="cgc" type="text" [value]="venda.CGC" />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs="15">
+                <label>I. E.</label>
+                <input matInput name="inscest" type="text" [value]="venda.INSC" />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs>
+                <label>e-mail</label>
+                <input matInput name="inscest" type="email" [value]="venda.EMAIL" />
+              </mat-form-field>
+            </div>
+          </fieldset>
+          <md-table-container style="overflow: auto;">
+            <table md-table>
+              <thead fix-head md-head>
+                <tr md-row>
+                  <th md-column>
+                    <span>Codigo</span>
+                  </th>
+                  <th md-column>
+                    <span>Descricao</span>
+                  </th>
+                  <th md-column>
+                    <span>Qtd</span>
+                  </th>
+                  <th md-column>
+                    <span>V. Unit</span>
+                  </th>
+                  <th md-column>
+                    <span>V. Unit</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of venda.PRODUTOS; let i = index">
+                  <td md-cell>{{ item.CODPRO }}</td>
+                  <td md-cell>{{ item.DESCRICAO }}</td>
+                  <td md-cell>{{ item.QTD }} {{ item.UNIDADE }}</td>
+                  <td md-cell>{{ item.VALOR }}</td>
+                  <td md-cell>{{ item.TOTAL }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </md-table-container>
+        </form>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Dados Gerais">
+      <div>
+        <form name="cabecalhoForm">
+          <fieldset>
+            <legend>Dados Gerais</legend>
+            <div layout-gt-xs="row">
+              <mat-form-field class="md-block" flex-gt-xs="15">
+                <label>Nota Fiscal</label>
+                <input matInput type="text" value="teste" />
+              </mat-form-field>
+              <mat-form-field>
+                <label>Data</label>
+                <md-datepicker
+                  name="data"
+                  md-hide-icons="calendar"
+                  [value]="nota.getDataDaEmissao()"
+                ></md-datepicker>
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs="20">
+                <!-- <md-icon class="material-icons" style="color: rgb(44, 155, 58);">search</md-icon> -->
+                <label>Nat. Operação</label>
+                <input matInput
+                  name="natoper"
+                  [value]="nota.getNaturezaDaOperacao()"
+                  type="text"
+                />
+              </mat-form-field>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Destinatário</legend>
+            <div layout-gt-xs="row">
+              <mat-form-field class="md-block" flex-gt-xs="5">
+                <label>Código</label>
+                <input matInput
+                  name="codcli"
+                  [value]="nota.getDestinatario().getCodigo()"
+                />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs>
+                <!-- <md-icon class="material-icons" style="color: rgb(44, 155, 58);">search</md-icon> -->
+                <label>Razão Social</label>
+                <input matInput
+                  name="nome"
+                  [value]="nota.getDestinatario().getNome()"
+                  type="text"
+                />
+              </mat-form-field>
+              <mat-form-field flex-gt-xs="15">
+                <label>Telefone</label>
+                <input matInput
+                  name="fone"
+                  [value]="nota.getDestinatario().getTelefone()"
+                  type="text"
+                />
+              </mat-form-field>
+            </div>
+            <div layout-gt-xs="row">
+              <mat-form-field class="md-block" flex-gt-xs="15">
+                <label>CNPJ / CPF</label>
+                <input matInput
+                  name="cgc"
+                  type="text"
+                  [value]="nota.getDestinatario().getRegistroNacional()"
+                />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs="15">
+                <label>I. E.</label>
+                <input matInput
+                  name="inscest"
+                  type="text"
+                  [value]="nota.getDestinatario().getInscricaoEstadual()"
+                />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs="10">
+                <label>Contribuinte</label>
+                <select>
+                  <option value="C">Contribuinte</option>
+                  <option value="I">Isento</option>
+                  <option value="N">Não Contrib.</option>
+                </select>
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs>
+                <label>e-mail</label>
+                <input matInput
+                  name="inscest"
+                  type="email"
+                  [value]="nota.getDestinatario().getEmail()"
+                />
+              </mat-form-field>
+            </div>
+            <div layout-gt-xs="row">
+              <mat-form-field class="md-block" flex-gt-xs="10">
+                <label>CEP</label>
+                <input matInput
+                  md-no-asterisk
+                  name="cep"
+                  [value]="
+                    nota
+                      .getDestinatario()
+                      .getEndereco()
+                      .getCep()
+                  "
+                />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs>
+                <label>Endereço</label>
+                <input matInput
+                  name="endereco"
+                  [value]="
+                    nota
+                      .getDestinatario()
+                      .getEndereco()
+                      .getLogradouro()
+                  "
+                />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs="5">
+                <label>Número</label>
+                <input matInput
+                  name="numero"
+                  [value]="
+                    nota
+                      .getDestinatario()
+                      .getEndereco()
+                      .getNumero()
+                  "
+                />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs="25">
+                <label>Bairro</label>
+                <input matInput
+                  name="bairro"
+                  [value]="
+                    nota
+                      .getDestinatario()
+                      .getEndereco()
+                      .getBairro()
+                  "
+                />
+              </mat-form-field>
+            </div>
+            <div layout-gt-xs="row">
+              <mat-form-field class="md-block" flex-gt-xs>
+                <label>Complemento</label>
+                <input matInput
+                  name="complemento"
+                  [value]="
+                    nota
+                      .getDestinatario()
+                      .getEndereco()
+                      .getComplemento()
+                  "
+                />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs="20">
+                <label>Cidade</label>
+                <input matInput
+                  name="cidade"
+                  [value]="
+                    nota
+                      .getDestinatario()
+                      .getEndereco()
+                      .getMunicipio()
+                  "
+                />
+              </mat-form-field>
+              <mat-form-field class="md-block" flex-gt-xs="8">
+                <label>Estado</label>
+                <input matInput
+                  name="estado"
+                  [value]="
+                    nota
+                      .getDestinatario()
+                      .getEndereco()
+                      .getUf()
+                  "
+                />
+              </mat-form-field>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Produtos">
+      <form>
+        <table md-table>
+          <thead fix-head md-head>
+            <tr md-row>
+              <th md-column>
+                <span>Codigo</span>
+              </th>
+              <th md-column>
+                <span>Descricao</span>
+              </th>
+              <th md-column>
+                <span>Ncm/Sh</span>
+              </th>
+              <th md-column>
+                <span>CST/CSOSN</span>
+              </th>
+              <th md-column>
+                <span>CFOP</span>
+              </th>
+              <th md-column>
+                <span>Qtd</span>
+              </th>
+              <th md-column>
+                <span>Un</span>
+              </th>
+              <th md-column>
+                <span>V. Unit</span>
+              </th>
+              <th md-column>
+                <span>V. Unit</span>
+              </th>
+              <th md-column>
+                <span>V ICMS</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of nota.getItens(); let i = index">
+              <td>{{ item.getCodigo() }}</td>
+              <td>{{ item.getDescricao() }}</td>
+              <td>{{ item.getNcmSh() }}</td>
+              <td>{{ item.getIcms().getSituacaoTributaria() }}</td>
+              <td>{{ item.getIcms().getCfop() }}</td>
+              <td>{{ item.getQuantidade() }}</td>
+              <td>{{ item.getUnidade() }}</td>
+              <td>{{ item.getValorUnitario() | currency }}</td>
+              <td>{{ item.getValorTotal() | currency }}</td>
+              <td>{{ item.getIcms().getValorDoIcms() }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </mat-tab>
+
+    <mat-tab label="Pagamento">
+      <form>
+        <table md-table>
+          <thead fix-head md-head>
+            <tr md-row>
+              <th md-column>
+                <span>Forma Pagto</span>
+              </th>
+              <th md-column>
+                <span>Meio Pagto</span>
+              </th>
+              <th md-column>
+                Vencimento
+              </th>
+              <th md-column>
+                <span>Valor</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of nota._pagamentos; let i = index">
+              <td md-cell>{{ item.getFormaDePagamento() }}</td>
+              <td md-cell>
+                {{ item.getMeioDePagamento() }} {{ item.getBandeiraDoCartao() }}
+              </td>
+              <td md-cell>{{ item.getVencimento() | date: "dd/MM/yyyy" }}</td>
+              <td md-cell>{{ item.getValor() | currency }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </mat-tab>
+
+    <mat-tab label="Observações">
+      <form name="cabecalhoForm">
+        <fieldset>
+          <legend>Transporte</legend>
+          <div layout-gt-xs="row">
+            <mat-form-field class="md-block" flex-gt-xs>
+              <label>Tipo</label>
+              <input matInput
+                disabled
+                name="modfrete"
+                [value]="nota.getModalidadeDoFreteFormatada()"
+              />
+            </mat-form-field>
+            <mat-form-field class="md-block" flex-gt-xs>
+              <label>Transpostador</label>
+              <input matInput
+                disabled
+                name="transportador"
+                [value]="nota.getTransportador().getNome()"
+              />
+            </mat-form-field>
+            <mat-form-field class="md-block" flex-gt-xs>
+              <label>Valor</label>
+              <input matInput disabled name="vlfrete" [value]="nota.getValorDoFrete()" />
+            </mat-form-field>
+            <mat-form-field class="md-block" flex-gt-xs>
+              <label>Volumes</label>
+              <input matInput
+                disabled
+                name="volumes"
+                [value]="nota.getVolumes().getQuantidade()"
+              />
+            </mat-form-field>
+            <mat-form-field class="md-block" flex-gt-xs>
+              <label>Espécie</label>
+              <input matInput
+                disabled
+                name="especie"
+                [value]="nota.getVolumes().getEspecie()"
+              />
+            </mat-form-field>
+            <mat-form-field class="md-block" flex-gt-xs>
+              <label>Peso Bruto</label>
+              <input matInput
+                disabled
+                name="pesob"
+                [value]="nota.getVolumes().getPesoBruto()"
+              />
+            </mat-form-field>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>NFe Referência</legend>
+          <div layout-gt-xs="row">
+            <mat-form-field class="md-block" flex-gt-xs>
+              <label>Numero</label>
+              <!-- <input matInput name="especie" [value]="dadosRef.numNota"> -->
+            </mat-form-field>
+            <mat-form-field class="md-block" flex-gt-xs>
+              <label>Chave</label>
+              <!-- <input matInput name="Num" [value]="dadosRef.chNota"> -->
+            </mat-form-field>
+            <mat-form-field class="md-block" flex-gt-xs>
+              <md-button
+                aria-label="Adicionar"
+                class="md-warn md-raised "
+                click=""
+              >
+                Adicionar
+              </md-button>
+            </mat-form-field>
+          </div>
+          <div layout-gt-xs="row">
+            <mat-form-field md-detect-hidden="true" flex-gt-xs>
+              <label>Notas Referência</label>
+              <!-- <textarea [value]="x.refNFe" rows="1" ng-repeat=nota._NfRef></textarea> -->
+            </mat-form-field>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Informações Adicionais</legend>
+          <div layout-gt-xs="row">
+            <mat-form-field md-detect-hidden="true" flex-gt-xs>
+              <label>Informações</label>
+              <textarea
+                [value]="nota._informacoesComplementares"
+                rows="4"
+              ></textarea>
+              <!-- <input matInput name="codcli" ng-value=""> -->
+            </mat-form-field>
+          </div>
+        </fieldset>
+      </form>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">cancela</button>
+  <button mat-button [mat-dialog-close]="" cdkFocusInitial>Ok</button>
+</div>

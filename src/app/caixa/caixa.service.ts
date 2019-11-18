@@ -62,8 +62,8 @@ export class CaixaService {
   getVendas(status: void): Observable<any[]> {
     return this.http.get<any[]>(this.apiURL + `/venda?STATUS=${status}`).pipe();
   }
-  getVenda(lcto: number): Observable<Venda> {
-    return this.http.get<Venda>(this.apiURL + `/venda/${lcto}`).pipe();
+  getVenda(lcto: number): Observable<any[]> {
+    return this.http.get<any[]>(this.apiURL + `/venda/${lcto}`).pipe();
   }
 
   confirmaVenda(
@@ -80,8 +80,8 @@ export class CaixaService {
       .pipe();
   }
 
-  getProdVenda(lcto: number): Observable<Produto[]> {
-    return this.http.get<Produto[]>(this.apiURL + `/prodvenda/${lcto}`).pipe();
+  getProdVenda(lcto: number): Observable<any[]> {
+    return this.http.get<any[]>(this.apiURL + `/prodvenda/${lcto}`).pipe();
   }
   getCartao(estabelecimento: number) {
     return this.http
@@ -93,4 +93,11 @@ export class CaixaService {
       .get<any[]>(this.apiURL + `/boleto?estabelecimento=${estabelecimento}`)
       .pipe();
   }
+
+  // funções da NF
+
+  getEmitente(empresa: number): Observable<any> {
+    return this.http.get<any>(this.apiURL + `/emitente?empresa= ${empresa}`).pipe();
+  }
+
 }

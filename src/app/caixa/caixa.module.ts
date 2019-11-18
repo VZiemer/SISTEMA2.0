@@ -10,15 +10,25 @@ import { MyModalComponent } from './my-modal/my-modal.component';
 import { ModalPagtoCartaoComponent } from './modal-pagto-cartao/modal-pagto-cartao.component';
 import { ModalPagtoDiComponent } from './modal-pagto-di/modal-pagto-di.component';
 import { ModalPagtoBoletoComponent } from './modal-pagto-boleto/modal-pagto-boleto.component';
+import { ModalBuscaVendaComponent } from './modal-busca-venda/busca-venda.component';
+import { ModalNfeComponent } from './modal-nfe/modal-nfe.component';
 
 
 import { ModalBuscaGenericoComponent } from '../shared/components/modal-busca-generico/busca-generico.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import {MatTabsModule} from '@angular/material/tabs';
 @NgModule({
-  declarations: [CaixaComponent, MyModalComponent,
-    ModalBuscaGenericoComponent, ModalPagtoCartaoComponent,
-    ModalPagtoDiComponent, ModalPagtoBoletoComponent],
+  declarations: [
+    CaixaComponent,
+    MyModalComponent,
+    ModalBuscaGenericoComponent,
+    ModalPagtoCartaoComponent,
+    ModalPagtoDiComponent,
+    ModalPagtoBoletoComponent,
+    ModalBuscaVendaComponent,
+    ModalNfeComponent
+  ],
   imports: [
     CommonModule,
     SharedModule,
@@ -28,9 +38,18 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     AngularMaterialModule,
     BrowserAnimationsModule,
     MatTableModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatTabsModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  entryComponents: [MyModalComponent, ModalBuscaGenericoComponent, ModalPagtoCartaoComponent, ModalPagtoDiComponent,ModalPagtoBoletoComponent]
+  entryComponents: [
+    MyModalComponent,
+    ModalBuscaVendaComponent,
+    ModalBuscaGenericoComponent,
+    ModalPagtoCartaoComponent,
+    ModalPagtoDiComponent,
+    ModalPagtoBoletoComponent,
+    ModalNfeComponent
+  ]
 })
-export class CaixaModule { }
+export class CaixaModule {}

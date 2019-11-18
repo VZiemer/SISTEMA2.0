@@ -3,15 +3,17 @@ import { CaixaService } from './caixa.service';
 import { MatDialog } from '@angular/material';
 import { ModalPagtoCartaoComponent } from './modal-pagto-cartao/modal-pagto-cartao.component';
 import { ModalPagtoBoletoComponent } from './modal-pagto-boleto/modal-pagto-boleto.component';
-
 import { ModalPagtoDiComponent } from './modal-pagto-di/modal-pagto-di.component';
+import { ModalBuscaVendaComponent } from './modal-busca-venda/busca-venda.component';
 import { ModalBuscaGenericoComponent } from '../shared/components/modal-busca-generico/busca-generico.component';
+import { ModalNfeComponent } from './modal-nfe/modal-nfe.component';
+
 import { Produto } from '../shared/models/produto';
 import { Cliente } from '../shared/models/Cliente';
 import { Vendedor } from '../shared/models/Vendedor';
 import { Venda } from '../shared/models/venda';
 import { Deus } from '../shared/models/deus';
-import * as bemafi from '../../../Bemafi32.js';
+
 @Component({
   selector: 'app-caixa',
   templateUrl: './caixa.component.html',
@@ -28,17 +30,36 @@ export class CaixaComponent implements OnInit {
     codbar: null,
     qtd: 1
   };
-  venda: Venda = {
-    LCTO: null,
-    DATA: null,
-    CODCLI: null,
-    CODVEND: null,
-    STATUS: null,
-    TOTAL: null,
-    CDCONDPAGTO: null,
-    NOMECLI: '',
-    EMPRESA: null
-  };
+  venda: Venda = new Venda(
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    ''
+  );
   Pagar: number;
   cartao = [];
   boleto = [];
@@ -92,6 +113,7 @@ export class CaixaComponent implements OnInit {
     this.DOM.inputQtd = this.renderer.selectRootElement('#multqtd');
   }
 
+
   // função que volta o input
   inputReturn() {
     this.DOM.inputProd.focus();
@@ -111,8 +133,75 @@ export class CaixaComponent implements OnInit {
     this.DOM.inputVend.focus();
   }
   clicaAbreVenda() {
-    this.selectedFunction.text = 'Digite a venda ou Enter para buscar';
-    this.DOM.inputProd.focus();
+    const dialogRef = this.dialog.open(ModalBuscaVendaComponent, {
+      width: '70vw',
+      height: '60vh',
+      hasBackdrop: true,
+      disableClose: true,
+      data: 'venda'
+    });
+
+    dialogRef.afterClosed().subscribe(res => {
+      console.log('retorno', res);
+      this.caixaService.getVenda(res.LCTO).subscribe(
+        venda => {
+          this.venda = new Venda(
+            venda[0].LCTO,
+            venda[0].DATA,
+            venda[0].ID_TRANSITO,
+            venda[0].CGC,
+            venda[0].INSC,
+            venda[0].CODCLI,
+            venda[0].NOMECLI,
+            venda[0].CODVEND,
+            venda[0].NOMEVEND,
+            venda[0].EMAIL,
+            venda[0].FONE,
+            venda[0].RAZAO,
+            venda[0].ENDERECO,
+            venda[0].NUMERO,
+            venda[0].BAIRRO,
+            venda[0].CEP,
+            venda[0].CODIBGE,
+            venda[0].CODCIDADE,
+            venda[0].CIDADE,
+            venda[0].ESTADO,
+            venda[0].COMPLEMENTO,
+            venda[0].DESCONTO,
+            venda[0].FRETE,
+            venda[0].SEGURO,
+            venda[0].TOTAL,
+            venda[0].FATURAMENTO,
+            venda[0].LIBERAFAT,
+            venda[0].LIBERANP
+          );
+          this.venda.insereTransporte(
+            venda[0].VOLUMES,
+            venda[0].PESO,
+            venda[0].TIPOFRETE,
+            venda[0].TRANSPORTADOR
+          );
+
+          this.getProdvenda(this.venda.LCTO);
+          console.log(this.venda);
+        },
+        error => console.log(error)
+      );
+    });
+  }
+
+  gerarNfe() {
+    const dialogRef = this.dialog.open(ModalNfeComponent, {
+      width: '100vw',
+      height: '100vh',
+      hasBackdrop: true,
+      disableClose: false,
+      data: this.venda
+    });
+
+    dialogRef.afterClosed().subscribe(res => {
+      console.log('retorno', res);
+    });
   }
 
   // insere um novo produto com pelo id (alterar para codbar)
@@ -170,8 +259,45 @@ export class CaixaComponent implements OnInit {
     if (id) {
       this.caixaService.getVenda(id).subscribe(
         venda => {
-          this.venda = venda;
-          this.clicaProduto();
+          this.venda = new Venda(
+            venda[0].LCTO,
+            venda[0].DATA,
+            venda[0].ID_TRANSITO,
+            venda[0].CGC,
+            venda[0].INSC,
+            venda[0].CODCLI,
+            venda[0].NOMECLI,
+            venda[0].CODVEND,
+            venda[0].NOMEVEND,
+            venda[0].EMAIL,
+            venda[0].FONE,
+            venda[0].RAZAO,
+            venda[0].ENDERECO,
+            venda[0].NUMERO,
+            venda[0].BAIRRO,
+            venda[0].CEP,
+            venda[0].CODIBGE,
+            venda[0].CODCIDADE,
+            venda[0].CIDADE,
+            venda[0].ESTADO,
+            venda[0].COMPLEMENTO,
+            venda[0].DESCONTO,
+            venda[0].FRETE,
+            venda[0].SEGURO,
+            venda[0].TOTAL,
+            venda[0].FATURAMENTO,
+            venda[0].LIBERAFAT,
+            venda[0].LIBERANP
+          );
+          this.venda.insereTransporte(
+            venda[0].VOLUMES,
+            venda[0].PESO,
+            venda[0].TIPOFRETE,
+            venda[0].TRANSPORTADOR
+          );
+
+          this.getProdvenda(this.venda.LCTO);
+          console.log(this.venda);
         },
         error => console.log(error)
       );
@@ -194,7 +320,7 @@ export class CaixaComponent implements OnInit {
   }
 
   cancelaPagto() {
-    this.pagamento = [];
+    this.venda.PAGAMENTO = [];
     this.cartao = [];
     this.boleto = [];
     this.Pagar = this.venda.TOTAL;
@@ -221,7 +347,7 @@ export class CaixaComponent implements OnInit {
       height: '80vh',
       hasBackdrop: true,
       disableClose: true,
-      data: { tipopag: pagto, valor: this.Pagar }
+      data: { tipopag: pagto, valor: this.venda.PAGAR }
     });
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
@@ -260,7 +386,7 @@ export class CaixaComponent implements OnInit {
             PROJECAO: 0,
             OBS: ''
           };
-          this.pagamento.push(pgto);
+          this.venda.PAGAMENTO.push(pgto);
           if (res.fPagto.TARIFA) {
             const valorTarifa: number = Number(
               ((res.valor * res.fPagto.TARIFA) / 100).toFixed(2)
@@ -282,7 +408,7 @@ export class CaixaComponent implements OnInit {
               PROJECAO: 0,
               OBS: ''
             };
-            this.pagamento.push(tarifa);
+            this.venda.PAGAMENTO.push(tarifa);
           }
         } else {
           const newDate = new Date(data);
@@ -317,7 +443,7 @@ export class CaixaComponent implements OnInit {
               PROJECAO: 0,
               OBS: ''
             };
-            this.pagamento.push(pgto);
+            this.venda.PAGAMENTO.push(pgto);
             if (res.fPagto.TARIFA) {
               const valorTarifa: number = Number(
                 ((valor * res.fPagto.TARIFA) / 100).toFixed(2)
@@ -344,11 +470,11 @@ export class CaixaComponent implements OnInit {
                 PROJECAO: 0,
                 OBS: ''
               };
-              this.pagamento.push(tarifa);
+              this.venda.PAGAMENTO.push(tarifa);
             }
           }
         }
-        console.log(this.pagamento);
+        console.log(this.venda.PAGAMENTO);
       }
     });
   }
@@ -359,7 +485,7 @@ export class CaixaComponent implements OnInit {
       height: '80vh',
       hasBackdrop: true,
       disableClose: true,
-      data: { tipopag: pagto, valor: this.Pagar }
+      data: { tipopag: pagto, valor: this.venda.PAGAR }
     });
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
@@ -372,44 +498,44 @@ export class CaixaComponent implements OnInit {
           LCTO: this.venda.LCTO,
           VENCIMENTOS: res.fPagto.VENCIMENTOS,
           BANDEIRA: res.fPagto.NOME_BANCO,
-          PARCELAS: res.fPagto.PARCELAS,
+          PARCELAS: res.fPagto.PARCELAS
         });
-          const newDate = new Date(data);
-          const valor: number = Number(
-            (res.valor / res.fPagto.PARCELAS).toFixed(2)
-          );
-          const resto: number = Number(
-            (res.valor - valor * res.fPagto.PARCELAS).toFixed(2)
-          );
-          for (let index = 0; index < res.fPagto.PARCELAS; index++) {
-            const pgto: Deus = {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: this.empresa.CODIGO,
-              CODPARC: this.cliente.CODIGO,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: 'V',
-              DOCUMENTO:
-                this.venda.LCTO.toString() +
-                '-' +
-                (index + 1) +
-                '/' +
-                res.fPagto.PARCELAS,
-              DATAEMISSAO: this.venda.DATA,
-              DATAVCTO: new Date(
-                newDate.setDate(newDate.getDate() + res.fPagto.PERIODO)
-              ),
-              DATALIQUID: null,
-              DEBITO: res.fPagto.DOMICILIO_BANCARIO,
-              CREDITO: 173,
-              VALOR: index + 1 === res.fPagto.PARCELAS ? valor + resto : valor,
-              PROJECAO: 0,
-              OBS: ''
-            };
-            this.pagamento.push(pgto);
-          }
+        const newDate = new Date(data);
+        const valor: number = Number(
+          (res.valor / res.fPagto.PARCELAS).toFixed(2)
+        );
+        const resto: number = Number(
+          (res.valor - valor * res.fPagto.PARCELAS).toFixed(2)
+        );
+        for (let index = 0; index < res.fPagto.PARCELAS; index++) {
+          const pgto: Deus = {
+            CODIGO: null,
+            CODDEC: null,
+            EMPRESA: this.empresa.CODIGO,
+            CODPARC: this.cliente.CODIGO,
+            LCTO: this.venda.LCTO,
+            TIPOLCTO: 'V',
+            DOCUMENTO:
+              this.venda.LCTO.toString() +
+              '-' +
+              (index + 1) +
+              '/' +
+              res.fPagto.PARCELAS,
+            DATAEMISSAO: this.venda.DATA,
+            DATAVCTO: new Date(
+              newDate.setDate(newDate.getDate() + res.fPagto.PERIODO)
+            ),
+            DATALIQUID: null,
+            DEBITO: res.fPagto.DOMICILIO_BANCARIO,
+            CREDITO: 173,
+            VALOR: index + 1 === res.fPagto.PARCELAS ? valor + resto : valor,
+            PROJECAO: 0,
+            OBS: ''
+          };
+          this.venda.PAGAMENTO.push(pgto);
+        }
 
-        console.log(this.pagamento);
+        console.log(this.venda.PAGAMENTO);
       }
     });
   }
@@ -420,7 +546,7 @@ export class CaixaComponent implements OnInit {
       height: '70vh',
       hasBackdrop: true,
       disableClose: true,
-      data: { tipopag: pagto, valor: this.Pagar }
+      data: { tipopag: pagto, valor: this.venda.PAGAR }
     });
     dialogRef.afterClosed().subscribe(res => {
       this.Pagar -= res.valor;
@@ -443,13 +569,13 @@ export class CaixaComponent implements OnInit {
         PROJECAO: 0,
         OBS: ''
       };
-      this.pagamento.push(pgto);
-      console.log(this.pagamento);
+      this.venda.PAGAMENTO.push(pgto);
+      console.log(this.venda.PAGAMENTO);
     });
   }
 
   confirmaVenda() {
-    this.pagamento.unshift({
+    this.venda.PAGAMENTO.unshift({
       CODIGO: null,
       CODDEC: null,
       EMPRESA: this.empresa.CODIGO,
@@ -467,44 +593,34 @@ export class CaixaComponent implements OnInit {
       OBS: ''
     });
     this.caixaService
-      .confirmaVenda(this.venda, this.pagamento, this.cartao)
+      .confirmaVenda(this.venda, this.venda.PAGAMENTO, this.cartao)
       .subscribe(rest => {
         console.log(rest);
       });
   }
 
   getProdvenda(lcto: number) {
-    this.caixaService.getProdVenda(1425044).subscribe(
+    this.caixaService.getProdVenda(lcto).subscribe(
       prodVenda => {
-        this.prodvenda = prodVenda;
+        const venda = this.venda;
+        console.log(prodVenda);
+        prodVenda.forEach(function (item) {
+          if (item.QTDPEDIDO > 0) {
+              venda.insereProduto(item);
+              console.log('inseriu item');
+          }
+          if (item.QTDPEDIDO < 0) {
+              venda.insereDescontos(item);
+              console.log('descontou item');
+          }
+      });
+        // this.prodvenda = prodVenda;
       },
       error => console.log(error)
     );
   }
 
   ngOnInit() {
-    this.caixaService.getVenda(1425044).subscribe(
-      venda => {
-        this.venda = venda[0];
-        this.Pagar = this.venda.TOTAL;
-        this.cliente.CODIGO = venda[0].CODCLI;
-        this.cliente.RAZAO = venda[0].NOMECLI;
-        this.getProdvenda(venda.LCTO);
-        console.log(this.venda);
-      },
-      error => console.log(error)
-    );
+    this.getVenda(1425697);
   }
-
-  // funções do cupom fiscal
-  leiturax = function (ev) {
-    console.log(bemafi.leituraX());
-  };
-  // reducaoZ = function (ev) {
-  //   console.log(bemafi.reducaoZ());
-  // };
-  // cancelaCupom = async function (ev) {
-  //   const cancela = await bemafi.cancelaCupom();
-  //   console.log(cancela);
-  // };
 }
