@@ -2,11 +2,13 @@ import { Component, OnInit, Inject } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
-import { Observable } from 'rxjs';
+import { Observable } from "rxjs";
 import { Venda } from "../../shared/models/venda";
 import { CaixaService } from "../../caixa/caixa.service";
 import * as dinheiro from "../../shared/models/dinheiro";
 import * as nfe from "node-nfe";
+
+import { ElectronService } from "../../core/services/electron/electron.service";
 
 const NFe = nfe.NFe,
   Gerador = nfe.Gerador,
@@ -36,8 +38,38 @@ export class ModalNfeComponent implements OnInit {
   destinatario = new Destinatario();
   transportador = new Transportador();
   volumes = new Volumes();
-  venda: Venda;
-  operacao: Number = 1;
+  venda: Venda = new Venda(
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '');
+  novaNota = "";
+  operacao: Number;
+  tabSelect = 0;
   nota = new NFe();
   busca = {
     codigo: "",
@@ -54,7 +86,7 @@ export class ModalNfeComponent implements OnInit {
     private caixaService: CaixaService,
     @Inject(MAT_DIALOG_DATA) public data: Venda
   ) {
-    this.venda = data;
+    // this.venda = data;
   }
   onNoClick(): void {
     this.dialogRef.close();
@@ -64,8 +96,77 @@ export class ModalNfeComponent implements OnInit {
     return Array(length).join(digito || "0") + valor;
   }
 
-  ngOnInit() {
-    this.geraNfe(1, this.venda).subscribe(danfe => {console.log('danfe', danfe);this.nota = danfe;});
+  ngOnInit() {}
+
+  carregaVenda(novaNota) {
+    this.caixaService.getVenda(novaNota).subscribe(
+      venda => {
+        this.venda = new Venda(
+          venda[0].LCTO,
+          venda[0].DATA,
+          venda[0].ID_TRANSITO,
+          venda[0].CGC,
+          venda[0].INSC,
+          venda[0].CODCLI,
+          venda[0].NOMECLI,
+          venda[0].CODVEND,
+          venda[0].NOMEVEND,
+          venda[0].EMAIL,
+          venda[0].FONE,
+          venda[0].RAZAO,
+          venda[0].ENDERECO,
+          venda[0].NUMERO,
+          venda[0].BAIRRO,
+          venda[0].CEP,
+          venda[0].CODIBGE,
+          venda[0].CODCIDADE,
+          venda[0].CIDADE,
+          venda[0].ESTADO,
+          venda[0].COMPLEMENTO,
+          venda[0].DESCONTO,
+          venda[0].FRETE,
+          venda[0].SEGURO,
+          venda[0].TOTAL,
+          venda[0].FATURAMENTO,
+          venda[0].LIBERAFAT,
+          venda[0].LIBERANP
+        );
+        this.venda.insereTransporte(
+          venda[0].VOLUMES,
+          venda[0].PESO,
+          venda[0].TIPOFRETE,
+          venda[0].TRANSPORTADOR
+        );
+
+        this.getProdvenda(this.venda.LCTO);
+        console.log(this.venda);
+      },
+      error => console.log(error)
+    );
+  }
+
+  getProdvenda(lcto: number) {
+    this.caixaService.getProdVenda(lcto).subscribe(
+      prodVenda => {
+        const venda = this.venda;
+        let ultimo: any;
+        console.log(prodVenda);
+        prodVenda.forEach(function(item) {
+          if (item.QTDPEDIDO > 0) {
+            ultimo = item;
+            venda.insereProduto(item);
+            console.log("inseriu item");
+          }
+          if (item.QTDPEDIDO < 0) {
+            venda.insereDescontos(item);
+            console.log("descontou item");
+          }
+          console.log(ultimo);
+        });
+        // this.prodvenda = prodVenda;
+      },
+      error => console.log(error)
+    );
   }
 
   geraNfe(empresa, venda): Observable<any> {
@@ -164,7 +265,8 @@ export class ModalNfeComponent implements OnInit {
                 .getEndereco()
                 .getUf()
           ) {
-            naturezaOperacao = " Devolução de venda de mercadoria fora do estado";
+            naturezaOperacao =
+              " Devolução de venda de mercadoria fora do estado";
             this.danfe.comFinalidade("devolução");
           }
           if (this.operacao === 4) {
@@ -216,8 +318,6 @@ export class ModalNfeComponent implements OnInit {
           this.danfe.comDataDaEmissao(new Date());
           this.danfe.comDataDaEntradaOuSaida(new Date());
           this.danfe.comModalidadeDoFrete(tipoFrete);
-
-
 
           console.log("com pagamento");
           let _numDuplicata = 0;
@@ -343,7 +443,9 @@ export class ModalNfeComponent implements OnInit {
                 .comValorUnitario(item.VALORUNITFISCAL)
                 .comValorDoFrete(item.FRETEPROD)
                 .comValorDoIpiDevolucao(
-                  venda.operacao === 3 ? (item.ALIQIPI / 100) * item.BASECALC : 0
+                  venda.operacao === 3
+                    ? (item.ALIQIPI / 100) * item.BASECALC
+                    : 0
                 )
             );
           }
@@ -356,16 +458,6 @@ export class ModalNfeComponent implements OnInit {
       );
     });
   }
-
-  // dadosNota(venda): Promise<Venda> {
-  //   console.log('dados nota');
-  //   return new Promise((resolve, reject) => {
-  //     console.log ('destinatario', this)
-
-  //     console.log('resolve dados nota');
-  //     resolve(venda);
-  //   });
-  // }
 
   criaNf(venda): Promise<Venda> {
     console.log("crianf");
@@ -759,16 +851,16 @@ export class ModalNfeComponent implements OnInit {
     });
   }
 
-  // geraNfe(empresa, venda) {
-  //   console.log("gera nfe");
-  //   this.dadosRemetente(empresa, venda)
-  //     .then(this.dadosNota)
-  //     .then(this.criaNf)
-  //     .then(this.itensNota)
-  //     .then(this.pagamentosNota)
-  //     .then(this.totalizadorNfe)
-  //     .then(function(res) {
-  //       console.log("danfe", this.danfe);
-  //     });
-  // }
+  geraNota() {
+    this.geraNfe(1, this.venda).subscribe(danfe => {
+      console.log("danfe", danfe);
+      this.nota = danfe;
+      this.tabSelect = 1;
+    });
+  }
+
+  enviaNota(res) {
+
+
+  }
 }

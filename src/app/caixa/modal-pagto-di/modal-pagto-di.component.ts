@@ -19,17 +19,18 @@ export class ModalPagtoDiComponent implements OnInit {
     public dialogRef: MatDialogRef<ModalPagtoDiComponent>,
     private caixaService: CaixaService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
-console.log(data);
+    console.log(data);
     this.titulo = data.tipopag;
-    this.Pagar = data.valor;
+    this.Pagar = 0;
     this.Total = data.valor;
   }
 
   onNoClick(): void {
+
     this.dialogRef.close();
   }
 
   ngOnInit() {
-  }
 
+  }
 }

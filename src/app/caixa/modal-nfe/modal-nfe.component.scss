@@ -1,3 +1,20 @@
 table {
   width: 100%;
 }
+
+fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+  justify-content: space-between;
+  div {
+    display: flex;
+    // flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
+
+mat-dialog-content {
+
+  height: 70vh;
+}

@@ -182,6 +182,13 @@
   version "8.2.2"
   resolved "https://registry.yarnpkg.com/@angular/language-service/-/language-service-8.2.2.tgz#38bda29260850e78132e89a4c370cbaf118c3062"
 
+"@angular/material-moment-adapter@^8.2.3":
+  version "8.2.3"
+  resolved "https://registry.yarnpkg.com/@angular/material-moment-adapter/-/material-moment-adapter-8.2.3.tgz#099fce64a3ffb3cfe30141700b195f5058cb360d"
+  integrity sha512-x0WE9MyQajqzGPYKm8eHcDmWWlwiobOX9rZ+V5uqY80fsvm2czk6TYnc1drFYcPAHIaIcx7je7NYOULPF1rTpw==
+  dependencies:
+    tslib "^1.7.1"
+
 "@angular/material@^8.2.2":
   version "8.2.3"
   resolved "https://registry.yarnpkg.com/@angular/material/-/material-8.2.3.tgz#16543e4e06a3fde2651a25cfe126e88e714ae105"
@@ -454,6 +461,15 @@
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-3.0.0.tgz#2862f3f58a9a7f7c3e78d79f130dd4d71c25c2a7"
 
+"@types/ffi@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@types/ffi/-/ffi-0.2.2.tgz#a5d78682ecd01abc8759042fe25e5891b223ea15"
+  integrity sha512-bhGEZ9NeeXGi7zYxaBReGYePKmjeKhI2bUCHze42Jn0NxOwtaP2aTMTo4dpJw3eU6V4zHVyEk4w4TSH+OLkV4w==
+  dependencies:
+    "@types/node" "*"
+    "@types/ref" "*"
+    "@types/ref-struct" "*"
+
 "@types/glob@^7.1.1":
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.1.1.tgz#aa59a1c6e3fbc421e07ccd31a944c30eba521575"
@@ -499,6 +515,20 @@
 "@types/node@^10.12.18":
   version "10.17.3"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.3.tgz#65a8d9a6a0f6af55595a2d0020617959130d6495"
+
+"@types/ref-struct@*":
+  version "0.0.29"
+  resolved "https://registry.yarnpkg.com/@types/ref-struct/-/ref-struct-0.0.29.tgz#a2d7c113a43d1182be99a22dfca8bf94bae97afa"
+  integrity sha512-ZOiybExNDG++Rjw7qNAlP8Z9TGe4W1S7UvqHbCYzFMc2cVBhTuA29tzAkOrk3bqY0CdzbOvmU7A5X2VOjTpCkw==
+  dependencies:
+    "@types/ref" "*"
+
+"@types/ref@*", "@types/ref@^0.0.28":
+  version "0.0.28"
+  resolved "https://registry.yarnpkg.com/@types/ref/-/ref-0.0.28.tgz#15a61253ed1259038b47499de1c9b0cbca57f55c"
+  integrity sha1-FaYSU+0SWQOLR0md4cmwy8pX9Vw=
+  dependencies:
+    "@types/node" "*"
 
 "@types/source-list-map@*":
   version "0.1.2"
@@ -1004,6 +1034,14 @@ array-ify@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/array-ify/-/array-ify-1.0.0.tgz#9e528762b4a9066ad163a6962a364418e9626ece"
 
+array-index@1:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/array-index/-/array-index-1.0.0.tgz#ec56a749ee103e4e08c790b9c353df16055b97f9"
+  integrity sha1-7FanSe4QPk4Ix5C5w1PfFgVbl/k=
+  dependencies:
+    debug "^2.2.0"
+    es6-symbol "^3.0.2"
+
 array-union@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/array-union/-/array-union-1.0.2.tgz#9a34410e4f4e3da23dea375be5be70f24778ec39"
@@ -1287,11 +1325,16 @@ binary-extensions@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.0.0.tgz#23c0df14f6a88077f5f986c0d167ec03c3d5537c"
 
-bindings@^1.5.0:
+bindings@1, bindings@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.5.0.tgz#10353c9e945334bc0511a6d90b38fbc7c9c504df"
   dependencies:
     file-uri-to-path "1.0.0"
+
+bindings@~1.2.0:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.2.1.tgz#14ad6113812d2d37d72e67b4cacb4bb726505f11"
+  integrity sha1-FK1hE4EtLTfXLme0ystLtyZQXxE=
 
 bl@^1.0.0:
   version "1.2.2"
@@ -2636,7 +2679,7 @@ debug@*, debug@^4.1.0, debug@^4.1.1:
   dependencies:
     ms "^2.1.1"
 
-debug@2.6.9, debug@^2.1.3, debug@^2.2.0, debug@^2.3.3, debug@^2.5.1, debug@^2.6.8:
+debug@2, debug@2.6.9, debug@^2.1.3, debug@^2.2.0, debug@^2.3.3, debug@^2.5.1, debug@^2.6.8:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
   dependencies:
@@ -2654,7 +2697,7 @@ debug@3.2.6, debug@^3.0.0, debug@^3.1.0, debug@^3.1.1, debug@^3.2.5, debug@^3.2.
   dependencies:
     ms "^2.1.1"
 
-debuglog@*, debuglog@^1.0.1:
+debuglog@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/debuglog/-/debuglog-1.0.1.tgz#aa24ffb9ac3df9a2351837cfb2d279360cd78492"
 
@@ -3326,7 +3369,7 @@ es6-symbol@3.1.1:
     d "1"
     es5-ext "~0.10.14"
 
-es6-symbol@^3.1.1, es6-symbol@~3.1.1, es6-symbol@~3.1.2:
+es6-symbol@^3.0.2, es6-symbol@^3.1.1, es6-symbol@~3.1.1, es6-symbol@~3.1.2:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/es6-symbol/-/es6-symbol-3.1.3.tgz#bad5d3c1bcdac28269f4cb331e431c78ac705d18"
   dependencies:
@@ -3668,6 +3711,17 @@ fd-slicer@~1.0.1:
   resolved "https://registry.yarnpkg.com/fd-slicer/-/fd-slicer-1.0.1.tgz#8b5bcbd9ec327c5041bf9ab023fd6750f1177e65"
   dependencies:
     pend "~1.2.0"
+
+ffi@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/ffi/-/ffi-2.3.0.tgz#fa1a7b3d85c0fa8c83d96947a64b5192bc47f858"
+  integrity sha512-vkPA9Hf9CVuQ5HeMZykYvrZF2QNJ/iKGLkyDkisBnoOOFeFXZQhUPxBARPBIZMJVulvBI2R+jgofW03gyPpJcQ==
+  dependencies:
+    bindings "~1.2.0"
+    debug "2"
+    nan "2"
+    ref "1"
+    ref-struct "1"
 
 figgy-pudding@^3.4.1, figgy-pudding@^3.5.1:
   version "3.5.1"
@@ -4586,7 +4640,7 @@ import-local@^2.0.0:
     pkg-dir "^3.0.0"
     resolve-cwd "^2.0.0"
 
-imurmurhash@*, imurmurhash@^0.1.4:
+imurmurhash@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
 
@@ -5635,11 +5689,6 @@ lockfile@^1.0.4:
   dependencies:
     signal-exit "^3.0.2"
 
-lodash._baseindexof@*:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/lodash._baseindexof/-/lodash._baseindexof-3.1.0.tgz#fe52b53a1c6761e42618d654e4a25789ed61822c"
-  integrity sha1-/lK1OhxnYeQmGNZU5KJXie1hgiw=
-
 lodash._baseuniq@~4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/lodash._baseuniq/-/lodash._baseuniq-4.6.0.tgz#0ebb44e456814af7905c6212fa2c9b2d51b841e8"
@@ -5648,32 +5697,10 @@ lodash._baseuniq@~4.6.0:
     lodash._createset "~4.0.0"
     lodash._root "~3.0.0"
 
-lodash._bindcallback@*:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/lodash._bindcallback/-/lodash._bindcallback-3.0.1.tgz#e531c27644cf8b57a99e17ed95b35c748789392e"
-  integrity sha1-5THCdkTPi1epnhftlbNcdIeJOS4=
-
-lodash._cacheindexof@*:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/lodash._cacheindexof/-/lodash._cacheindexof-3.0.2.tgz#3dc69ac82498d2ee5e3ce56091bafd2adc7bde92"
-  integrity sha1-PcaayCSY0u5ePOVgkbr9Ktx73pI=
-
-lodash._createcache@*:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/lodash._createcache/-/lodash._createcache-3.1.2.tgz#56d6a064017625e79ebca6b8018e17440bdcf093"
-  integrity sha1-VtagZAF2JeeevKa4AY4XRAvc8JM=
-  dependencies:
-    lodash._getnative "^3.0.0"
-
 lodash._createset@~4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/lodash._createset/-/lodash._createset-4.0.3.tgz#0f4659fbb09d75194fa9e2b88a6644d363c9fe26"
   integrity sha1-D0ZZ+7CddRlPqeK4imZE02PJ/iY=
-
-lodash._getnative@*, lodash._getnative@^3.0.0:
-  version "3.9.1"
-  resolved "https://registry.yarnpkg.com/lodash._getnative/-/lodash._getnative-3.9.1.tgz#570bc7dede46d61cdcde687d65d3eecbaa3aaff5"
-  integrity sha1-VwvH3t5G1hzc3mh9ZdPuy6o6r/U=
 
 lodash._reinterpolate@^3.0.0:
   version "3.0.0"
@@ -5695,11 +5722,6 @@ lodash.clonedeep@^4.5.0, lodash.clonedeep@~4.5.0:
 lodash.ismatch@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/lodash.ismatch/-/lodash.ismatch-4.4.0.tgz#756cb5150ca3ba6f11085a78849645f188f85f37"
-
-lodash.restparam@*:
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/lodash.restparam/-/lodash.restparam-3.6.1.tgz#936a4e309ef330a7645ed4145986c85ae5b20805"
-  integrity sha1-k2pOMJ7zMKdkXtQUWYbIWuWyCAU=
 
 lodash.tail@^4.1.1:
   version "4.1.1"
@@ -6166,6 +6188,11 @@ modify-values@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"
 
+moment@^2.24.0:
+  version "2.24.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
+  integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
+
 morgan@^1.9.1:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/morgan/-/morgan-1.9.1.tgz#0a8d16734a1d9afbc824b99df87e738e58e2da59"
@@ -6232,7 +6259,7 @@ mute-stream@~0.0.4:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-nan@^2.12.1:
+nan@2, nan@^2.12.1:
   version "2.14.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.0.tgz#7818f722027b2459a86f0295d434d1fc2336c52c"
 
@@ -6352,10 +6379,10 @@ node-libs-browser@^2.0.0:
     util "^0.11.0"
     vm-browserify "^1.0.1"
 
-node-nfe@^1.0.11:
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/node-nfe/-/node-nfe-1.0.11.tgz#2436c6be19aabeac6592e58f91b1b2ecb8657a43"
-  integrity sha512-fDIU31fLw96s7xKxEKODaOnMKgt8TXYAwg2lgYyCdUAb5O7QkzTTkH3nA5P+prpLZAjpBPE+jDrWMZMMn+uGlg==
+node-nfe@^1.0.12:
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/node-nfe/-/node-nfe-1.0.12.tgz#f072e595e0e726a86a96b172d6bfbb25c7e13a4f"
+  integrity sha512-pWoRyG5jU9lRDxEw14zd+oHOtLHxbt+zh2+ZbPMCVZ/ykXf5sj8XPHYZD67hHUS37IfojNu6UGYWzRa7svJU6A==
   dependencies:
     busca-cep "^0.5.0"
     gammautils "^0.0.81"
@@ -7787,6 +7814,32 @@ redent@^2.0.0:
   dependencies:
     indent-string "^3.0.0"
     strip-indent "^2.0.0"
+
+ref-array@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/ref-array/-/ref-array-1.2.0.tgz#bba870152d4ee0abed1421b062392f0b0184290c"
+  integrity sha1-u6hwFS1O4KvtFCGwYjkvCwGEKQw=
+  dependencies:
+    array-index "1"
+    debug "2"
+    ref "1"
+
+ref-struct@1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/ref-struct/-/ref-struct-1.1.0.tgz#5d5ee65ad41cefc3a5c5feb40587261e479edc13"
+  integrity sha1-XV7mWtQc78Olxf60BYcmHkee3BM=
+  dependencies:
+    debug "2"
+    ref "1"
+
+ref@1, ref@^1.3.5:
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/ref/-/ref-1.3.5.tgz#0e33f080cdb94a3d95312b2b3b1fd0f82044ca0f"
+  integrity sha512-2cBCniTtxcGUjDpvFfVpw323a83/0RLSGJJY5l5lcomZWhYpU2cuLdsvYqMixvsdLJ9+sTdzEkju8J8ZHDM2nA==
+  dependencies:
+    bindings "1"
+    debug "2"
+    nan "2"
 
 reflect-metadata@^0.1.2:
   version "0.1.13"

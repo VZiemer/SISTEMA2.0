@@ -1,7 +1,7 @@
 import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
-import * as nfe from 'node-nfe';
+import * as fs from 'fs';
 
 let win, serve;
 const args = process.argv.slice(1);
@@ -48,7 +48,37 @@ function createWindow() {
     win = null;
   });
 
+
+  win.webContents.on('new-window', (event, url, frameName, disposition, options, additionalFeatures) => {
+
+    if (frameName === 'impressao') {
+      //abre a janela de impressão
+      // open window as modal
+      event.preventDefault()
+      event.newGuest = new BrowserWindow({
+        minimizable :false,
+        movable:true,
+        width: 300,
+        height: 500,
+        fullscreen :false,
+        enableLargerThanScreen  :false,
+        skipTaskbar:false,
+        autoHideMenuBar:true,
+        webPreferences: {
+          nativeWindowOpen: true
+        }
+      })
+      event.newGuest.loadURL('file://c:/temp/teste.html')
+      event.newGuest.webContents.on('did-finish-load', () => {
+        // Use default printing options
+        event.newGuest.webContents.print({silent: false, printBackground: true, deviceName: ''});
+      });
+    }
+  })
+
+
 }
+
 
 try {
 

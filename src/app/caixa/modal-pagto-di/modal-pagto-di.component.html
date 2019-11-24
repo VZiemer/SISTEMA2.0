@@ -1,22 +1,42 @@
 <h1 mat-dialog-title class="titte">Pagamento com Dinheiro</h1>
-<hr>
-<div mat-dialog-content class='container'>
+<hr />
+<div mat-dialog-content class="container">
   <div class="painel-valor">
-    <fieldset>
-      <label>Valor a Pagar</label>
-      <input type="text" [(ngModel)]="Pagar" />
-    </fieldset>
-  </div>
-  <div class="painel-valor">
-    <fieldset>
-      <label>Troco</label>
-      <input type="text" [value]="Total-Pagar" />
-    </fieldset>
+    <mat-form-field>
+      <mat-label>Valor a Pagar</mat-label>
+      <input matInput [value]="Total" disabled />
+      <span matPrefix>R$&nbsp;</span>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Dinheiro</mat-label>
+      <input
+        matInput type="text"
+        [(ngModel)]="Pagar"
+        [ngModelOptions]="{standalone: true }"
+      />
+      <span matPrefix>R$&nbsp;</span>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>troco</mat-label>
+      <input
+        matInput
+        [value]="(Pagar - Total > 0 ? Pagar - Total : 0).toFixed(2)"
+      />
+      <span matPrefix>R$&nbsp;</span>
+    </mat-form-field>
   </div>
 </div>
-<hr>
+<hr />
 <div mat-dialog-actions class="footer">
   <button mat-raised-button (click)="onNoClick()">cancela</button>
-  <button mat-raised-button [mat-dialog-close]="{'fPagto':DINHEIRO,'valor':Pagar}"
-    cdkFocusInitial>Confirma</button>
+  <button
+    mat-raised-button
+    [mat-dialog-close]="{
+      fPagto: DINHEIRO,
+      valor: Pagar > Total ? Pagar : Total
+    }"
+    cdkFocusInitial
+  >
+    Confirma
+  </button>
 </div>

@@ -305,16 +305,16 @@ routes
     estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
-      db.query(
-        `select * from LISTAPRODVENDAS(${req.params.id})`,
-        function(err, result) {
-          // IMPORTANT: close the connection
-          db.detach(function() {
-            console.log("retornou", result);
-            res.status(200).json(result);
-          });
-        }
-      );
+      db.query(`select * from LISTAPRODVENDAS(${req.params.id})`, function(
+        err,
+        result
+      ) {
+        // IMPORTANT: close the connection
+        db.detach(function() {
+          console.log("retornou", result);
+          res.status(200).json(result);
+        });
+      });
     });
   });
 
@@ -474,32 +474,49 @@ routes
     var sql = `select p.crt,c.razao,c.cgc,c.insc,c.endereco,c.bairro,c.cep,c.fone,c.email,ci.nom_cidade as cidade,ci.codibge,ci.estado,p.icms_simples from param p  join cliente c on p.codparc = c.codigo  join cidade ci on c.codcidade = ci.cod_cidade where p.codigo=${req.query.empresa}`;
     estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql,
-        function(err, result) {
-          if (err) throw err;
-          db.detach(function() {
-            res.send(result[0]);
-          });
-        }
-      );
+      db.query(sql, function(err, result) {
+        if (err) throw err;
+        db.detach(function() {
+          res.send(result[0]);
+        });
+      });
     });
   });
 
-  routes
+routes
   .route("/destinatario")
   //buscas
   .get((req, res) => {
     var sql = `select p.crt,c.razao,c.cgc,c.insc,c.endereco,c.bairro,c.cep,c.fone,c.email,ci.nom_cidade as cidade,ci.codibge,ci.estado,p.icms_simples from param p  join cliente c on p.codparc = c.codigo  join cidade ci on c.codcidade = ci.cod_cidade where p.codigo=${req.query.empresa}`;
     estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(
-        function(err, result) {
-          if (err) throw err;
-          db.detach(function() {
-            res.send(result[0]);
-          });
-        }
-      );
+      db.query(function(err, result) {
+        if (err) throw err;
+        db.detach(function() {
+          res.send(result[0]);
+        });
+      });
+    });
+  });
+
+routes
+  .route("/nfe")
+  // funçao da nota fiscal
+  .post((req, res) => {
+    let valores = req.body.valores;
+    let sql =
+      "update or insert into SAIDA (EMPRESA,NOTA,DATA,CODCLI,DT_EMISSAO,DT_FISCAL,ESPECIE,DESPACES,DESCONTO,CODIGOBARRAS,FRETENOTA,FRETEFOB,VPROD,BCICMS,VICMS,VICMSST,BCICMSST,VNF,UF,CHAVE,TOMADORFRETE,MODELO,SERIE,CODPARC,PROTOCOLO,PROTOCOLOCANCELA) ";
+    sql += "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+    sql += "MATCHING (EMPRESA,NOTA) ";
+    sql += "RETURNING NOTA,LCTO";
+    estoque.get(function(err, db) {
+      if (err) throw err;
+      db.query(sql, valores, function(err, result) {
+        if (err) throw err;
+        db.detach(function() {
+          res.send(result);
+        });
+      });
     });
   });
 

@@ -100,4 +100,10 @@ export class CaixaService {
     return this.http.get<any>(this.apiURL + `/emitente?empresa= ${empresa}`).pipe();
   }
 
+
+  gravaNfe(valores: any, item: any): Observable<any> {
+    return this.http.post<any>(this.apiURL + `/nfe`, {'valores': valores, 'item': item}).pipe();
+  }
+
+
 }

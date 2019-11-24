@@ -1,33 +1,75 @@
-<h1 mat-dialog-title>buscar {{ titulo }}</h1>
+<!-- <h1 mat-dialog-title>buscar {{ titulo }}</h1> -->
 <div mat-dialog-content>
-  <mat-tab-group>
-    <mat-tab label="Venda">
+  <div>
+    <mat-form-field appearance="outline">
+      <mat-label>Venda</mat-label>
+      <input
+        matInput
+        [(ngModel)]="novaNota"
+        (keydown.enter)="carregaVenda(novaNota)"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Natureza Operação</mat-label>
+      <mat-select
+        [(ngModel)]="operacao"
+        [disabled]="!novaNota"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        <mat-option value="1">Venda de Mercadoria</mat-option>
+        <mat-option value="2">Venda de Ativo</mat-option>
+        <mat-option value="3">Devolução de Mercadoria</mat-option>
+        <mat-option value="4">Remessa Para Conserto</mat-option>
+        <mat-option value="5">Remessa de Amostra Grátis</mat-option>
+        <mat-option value="6">Retorno de Bem em Comodato</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-button (click)="geraNota()" [disabled]="!novaNota || !operacao">
+      Gerar Nota
+    </button>
+    <button mat-button (click)="enviaNota()" [disabled]="!novaNota || !operacao">
+      Envia Nota
+    </button>
+  </div>
+  <mat-tab-group [selectedIndex]="tabSelect">
+    <mat-tab label="Venda" *ngIf="venda.LCTO">
       <div>
         <form name="cabecalhoForm">
           <fieldset>
             <legend>Destinatário</legend>
-            <div layout-gt-xs="row">
-              <mat-form-field>
-                <!-- <label>Código</label> -->
-                <input matInput name="codcli" [value]="venda.CODCLI" placeholder="Código" />
+            <div>
+              <mat-form-field appearance="outline">
+                <mat-label>Codigo</mat-label>
+                <input matInput name="codcli" [value]="venda.CODCLI" />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs>
-                <label>Razão Social</label>
-                <input matInput name="nome" [value]="venda.RAZAO" type="text" />
+              <mat-form-field appearance="outline">
+                <mat-label>Razão Social</mat-label>
+                <input matInput name="nome" [value]="venda.RAZAO" />
               </mat-form-field>
             </div>
-            <div layout-gt-xs="row">
-              <mat-form-field class="md-block" flex-gt-xs="15">
-                <label>CNPJ / CPF</label>
+            <div>
+              <mat-form-field appearance="outline">
+                <mat-label>CNPJ / CPF</mat-label>
                 <input matInput name="cgc" type="text" [value]="venda.CGC" />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs="15">
-                <label>I. E.</label>
-                <input matInput name="inscest" type="text" [value]="venda.INSC" />
+              <mat-form-field appearance="outline">
+                <mat-label>I. E.</mat-label>
+                <input
+                  matInput
+                  name="inscest"
+                  type="text"
+                  [value]="venda.INSC"
+                />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs>
-                <label>e-mail</label>
-                <input matInput name="inscest" type="email" [value]="venda.EMAIL" />
+              <mat-form-field appearance="outline">
+                <mat-label>e-mail</mat-label>
+                <input
+                  matInput
+                  name="inscest"
+                  type="email"
+                  [value]="venda.EMAIL"
+                />
               </mat-form-field>
             </div>
           </fieldset>
@@ -67,28 +109,37 @@
       </div>
     </mat-tab>
 
-    <mat-tab label="Dados Gerais">
+    <mat-tab label="Dados Gerais" *ngIf="venda.LCTO">
       <div>
         <form name="cabecalhoForm">
           <fieldset>
             <legend>Dados Gerais</legend>
-            <div layout-gt-xs="row">
-              <mat-form-field class="md-block" flex-gt-xs="15">
-                <label>Nota Fiscal</label>
+            <div>
+              <mat-form-field appearance="outline">
+                <mat-label>Nota Fiscal</mat-label>
                 <input matInput type="text" value="teste" />
               </mat-form-field>
+
               <mat-form-field>
-                <label>Data</label>
-                <md-datepicker
-                  name="data"
-                  md-hide-icons="calendar"
+                <mat-label>Data Emissão</mat-label>
+                <input
+                  matInput
+                  [matDatepicker]="picker"
                   [value]="nota.getDataDaEmissao()"
-                ></md-datepicker>
+                  placeholder="Data Emissão"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="picker"
+                ></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs="20">
-                <!-- <md-icon class="material-icons" style="color: rgb(44, 155, 58);">search</md-icon> -->
-                <label>Nat. Operação</label>
-                <input matInput
+
+              <mat-form-field appearance="outline" class="form-full-width">
+                <!-- <mat-icon matSuffix>sentiment_very_satisfied</mat-icon> -->
+                <mat-label>Nat. Operação</mat-label>
+                <input
+                  matInput
                   name="natoper"
                   [value]="nota.getNaturezaDaOperacao()"
                   type="text"
@@ -96,72 +147,84 @@
               </mat-form-field>
             </div>
           </fieldset>
+
           <fieldset>
             <legend>Destinatário</legend>
-            <div layout-gt-xs="row">
-              <mat-form-field class="md-block" flex-gt-xs="5">
-                <label>Código</label>
-                <input matInput
+            <div>
+              <mat-form-field appearance="outline">
+                <mat-label>Código</mat-label>
+                <input
+                  matInput
                   name="codcli"
                   [value]="nota.getDestinatario().getCodigo()"
                 />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs>
-                <!-- <md-icon class="material-icons" style="color: rgb(44, 155, 58);">search</md-icon> -->
-                <label>Razão Social</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>Razão Social</mat-label>
+                <input
+                  matInput
                   name="nome"
                   [value]="nota.getDestinatario().getNome()"
                   type="text"
                 />
               </mat-form-field>
-              <mat-form-field flex-gt-xs="15">
-                <label>Telefone</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>Telefone</mat-label>
+                <input
+                  matInput
                   name="fone"
                   [value]="nota.getDestinatario().getTelefone()"
                   type="text"
                 />
               </mat-form-field>
             </div>
-            <div layout-gt-xs="row">
-              <mat-form-field class="md-block" flex-gt-xs="15">
-                <label>CNPJ / CPF</label>
-                <input matInput
+            <div>
+              <mat-form-field appearance="outline">
+                <mat-label>CNPJ / CPF</mat-label>
+                <input
+                  matInput
                   name="cgc"
                   type="text"
                   [value]="nota.getDestinatario().getRegistroNacional()"
                 />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs="15">
-                <label>I. E.</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>I. E.</mat-label>
+                <input
+                  matInput
                   name="inscest"
                   type="text"
                   [value]="nota.getDestinatario().getInscricaoEstadual()"
                 />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs="10">
-                <label>Contribuinte</label>
-                <select>
-                  <option value="C">Contribuinte</option>
-                  <option value="I">Isento</option>
-                  <option value="N">Não Contrib.</option>
-                </select>
+
+              <mat-form-field appearance="outline">
+                <mat-label>TESTE</mat-label>
+                <mat-select>
+                  <mat-option value="C">Contribuinte</mat-option>
+                  <mat-option value="I">Isento</mat-option>
+                  <mat-option value="N">Não Contrib.</mat-option>
+                </mat-select>
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs>
-                <label>e-mail</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>e-mail</mat-label>
+                <input
+                  matInput
                   name="inscest"
                   type="email"
                   [value]="nota.getDestinatario().getEmail()"
                 />
               </mat-form-field>
             </div>
-            <div layout-gt-xs="row">
-              <mat-form-field class="md-block" flex-gt-xs="10">
-                <label>CEP</label>
-                <input matInput
+            <div>
+              <mat-form-field appearance="outline">
+                <mat-label>CEP</mat-label>
+                <input
+                  matInput
                   md-no-asterisk
                   name="cep"
                   [value]="
@@ -172,9 +235,11 @@
                   "
                 />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs>
-                <label>Endereço</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>Endereço</mat-label>
+                <input
+                  matInput
                   name="endereco"
                   [value]="
                     nota
@@ -184,9 +249,11 @@
                   "
                 />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs="5">
-                <label>Número</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>Número</mat-label>
+                <input
+                  matInput
                   name="numero"
                   [value]="
                     nota
@@ -196,9 +263,11 @@
                   "
                 />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs="25">
-                <label>Bairro</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>Bairro</mat-label>
+                <input
+                  matInput
                   name="bairro"
                   [value]="
                     nota
@@ -209,10 +278,11 @@
                 />
               </mat-form-field>
             </div>
-            <div layout-gt-xs="row">
-              <mat-form-field class="md-block" flex-gt-xs>
-                <label>Complemento</label>
-                <input matInput
+            <div>
+              <mat-form-field appearance="outline">
+                <mat-label>Complemento</mat-label>
+                <input
+                  matInput
                   name="complemento"
                   [value]="
                     nota
@@ -222,9 +292,11 @@
                   "
                 />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs="20">
-                <label>Cidade</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>Cidade</mat-label>
+                <input
+                  matInput
                   name="cidade"
                   [value]="
                     nota
@@ -234,9 +306,11 @@
                   "
                 />
               </mat-form-field>
-              <mat-form-field class="md-block" flex-gt-xs="8">
-                <label>Estado</label>
-                <input matInput
+
+              <mat-form-field appearance="outline">
+                <mat-label>Estado</mat-label>
+                <input
+                  matInput
                   name="estado"
                   [value]="
                     nota
@@ -252,7 +326,7 @@
       </div>
     </mat-tab>
 
-    <mat-tab label="Produtos">
+    <mat-tab label="Produtos" *ngIf="venda.LCTO">
       <form>
         <table md-table>
           <thead fix-head md-head>
@@ -307,7 +381,7 @@
       </form>
     </mat-tab>
 
-    <mat-tab label="Pagamento">
+    <mat-tab label="Pagamento" *ngIf="venda.LCTO">
       <form>
         <table md-table>
           <thead fix-head md-head>
@@ -340,50 +414,60 @@
       </form>
     </mat-tab>
 
-    <mat-tab label="Observações">
+    <mat-tab label="Observações" *ngIf="venda.LCTO">
       <form name="cabecalhoForm">
         <fieldset>
           <legend>Transporte</legend>
           <div layout-gt-xs="row">
-            <mat-form-field class="md-block" flex-gt-xs>
-              <label>Tipo</label>
-              <input matInput
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo</mat-label>
+              <input
+                matInput
                 disabled
                 name="modfrete"
                 [value]="nota.getModalidadeDoFreteFormatada()"
               />
             </mat-form-field>
-            <mat-form-field class="md-block" flex-gt-xs>
-              <label>Transpostador</label>
-              <input matInput
+            <mat-form-field appearance="outline">
+              <mat-label>Transpostador</mat-label>
+              <input
+                matInput
                 disabled
                 name="transportador"
                 [value]="nota.getTransportador().getNome()"
               />
             </mat-form-field>
-            <mat-form-field class="md-block" flex-gt-xs>
-              <label>Valor</label>
-              <input matInput disabled name="vlfrete" [value]="nota.getValorDoFrete()" />
+            <mat-form-field appearance="outline">
+              <mat-label>Valor</mat-label>
+              <input
+                matInput
+                disabled
+                name="vlfrete"
+                [value]="nota.getValorDoFrete()"
+              />
             </mat-form-field>
-            <mat-form-field class="md-block" flex-gt-xs>
-              <label>Volumes</label>
-              <input matInput
+            <mat-form-field appearance="outline">
+              <mat-label>Volumes</mat-label>
+              <input
+                matInput
                 disabled
                 name="volumes"
                 [value]="nota.getVolumes().getQuantidade()"
               />
             </mat-form-field>
-            <mat-form-field class="md-block" flex-gt-xs>
-              <label>Espécie</label>
-              <input matInput
+            <mat-form-field appearance="outline">
+              <mat-label>Espécie</mat-label>
+              <input
+                matInput
                 disabled
                 name="especie"
                 [value]="nota.getVolumes().getEspecie()"
               />
             </mat-form-field>
-            <mat-form-field class="md-block" flex-gt-xs>
-              <label>Peso Bruto</label>
-              <input matInput
+            <mat-form-field appearance="outline">
+              <mat-label>Peso Bruto</mat-label>
+              <input
+                matInput
                 disabled
                 name="pesob"
                 [value]="nota.getVolumes().getPesoBruto()"
@@ -394,41 +478,41 @@
         <fieldset>
           <legend>NFe Referência</legend>
           <div layout-gt-xs="row">
-            <mat-form-field class="md-block" flex-gt-xs>
-              <label>Numero</label>
-              <!-- <input matInput name="especie" [value]="dadosRef.numNota"> -->
+            <mat-form-field appearance="outline">
+              <mat-label>Numero</mat-label>
+              <input matInput name="especie" value="xxxx" />
             </mat-form-field>
-            <mat-form-field class="md-block" flex-gt-xs>
-              <label>Chave</label>
-              <!-- <input matInput name="Num" [value]="dadosRef.chNota"> -->
+            <mat-form-field appearance="outline">
+              <mat-label>Chave</mat-label>
+              <input matInput name="Num" value="xxxx" />
             </mat-form-field>
-            <mat-form-field class="md-block" flex-gt-xs>
-              <md-button
-                aria-label="Adicionar"
-                class="md-warn md-raised "
-                click=""
-              >
-                Adicionar
-              </md-button>
-            </mat-form-field>
+
+            <button
+              mat-button
+              aria-label="Adicionar"
+              class="md-warn md-raised "
+              click=""
+            >
+              Adicionar
+            </button>
           </div>
           <div layout-gt-xs="row">
-            <mat-form-field md-detect-hidden="true" flex-gt-xs>
-              <label>Notas Referência</label>
-              <!-- <textarea [value]="x.refNFe" rows="1" ng-repeat=nota._NfRef></textarea> -->
-            </mat-form-field>
+            <!-- <mat-form-field appearance="outline">
+                <mat-label>Notas Referência</mat-label>
+                <textarea [value]="x.refNFe" rows="1" ng-repeat=nota._NfRef></textarea>
+              </mat-form-field> -->
           </div>
         </fieldset>
         <fieldset>
           <legend>Informações Adicionais</legend>
           <div layout-gt-xs="row">
-            <mat-form-field md-detect-hidden="true" flex-gt-xs>
+            <mat-form-field appearance="outline">
               <label>Informações</label>
               <textarea
+                matInput
                 [value]="nota._informacoesComplementares"
                 rows="4"
               ></textarea>
-              <!-- <input matInput name="codcli" ng-value=""> -->
             </mat-form-field>
           </div>
         </fieldset>
