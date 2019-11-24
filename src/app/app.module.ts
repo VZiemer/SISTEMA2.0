@@ -22,6 +22,7 @@ import { CaixaModule } from './caixa/caixa.module';
 import { FinanceiroModule } from './financeiro/financeiro.module';
 
 import { AppComponent } from './app.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -31,6 +32,7 @@ export function HttpLoaderFactory(http: HttpClient) {
 @NgModule({
   declarations: [AppComponent],
   imports: [
+    FormsModule,
     BrowserModule,
     HttpClientModule,
     CoreModule,

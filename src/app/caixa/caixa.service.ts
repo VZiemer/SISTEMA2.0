@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { HttpHeaders } from '@angular/common/http';
-
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Produto } from '../shared/models/produto';
@@ -42,6 +41,7 @@ export class CaixaService {
     return this.http.post<Venda>(this.apiURL + 'venda/', { CODCLI: codcli, CODVEND: codvend })
       .pipe();
   }
+  
   // getVenda(cliente: void): Observable<Produto> {
   //   // return this.http.get<Produto>(this.apiURL + 'venda/'+ `?CODIGO=${codigo}`)
   //     // .pipe();

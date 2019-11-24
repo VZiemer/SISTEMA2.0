@@ -14,5 +14,6 @@ export class Deus {
   public VALOR: number;
   public PROJECAO: number;
   public OBS: string;
-
+  public PERMITEAPAGA: number;
+  public TIPOOPERACAO: number;
 }

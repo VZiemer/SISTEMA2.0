@@ -1,0 +1,106 @@
+<h1 mat-dialog-title>
+    {{RegistroDeus[0].DOCUMENTO}} <span *ngIf="RegistroDeus[0].CODPARC"> / {{RegistroDeus[0].FANTASIA}}</span> <span
+        *ngIf="RegistroDeus[0].CODPARC" class="FontePequena"> ({{RegistroDeus[0].CODPARC}})</span></h1>
+
+<p></p>
+
+
+
+<h1>{{converteMoeda(total)}} <span class="vermelho" *ngIf="RegistroDeus[0].PROJECAO==1">PROJEÇÃO</span> </h1>
+
+<div>
+
+    <div class="Tabela">
+        <table>
+            <th class=""> Conta </th>
+            <th class=""> Descrição </th>
+            <th class=""> Vencimento </th>
+            <th class=""> Valor </th>
+            <tr *ngFor="let item of RegistroDeus">
+                <td class="centro"><a *ngIf="item.DEBITO">{{item.DEBITO}}</a></td>
+                <td class="esquerda">{{item.CDEBITO}}</td>
+                <td class="centro">{{item.DATAVCTO | date: 'dd/MM/yy'}}</td>
+                <td class="direita">{{converteMoeda(item.VALOR)}}</td>
+                <button *ngIf="item.PERMITEAPAGA" mat-raised-button color="primary"
+                    (click)="deletDespesaRegistroDeus(item.CODIGO)">Apagar</button>
+
+
+            </tr>
+        </table>
+
+        <p></p>
+        <label>OBS</label>
+        <input class="inputObs" type="text" [(ngModel)]="RegistroDeus[0].OBS">
+        <p></p>
+
+
+
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="FechaModal()">FECHAR</button>
+
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary"
+            (click)="apresentaDespesaRegistroDeus()">NOVA DESPESA</button>
+
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="DividePagto()">DIVIDE
+            PAGTO</button>
+
+
+        <button *ngIf="mostraContasDespesas" mat-raised-button color="primary"
+            (click)="desapresentaDespesaRegistroDeus()">CANCELA</button>
+
+        <p></p>
+
+        <fieldset *ngIf="mostraContasDespesas">
+            <legend *ngIf="!dividePagamento">Inserir Despesa</legend>
+            <legend *ngIf="dividePagamento">Valor Parcial</legend>
+
+
+            <div *ngIf="!dividePagamento">
+                <select class="inputConta" [(ngModel)]="DESPESA">
+                    <option *ngFor="let item of listaContasDespesas" [value]="item.CODIGO">{{item.CODIGO}} -
+                        {{item.DESCRICAO}} </option>
+                </select>
+                <input placeholder="VALOR DESPESA" class="inputData" type="number" [(ngModel)]="valorDespesa">
+                <button [disabled]="!DESPESA" mat-raised-button color="primary"
+                    (click)="insertDespesaRegistroDeus()">INCLUIR</button>
+            </div>
+
+            <div *ngIf="dividePagamento">
+                <input placeholder="VALOR PARCIAL" class="inputData" type="number" [(ngModel)]="valorParcial">
+                <button [disabled]="!valorParcial" mat-raised-button color="primary"
+                    (click)="parcelaPagamento()">CONCLUIR</button>
+            </div>
+
+
+
+
+        </fieldset>
+
+
+
+
+        <p></p>
+
+
+    </div>
+
+
+
+
+    <fieldset *ngIf="!mostraContasDespesas">
+        <legend>Conta de liquidação</legend>
+        <h3>Saldo: {{saldoFinal}} </h3>
+        <input class="inputData" type="date" (change)="verificaliberaBtnLiquidar()" [(ngModel)]="dataLiquid">
+
+        <select [disabled]="travaSelectConta" class="inputConta" [(ngModel)]="CREDITO" (change)="calculaSaldo()">
+            <option *ngFor="let item of contas" [value]="item.CODIGO">{{item.CODIGO}} - {{item.DESCRICAO}} </option>
+        </select>
+
+        <button mat-raised-button color="primary" [disabled]="!liberaBtnLiquidar"
+            (click)="updateRegistroDeus()">LIQUIDAR</button>
+
+    </fieldset>
+
+</div>
+<div mat-dialog-actions>
+
+</div>
