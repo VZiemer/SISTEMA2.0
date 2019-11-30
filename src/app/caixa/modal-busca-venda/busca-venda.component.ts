@@ -38,10 +38,12 @@ export class ModalBuscaVendaComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.buscaVendas('C');
   }
 
 
   buscaVendas(tipo): void {
+    console.log('busca vendas')
       this.caixaService.getVendas(tipo)
         .subscribe(vendas => {
           this.Vendas = vendas;

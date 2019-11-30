@@ -212,14 +212,15 @@ export class CaixaComponent implements OnInit {
 
   // insere um novo produto com pelo id (alterar para codbar)
   getProduto(id: number, qtd: number) {
+    console.log('getProduto');
     this.input.codbar = null;
     this.input.qtd = 1;
     this.caixaService.insereProdvenda(id, qtd, this.venda.LCTO).subscribe(
       produto => {
         // produto.QTD = qtd;
-        escopo.ultimoProduto = produto;
+        this.ultimoProduto = produto;
         this.prodvenda.push(produto);
-        this.venda.TOTAL += produto.VALOR * produto.QTD;
+        this.venda.insereProduto(produto);
         this.Pagar = this.venda.TOTAL;
       },
       error => console.log(error)
@@ -308,7 +309,7 @@ export class CaixaComponent implements OnInit {
         error => console.log(error)
       );
     } else {
-      this.openDialog("venda", this.getVenda);
+      this.clicaAbreVenda();
     }
   }
 
@@ -336,7 +337,7 @@ export class CaixaComponent implements OnInit {
   openDialog(busca, callback) {
     const dialogRef = this.dialog.open(ModalBuscaGenericoComponent, {
       width: "70vw",
-      height: "60vh",
+      height: "79vh",
       hasBackdrop: true,
       disableClose: true,
       data: busca
@@ -375,6 +376,7 @@ export class CaixaComponent implements OnInit {
         console.log("cartao", this.cartao);
         if (res.fPagto.PARCELAS === 0) {
           const pgto: Deus = {
+
             CODIGO: null,
             CODDEC: null,
             EMPRESA: this.empresa.CODIGO,
@@ -391,7 +393,10 @@ export class CaixaComponent implements OnInit {
             CREDITO: 173,
             VALOR: res.valor,
             PROJECAO: 0,
-            OBS: ""
+            OBS: "",
+            PERMITEAPAGA: null,
+            TIPOOPERACAO: null,
+            TRAVACREDITO: null
           };
           this.venda.PAGAMENTO.push(pgto);
           if (res.fPagto.TARIFA) {
@@ -413,7 +418,10 @@ export class CaixaComponent implements OnInit {
               CREDITO: res.fPagto.DOMICILIO_BANCARIO,
               VALOR: valorTarifa,
               PROJECAO: 0,
-              OBS: ""
+              OBS: "",
+              PERMITEAPAGA: null,
+              TIPOOPERACAO: null,
+              TRAVACREDITO: null
             };
             this.venda.PAGAMENTO.push(tarifa);
           }
@@ -448,7 +456,10 @@ export class CaixaComponent implements OnInit {
               CREDITO: 173,
               VALOR: index + 1 === res.fPagto.PARCELAS ? valor + resto : valor,
               PROJECAO: 0,
-              OBS: ""
+              OBS: "",
+              PERMITEAPAGA: null,
+              TIPOOPERACAO: null,
+              TRAVACREDITO: null
             };
             this.venda.PAGAMENTO.push(pgto);
             if (res.fPagto.TARIFA) {
@@ -475,7 +486,10 @@ export class CaixaComponent implements OnInit {
                 CREDITO: res.fPagto.DOMICILIO_BANCARIO,
                 VALOR: valorTarifa,
                 PROJECAO: 0,
-                OBS: ""
+                OBS: "",
+                PERMITEAPAGA: null,
+                TIPOOPERACAO: null,
+                TRAVACREDITO: null
               };
               this.venda.PAGAMENTO.push(tarifa);
             }
@@ -537,7 +551,10 @@ export class CaixaComponent implements OnInit {
             CREDITO: 173,
             VALOR: index + 1 === res.fPagto.PARCELAS ? valor + resto : valor,
             PROJECAO: 0,
-            OBS: ""
+            OBS: "",
+            PERMITEAPAGA: null,
+            TIPOOPERACAO: null,
+            TRAVACREDITO: null
           };
           this.venda.PAGAMENTO.push(pgto);
         }
@@ -574,7 +591,10 @@ export class CaixaComponent implements OnInit {
         CREDITO: 173,
         VALOR: res.pagar,
         PROJECAO: 0,
-        OBS: ""
+        OBS: "",
+        PERMITEAPAGA: null,
+        TIPOOPERACAO: null,
+        TRAVACREDITO: null
       };
       this.venda.PAGAMENTO.push(pgto);
       console.log(this.venda.PAGAMENTO);

@@ -16,21 +16,22 @@ export class ModalBuscaGenericoComponent implements OnInit {
   Clientes: any[];
   busca = {
     codigo: '',
-    razao: ''
+    fantasia: ''
   };
   titulo: string;
+  tipoParc: string;
 
-  displayedColumns: string[] = ['select', 'CODIGO', 'RAZAO'];
+  displayedColumns: string[] = ['select', 'CODIGO', 'FANTASIA'];
   dataSource = new MatTableDataSource<any[]>(this.Clientes);
   selection = new SelectionModel<any[]>(false, []);
 
   constructor(
     public dialogRef: MatDialogRef<ModalBuscaGenericoComponent>,
     private caixaService: CaixaService,
-    @Inject(MAT_DIALOG_DATA) public data: string) {
+    @Inject(MAT_DIALOG_DATA) public data: {tipoParc: string}) {
 
-    this.titulo = data;
-
+    this.titulo = 'modal teste';
+    this.tipoParc = data.tipoParc;
   }
 
   onNoClick(): void {
@@ -40,28 +41,13 @@ export class ModalBuscaGenericoComponent implements OnInit {
   ngOnInit() {
   }
 
-
-  buscaGenerico(codigo, razao): void {
-
-    if (this.data === 'cliente') {
-      this.caixaService.getClientes(codigo, razao)
+  buscaGenerico(codigo, fantasia): void {
+      this.caixaService.getParceiros(codigo, fantasia, this.tipoParc)
         .subscribe(cliente => {
           this.Clientes = cliente;
-          console.log(cliente);
           this.dataSource = new MatTableDataSource<any[]>(this.Clientes);
           this.selection = new SelectionModel<any[]>(false, []);
         }, error => (console.log(error)));
-    }
-
-    if (this.data === 'vendedor') {
-      this.caixaService.getVendedores(codigo, razao)
-        .subscribe(cliente => {
-          this.Clientes = cliente;
-          console.log(cliente);
-          this.dataSource = new MatTableDataSource<any[]>(this.Clientes);
-          this.selection = new SelectionModel<any[]>(false, []);
-        }, error => (console.log(error)));
-    }
   }
 
 
@@ -82,8 +68,6 @@ export class ModalBuscaGenericoComponent implements OnInit {
 
   /** The label for the checkbox on the passed row */
   checkboxLabel(row?: any): string {
-    console.log('row', row);
-    console.log('select', this.selection.selected);
     if (!row) {
       return `${this.isAllSelected() ? 'select' : 'deselect'} all`;
     }

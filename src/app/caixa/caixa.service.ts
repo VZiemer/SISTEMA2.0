@@ -21,6 +21,7 @@ const httpOptions = {
 })
 export class CaixaService {
   apiURL = 'http://localhost:4200/api/rotas';
+  // apiURL = 'http://sistema.florestalferragens.com.br/rotas';
   constructor(private http: HttpClient) {}
 
   getProduto(id: void): Observable<Produto> {
@@ -43,6 +44,14 @@ export class CaixaService {
   getCliente(id: number): Observable<Cliente> {
     return this.http.get<Cliente>(this.apiURL + '/cliente/' + id).pipe();
   }
+  getParceiros(codigo: void, nome: void, tipoParc: string): Observable<[]> {
+    return this.http
+      .get<[]>(this.apiURL + '/parceiro' + `?CODIGO=${codigo}&NOME=${nome}&TIPOPARC=${tipoParc}`)
+      .pipe();
+  }
+  getParceiro(id: number): Observable<Cliente> {
+    return this.http.get<Cliente>(this.apiURL + '/parceiro/' + id).pipe();
+  }
   getVendedores(codigo: void, nome: void): Observable<[]> {
     return this.http
       .get<[]>(this.apiURL + '/vendedor' + `?CODIGO=${codigo}&NOME=${nome}`)
@@ -60,7 +69,7 @@ export class CaixaService {
       .pipe();
   }
   getVendas(status: void): Observable<any[]> {
-    return this.http.get<any[]>(this.apiURL + `/venda?STATUS=${status}`).pipe();
+    return this.http.get<any[]>(this.apiURL + `/venda?status=${status}`).pipe();
   }
   getVenda(lcto: number): Observable<any[]> {
     return this.http.get<any[]>(this.apiURL + `/venda/${lcto}`).pipe();

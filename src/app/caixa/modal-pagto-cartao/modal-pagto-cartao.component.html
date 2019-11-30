@@ -15,7 +15,7 @@
     </select>
   </div>
   <div class="painel">
-    <ng-template ngFor let-cartao [ngForOf]="Bandeiras" let-i="index" let-odd="odd" [ngForTrackBy]="trackById">
+    <ng-template ngFor let-cartao [ngForOf]="Bandeiras" let-i="index" let-odd="odd">
       <button mat-raised-button color="primary" (click)="escolheCartao(cartao)">{{cartao}}</button>
     </ng-template>
   </div>

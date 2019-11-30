@@ -19,8 +19,23 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { HomeModule } from './home/home.module';
 import { CaixaModule } from './caixa/caixa.module';
-
+import { FinanceiroModule } from './financeiro/financeiro.module';
 import { AppComponent } from './app.component';
+
+import {
+  MatMomentDateModule,
+  MAT_MOMENT_DATE_ADAPTER_OPTIONS
+} from "@angular/material-moment-adapter";
+import { MAT_DATE_LOCALE } from "@angular/material";
+
+
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
+
+// the second parameter 'fr' is optional
+registerLocaleData(localeFr, 'pt');
+
+
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -36,9 +51,12 @@ export function HttpLoaderFactory(http: HttpClient) {
     SharedModule,
     HomeModule,
     CaixaModule,
+    FinanceiroModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     AngularMaterialModule,
+    MatMomentDateModule,
+
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -47,8 +65,11 @@ export function HttpLoaderFactory(http: HttpClient) {
       }
     })
   ],
-  providers: [],
   bootstrap: [AppComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [
+    {provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: {strict: true}},
+    {provide: MAT_DATE_LOCALE, useValue: 'pt-BR'},
+  ],
 })
 export class AppModule {}

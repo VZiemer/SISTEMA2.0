@@ -58,8 +58,8 @@ function createWindow() {
       event.newGuest = new BrowserWindow({
         minimizable :false,
         movable:true,
-        width: 300,
-        height: 500,
+        width: 800,
+        height: 1000,
         fullscreen :false,
         enableLargerThanScreen  :false,
         skipTaskbar:false,

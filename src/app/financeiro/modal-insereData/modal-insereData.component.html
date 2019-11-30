@@ -1,0 +1,127 @@
+<h1 mat-dialog-title>{{stringTituloModal}}</h1>
+
+<h4 mat-dialog-title *ngIf="param==3">saldo: {{saldoFinal}}</h4>
+
+<div>
+    <div *ngIf="param==3 || param==4">
+        <label *ngIf="param==3">Data Transferência</label>
+        <label *ngIf="param==4">Data Vencimento</label>
+        <input class="select" type="date" [(ngModel)]="dataMovimento" (change)="verificaliberaBtnConsulta()">
+    </div>
+    <div *ngIf="param==2">
+        <label>Data Inicio</label>
+        <input class="select" type="date" [(ngModel)]="dataInicio" (change)="verificaliberaBtnConsulta()">
+    </div>
+    <div *ngIf="param==1">
+        <label>Data Fim</label>
+        <input class="select" type="date" [(ngModel)]="dataFim" (change)="verificaliberaBtnConsulta()">
+    </div>
+    <p></p>
+    <div *ngIf="param==2 || param==3">
+        <label>Tipo Contas </label>
+        <select class="select" [disabled]="parametroBuscaContas==1000" [(ngModel)]="parametroBuscaContas"
+            (change)="carregaContas()">
+            <option [value]="5">Bancária</option>
+            <option [value]="6">Transição</option>
+            <option [value]="7">Sócio</option>
+            <option [value]="14">Parceiro</option>
+
+
+
+        </select>
+    </div>
+    <p></p>
+
+    <div *ngIf="param==2 || param==3">
+        <label>Contas</label>
+        <select [disabled]="!parametroBuscaContas" class="select" [(ngModel)]="codigoConta"
+            (change)="verificaliberaBtnConsulta()">
+            <option *ngFor="let item of listaContas" [value]="item.CODIGO">{{item.DESCRICAO}} </option>
+        </select>
+    </div>
+    <p></p>
+
+    <div *ngIf="param==4">
+        <label>Tipo Contas </label>
+        <select class="select" [disabled]="parametroBuscaContas==1000" [(ngModel)]="parametroBuscaContas"
+            (change)="carregaContas()">
+            <option [value]="2">Desp. FINANCEIRAS</option>
+            <option [value]="8">Desp. MERC. P/ VENDA</option>
+            <option [value]="9">Desp. C/ PESSOAL</option>
+            <option [value]="10">Desp. GERAIS</option>
+            <option [value]="11">Desp. TRIBUTÁRIA</option>
+            <option [value]="12">Desp. INDEDUTIVEL</option>
+            <option [value]="13">RES. NEGATIVO NA ALIEN. IMOBILIZ</option>
+
+        </select>
+    </div>
+    <p></p>
+
+    <div *ngIf="param==4">
+        <label>Contas</label>
+        <select [disabled]="!parametroBuscaContas" class="select" [(ngModel)]="codigoConta"
+            (change)="verificaliberaBtnConsulta()">
+            <option *ngFor="let item of listaContas" [value]="item.CODIGO">{{item.DESCRICAO}} </option>
+        </select>
+    </div>
+    <p></p>
+
+    <div *ngIf="param==4">
+        <label>Projeção </label>
+        <select class="select" [disabled]="parametroBuscaContas==1000" [(ngModel)]="projecao">
+            <option [value]="1">Sim</option>
+            <option [value]="0">Não</option>
+
+        </select>
+    </div>
+    <p></p>
+
+
+
+    <div *ngIf="param==3 || param==4">
+        <label>Valor</label>
+        <input class="select" type="number" [(ngModel)]="valorMovimento" (keyup)="verificaliberaBtnConsulta()">
+
+    </div>
+    
+    <div *ngIf="parametroBuscaContas==14">
+            <label>Parceiro</label>
+            <input class="select" type="text" [(ngModel)]="parceiro.FANTASIA" [disabled]="true" >
+            <p></p>
+
+            <button [disabled]="!codigoConta"  mat-raised-button color="primary" (click)="buscaParceiro()">Parceiro</button>
+
+        </div>
+    
+
+
+    <p></p>
+
+    <div>
+        <button *ngIf="param!=3 && param!=4" [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
+            (click)="FechaModal()">Concluir</button>
+
+    </div>
+    <p></p>
+
+    <div>
+
+        <button *ngIf="param==3" [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
+            (click)="insertTransferenciaRegistroDeus()">Concluir</button>
+
+    </div>
+    <p></p>
+
+
+    <div>
+        <button *ngIf="param==4" [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
+            (click)="insertDespesaRegistroDeus()">Concluir</button>
+
+    </div>
+
+
+
+</div>
+<div mat-dialog-actions>
+
+</div>

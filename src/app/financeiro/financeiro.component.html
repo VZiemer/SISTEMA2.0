@@ -1,0 +1,134 @@
+<div class="container">
+  <header class="header column">
+    <div>
+      <mat-form-field name="Empresa" appearance="outline">
+        <mat-label>Empresa</mat-label>
+        <mat-select [(ngModel)]="empresa" (selectionChange)="limpaLista()" [ngModelOptions]="{standalone: true}">
+          <mat-option *ngFor="let item of listaEmpresas" [value]="item.CODIGO">{{item.NOMESYS}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+
+      <mat-form-field name="Projecao" appearance="outline" *ngIf="param==1">
+        <mat-label>Projeção</mat-label>
+        <mat-select [(ngModel)]="projecaoSelecionado" (selectionChange)="FiltraLista()"
+          [ngModelOptions]="{standalone: true}">
+          <mat-option value="TODOS">TODOS</mat-option>
+          <mat-option *ngFor="let item of listaSelectProjecao" [value]="item.PROJECAO">{{item.PROJECAO}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field name="Fantasia" appearance="outline" *ngIf="param==1">
+        <mat-label>Fantasia</mat-label>
+        <mat-select [(ngModel)]="fantasiaSelecionado" (selectionChange)="FiltraLista()"
+          [ngModelOptions]="{standalone: true}">
+          <mat-option value="TODOS">TODOS</mat-option>
+          <mat-option *ngFor="let item of listaSelectParceiro" [value]="item.FANTASIA">{{item.FANTASIA}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field name="Conta" appearance="outline" *ngIf="param==1">
+        <mat-label>Conta</mat-label>
+        <mat-select [(ngModel)]="contaSelecionado" (selectionChange)="FiltraLista()"
+          [ngModelOptions]="{standalone: true}">
+          <mat-option value="TODOS">TODOS</mat-option>
+          <mat-option *ngFor="let item of listaSelectConta" [value]="item.CONTAMOSTRATELA">{{item.CONTAMOSTRATELA}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+
+
+    <h2 *ngIf="param==2 || param==3">{{tituloPagina}}</h2>
+
+    <h2 *ngIf="saldoDataInicio">Saldo em {{dataInicio | date: 'dd/MM/yy'}} {{converteMoeda(saldoDataInicio)}}</h2>
+    <h2 *ngIf="param==1 || param==4">CONTAS EM ABERTO ATÉ {{dataFim | date: 'dd/MM/yy'}}</h2>
+
+
+  </header>
+
+
+  <aside class="sidebar column">
+    <div>
+      <button [disabled]="!empresa" (click)="ChamaModaInsereData(1)">CONTAS PAGAR</button>
+      <button [disabled]="!empresa || param!=1 || !dataFim" (click)="ChamaModaInsereData(4)">LANÇAR DESPESA</button>
+      <button [disabled]="!empresa" (click)="ChamaModaInsereData(2)">EXTRATO</button>
+      <button [disabled]="!empresa" (click)="ChamaModaInsereData(5)">CONTAS RECEBER</button>
+      <button [disabled]="!empresa || !codigoConta" (click)="ChamaModaInsereData(3)">TRANSFERIR</button>
+    </div>
+    <div>
+      <button [disabled]="!param || param==3 || param==4" (click)="ImprimirlistaAgrupada()">IMPRIMIR</button>
+    </div>
+
+  </aside>
+  <main class="content column">
+
+    <div class="mat-elevation-z8 caixaTabela">
+
+      <table mat-table [dataSource]="listaAgrupada">
+
+        <ng-container matColumnDef="DOCUMENTO">
+          <th mat-header-cell *matHeaderCellDef> DOCUMENTO </th>
+          <td mat-cell *matCellDef="let item"><a [class]="item.PROJECAO==1 ? 'hiperlinkred':'hiperlinkblue'"
+              (click)="ChamaModalRegistroDeus(item)">{{item.DOCUMENTO}}</a></td>
+        </ng-container>
+
+        <ng-container matColumnDef="DATAVCTO">
+          <th mat-header-cell *matHeaderCellDef> DATA VCTO </th>
+          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item">
+            {{item.DATAVCTO | date: 'dd/MM/yy'}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="DATALIQUID">
+          <th mat-header-cell *matHeaderCellDef> DATA LIQUID </th>
+          <td mat-cell *matCellDef="let item"> {{item.DATALIQUID | date: 'dd/MM/yy'}} </td>
+        </ng-container>
+
+
+
+        <ng-container matColumnDef="CODPARC">
+          <th mat-header-cell *matHeaderCellDef> CODPARC </th>
+          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item"> {{item.CODPARC}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="FANTASIA">
+          <th mat-header-cell *matHeaderCellDef> PARCEIRO </th>
+          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item"> {{item.FANTASIA}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="CONTAMOSTRATELA">
+          <th mat-header-cell *matHeaderCellDef> CONTA </th>
+          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item"> {{item.CONTAMOSTRATELA}}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="CCREDITO">
+          <th mat-header-cell *matHeaderCellDef> CREDITO </th>
+          <td mat-cell *matCellDef="let item"> {{item.CCREDITO}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="VALOR">
+          <th mat-header-cell *matHeaderCellDef> VALOR </th>
+          <td [class]="item.VALOR<0 ||item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item">
+            {{converteMoeda(item.VALOR)}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="SALDO">
+          <th mat-header-cell *matHeaderCellDef> SALDO </th>
+          <td [class]="item.SALDO<0 ||item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item">
+            {{converteMoeda(item.SALDO)}} </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="camposTabela; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: camposTabela;"></tr>
+      </table>
+    </div>
+
+  </main>
+
+  <footer class="footer column">
+    <div></div>
+    <span *ngIf="saldoFinal">Saldo {{converteMoeda(saldoFinal)}} </span>
+  </footer>
+</div>

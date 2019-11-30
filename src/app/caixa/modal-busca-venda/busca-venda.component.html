@@ -1,4 +1,4 @@
-<h1 mat-dialog-title>buscar {{titulo}}</h1>
+<h1 mat-dialog-title>buscar {{titulo}} aaaaaa</h1>
 <div mat-dialog-content>
   <table cellspacing=0>
     <tr>
@@ -50,6 +50,6 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">cancela</button>
-  <button mat-button [mat-dialog-close]="selection.selected" [disabled]="!selection.selected.length"
+  <button mat-button [mat-dialog-close]="selection.selected[0]" [disabled]="!selection.selected.length"
     cdkFocusInitial>Ok</button>
 </div>
