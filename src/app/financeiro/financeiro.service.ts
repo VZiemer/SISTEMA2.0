@@ -20,7 +20,6 @@ const httpOptions = {
 
 export class FinanceiroService {
   apiURL = 'http://localhost:4200/api/rotas';
-  // apiURL = 'http://sistema.florestalferragens.com.br/rotas';
   constructor(private http: HttpClient) { }
 
   getRegistrosFinanceiros(NroBotao: number, Empresa: number, dataFim: Date, dataInicio: Date, conta: number): Observable<any[]> {

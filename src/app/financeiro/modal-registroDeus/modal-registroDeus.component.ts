@@ -183,7 +183,7 @@ export class ModalRegistroDeusComponent implements OnInit {
   verificaliberaBtnLiquidar() {
     this.liberaBtnLiquidar = 0;
 
-    if (this.dataLiquid && this.CREDITO && this.saldoTravaNegativo && this.total <= this.saldoFinal) { this.liberaBtnLiquidar = 1; }
+    if (this.dataLiquid && this.CREDITO && this.saldoTravaNegativo && this.total <= -this.saldoFinal) { this.liberaBtnLiquidar = 1; }
     if (this.dataLiquid && this.CREDITO && !this.saldoTravaNegativo) { this.liberaBtnLiquidar = 1; }
 
 

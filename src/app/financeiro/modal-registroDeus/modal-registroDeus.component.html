@@ -99,7 +99,7 @@
 
     <fieldset *ngIf="!mostraContasDespesas && param==1">
         <legend>Conta de liquidação</legend>
-        <h3>Saldo: {{saldoFinal}} </h3>
+        <h3>Saldo: {{converteMoeda(-saldoFinal)}} </h3>
         <input class="inputData" type="date" (change)="verificaliberaBtnLiquidar()" [(ngModel)]="dataLiquid">
 
         <select [disabled]="travaSelectConta" class="inputConta" [(ngModel)]="CREDITO" (change)="calculaSaldo()">

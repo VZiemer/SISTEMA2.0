@@ -386,7 +386,7 @@ export class FinanceiroComponent implements OnInit {
     }
   }
 
-  ImprimirlistaAgrupada = async function (venda:void) {
+  ImprimirlistaAgrupada = async function (venda) {
     let data = new Date(this.dataInicio);
     const dataInicio = data.getDate() + '/' + (data.getMonth() + 1) + '/' + data.getFullYear();
 
