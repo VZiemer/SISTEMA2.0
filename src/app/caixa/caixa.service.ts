@@ -20,8 +20,8 @@ const httpOptions = {
   providedIn: 'root'
 })
 export class CaixaService {
-  apiURL = 'http://localhost:4200/api/rotas';
-  // apiURL = 'http://sistema.florestalferragens.com.br/rotas';
+  // apiURL = 'http://localhost:4200/api/rotas';
+  apiURL = 'http://sistema.florestalferragens.com.br/rotas';
   constructor(private http: HttpClient) {}
 
   getProduto(id: void): Observable<Produto> {
