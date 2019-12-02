@@ -1,4 +1,4 @@
-import { Component, OnInit, Renderer2 } from "@angular/core";
+import { Component, OnInit, Renderer2, HostListener } from "@angular/core";
 import { CaixaService } from "./caixa.service";
 import { ElectronService } from "../core/services/electron/electron.service";
 import { MatDialog } from "@angular/material";
@@ -14,23 +14,24 @@ import { Cliente } from "../shared/models/Cliente";
 import { Vendedor } from "../shared/models/Vendedor";
 import { Venda } from "../shared/models/venda";
 import { Deus } from "../shared/models/deus";
+import { Param } from "../shared/models/param";
 
 import * as dinheiro from "../shared/models/dinheiro";
 
 // import * as bemafi from '../../Bemafi32';
 let escopo = this;
+
 @Component({
   selector: "app-caixa",
   templateUrl: "./caixa.component.html",
   styleUrls: ["./caixa.component.scss"]
 })
 export class CaixaComponent implements OnInit {
-  empresa = {
-    CODIGO: 1,
-    NOME: "FLORESTAL FERRAGENS"
-  };
+  ctrlPress: boolean;
+  empresa = null;
   name: string;
   color: string;
+  listaEmpresas: Param[];
   input = {
     codbar: null,
     qtd: 1
@@ -73,6 +74,7 @@ export class CaixaComponent implements OnInit {
   cliente: Cliente = {
     CODIGO: null,
     RAZAO: "",
+    FANTASIA: "",
     CGC: null,
     INSC: null,
     LIBERAFAT: null,
@@ -120,9 +122,59 @@ export class CaixaComponent implements OnInit {
     this.DOM.inputQtd = this.renderer.selectRootElement("#multqtd");
   }
 
+  @HostListener("window:keyupdown", ["$event"])
+  keyDown(event: KeyboardEvent) {
+    console.log(event);
+    if (event.key === "Control") {
+      //  event.preventDefault();
+      this.ctrlPress = true;
+    }
+  }
+
+  @HostListener("window:keyup", ["$event"])
+  keyUp(event: KeyboardEvent) {
+    console.log(event);
+    if (event.altKey) {
+    } else if (event.ctrlKey) {
+      this.ctrlPress = false;
+      if (event.key === "F2") {
+        this.inserePagtoCartao("cartão");
+      }
+      if (event.key === "F3") {
+        this.inserePagtoDi("dinheiro");
+      }
+      if (event.key === "F4") {
+        this.inserePagtoBoleto("boleto");
+      }
+      if (event.key === "F5") {
+        this.clicaVendedor();
+      }
+      if (event.key === "F6") {
+        this.clicaAbreVenda();
+      }
+    } else {
+      if (event.key === "F2") {
+        this.novaVenda();
+      }
+      if (event.key === "F3") {
+        this.clicaProduto();
+      }
+      if (event.key === "F4") {
+        this.clicaCliente();
+      }
+      if (event.key === "F5") {
+        this.clicaVendedor();
+      }
+      if (event.key === "F6") {
+        this.clicaAbreVenda();
+      }
+    }
+  }
+
   // função que volta o input
   inputReturn() {
     this.DOM.inputProd.focus();
+    console.log("volta o input");
   }
 
   // funções dos botões
@@ -134,66 +186,92 @@ export class CaixaComponent implements OnInit {
     this.selectedFunction.text = "Leia o código do Produto";
     this.DOM.inputProd.focus();
   }
+
+  getEmpresas() {
+    this.caixaService.getParam().subscribe(
+      res => {
+        this.listaEmpresas = res;
+        console.log("listaEmpresas", this.listaEmpresas);
+      },
+      error => console.log(error)
+    );
+  }
+
   clicaVendedor() {
     this.selectedFunction.text = "Digite o vendedor ou Enter para Buscar";
     this.DOM.inputVend.focus();
   }
   clicaAbreVenda() {
-    const dialogRef = this.dialog.open(ModalBuscaVendaComponent, {
-      width: "70vw",
-      height: "60vh",
-      hasBackdrop: true,
-      disableClose: true,
-      data: "venda"
-    });
+    if (this.empresa) {
+      const dialogRef = this.dialog.open(ModalBuscaVendaComponent, {
+        width: "70vw",
+        height: "100vh",
+        hasBackdrop: true,
+        disableClose: false,
+        data: "venda"
+      });
 
-    dialogRef.afterClosed().subscribe(res => {
-      console.log("retorno", res);
-      this.caixaService.getVenda(res.LCTO).subscribe(
-        venda => {
-          this.venda = new Venda(
-            venda[0].LCTO,
-            venda[0].DATA,
-            venda[0].ID_TRANSITO,
-            venda[0].CGC,
-            venda[0].INSC,
-            venda[0].CODCLI,
-            venda[0].NOMECLI,
-            venda[0].CODVEND,
-            venda[0].NOMEVEND,
-            venda[0].EMAIL,
-            venda[0].FONE,
-            venda[0].RAZAO,
-            venda[0].ENDERECO,
-            venda[0].NUMERO,
-            venda[0].BAIRRO,
-            venda[0].CEP,
-            venda[0].CODIBGE,
-            venda[0].CODCIDADE,
-            venda[0].CIDADE,
-            venda[0].ESTADO,
-            venda[0].COMPLEMENTO,
-            venda[0].DESCONTO,
-            venda[0].FRETE,
-            venda[0].SEGURO,
-            venda[0].TOTAL,
-            venda[0].FATURAMENTO,
-            venda[0].LIBERAFAT,
-            venda[0].LIBERANP
-          );
-          this.venda.insereTransporte(
-            venda[0].VOLUMES,
-            venda[0].PESO,
-            venda[0].TIPOFRETE,
-            venda[0].TRANSPORTADOR
-          );
-
-          this.getProdvenda(this.venda.LCTO);
-          console.log(this.venda);
-        },
-        error => console.log(error)
-      );
-    });
+      dialogRef.afterClosed().subscribe(res => {
+        console.log("retorno", res);
+        this.inputReturn();
+        this.caixaService.getVenda(res.LCTO).subscribe(
+          venda => {
+            this.cliente = {
+              CODIGO: venda[0].CODCLI,
+              RAZAO: venda[0].NOMECLI,
+              FANTASIA: venda[0].NOMECLI,
+              CGC: venda[0].CGC,
+              INSC: venda[0].INSC,
+              LIBERAFAT: venda[0].LIBERAFAT,
+              LIBERANP: venda[0].LIBERANP
+            };
+            this.vendedor = {
+              CODIGO: venda[0].CODVEND,
+              NOME: venda[0].NOMEVEND
+            };
+            this.venda = new Venda(
+              venda[0].LCTO,
+              venda[0].DATA,
+              venda[0].ID_TRANSITO,
+              venda[0].CGC,
+              venda[0].INSC,
+              venda[0].CODCLI,
+              venda[0].NOMECLI,
+              venda[0].CODVEND,
+              venda[0].NOMEVEND,
+              venda[0].EMAIL,
+              venda[0].FONE,
+              venda[0].RAZAO,
+              venda[0].ENDERECO,
+              venda[0].NUMERO,
+              venda[0].BAIRRO,
+              venda[0].CEP,
+              venda[0].CODIBGE,
+              venda[0].CODCIDADE,
+              venda[0].CIDADE,
+              venda[0].ESTADO,
+              venda[0].COMPLEMENTO,
+              venda[0].DESCONTO,
+              venda[0].FRETE,
+              venda[0].SEGURO,
+              venda[0].TOTAL,
+              venda[0].FATURAMENTO,
+              venda[0].LIBERAFAT,
+              venda[0].LIBERANP
+            );
+            this.venda.insereTransporte(
+              venda[0].VOLUMES,
+              venda[0].PESO,
+              venda[0].TIPOFRETE,
+              venda[0].TRANSPORTADOR
+            );
+            this.getProdvenda(this.venda.LCTO);
+            console.log(this.venda);
+          },
+          error => console.log(error)
+        );
+      });
+    }
   }
 
   gerarNfe() {
@@ -207,32 +285,40 @@ export class CaixaComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       console.log("retorno", res);
+      this.inputReturn();
     });
   }
 
   // insere um novo produto com pelo id (alterar para codbar)
   getProduto(id: number, qtd: number) {
-    console.log('getProduto');
+    console.log("getProduto");
     this.input.codbar = null;
     this.input.qtd = 1;
+    this.inputReturn();
     this.caixaService.insereProdvenda(id, qtd, this.venda.LCTO).subscribe(
       produto => {
         // produto.QTD = qtd;
-        this.ultimoProduto = produto;
-        this.prodvenda.push(produto);
+        this.ultimoProduto = {
+          CODIGO: produto.CODPRO,
+          DESCRICAO:  produto.DESCRICAO,
+          QTD: produto.QTDFISCAL,
+          VALOR: produto.VALOR,
+          UNIDADE: produto.UNIDADE
+        };
+        // this.prodvenda.push(produto);
         this.venda.insereProduto(produto);
-        this.Pagar = this.venda.TOTAL;
       },
       error => console.log(error)
     );
   }
 
   // insere um novo produto com pelo id (alterar para codbar)
-  getCliente(id: number): void {
+  getCliente(id: number = null) {
     this.input.codbar = null;
     this.input.qtd = 1;
+    this.inputReturn();
     if (id) {
-      this.caixaService.getCliente(id).subscribe(
+      this.caixaService.getParceiro(id).subscribe(
         cliente => {
           this.cliente = cliente;
           this.clicaProduto();
@@ -240,29 +326,34 @@ export class CaixaComponent implements OnInit {
         error => console.log(error)
       );
     } else {
-      this.openDialog("cliente", this.getCliente);
+      this.openDialog("C");
     }
   }
 
   getVendedor(id: number): void {
+    console.log("id", id);
     this.input.codbar = null;
     this.input.qtd = 1;
+    this.inputReturn();
+    console.log("getVendedor", this);
     if (id) {
-      this.caixaService.getVendedor(id).subscribe(
-        vendedor => {
-          this.vendedor = vendedor;
+      this.caixaService.getParceiro(id).subscribe(
+        parceiro => {
+          console.log('parceiro', parceiro)
+          this.vendedor = { NOME: parceiro.FANTASIA, CODIGO: parceiro.CODIGO };
           this.clicaProduto();
         },
         error => console.log(error)
       );
     } else {
-      this.openDialog("vendedor", this.getVendedor);
+      this.openDialog("V");
     }
   }
 
-  getVenda(id: number): void {
+  getVenda(id: number = null) {
     this.input.codbar = null;
     this.input.qtd = 1;
+    this.inputReturn();
     if (id) {
       this.caixaService.getVenda(id).subscribe(
         venda => {
@@ -316,36 +407,121 @@ export class CaixaComponent implements OnInit {
   novaVenda() {
     this.input.codbar = null;
     this.input.qtd = 1;
-    this.caixaService
-      .novaVenda(this.cliente.CODIGO, this.vendedor.CODIGO)
-      .subscribe(
-        venda => {
-          this.venda = venda;
-        },
-        error => console.log(error)
-      );
+    this.venda = new Venda(
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    );
+
+    if (!this.cliente.CODIGO) {
+      this.openDialog("C");
+    } else if (!this.vendedor.CODIGO) {
+      this.openDialog("V");
+    } else {
+      console.log("else nova venda");
+      console.log('cliente', this.cliente)
+      console.log('vendedor', this.vendedor)
+      this.caixaService
+        .novaVenda(this.cliente.CODIGO, this.vendedor.CODIGO)
+        .subscribe(
+          venda => {
+            console.log("retornou venda", venda);
+            this.venda = new Venda(
+              venda[0].LCTO,
+              venda[0].DATA,
+              venda[0].ID_TRANSITO,
+              venda[0].CGC,
+              venda[0].INSC,
+              venda[0].CODCLI,
+              venda[0].NOMECLI,
+              venda[0].CODVEND,
+              venda[0].NOMEVEND,
+              venda[0].EMAIL,
+              venda[0].FONE,
+              venda[0].RAZAO,
+              venda[0].ENDERECO,
+              venda[0].NUMERO,
+              venda[0].BAIRRO,
+              venda[0].CEP,
+              venda[0].CODIBGE,
+              venda[0].CODCIDADE,
+              venda[0].CIDADE,
+              venda[0].ESTADO,
+              venda[0].COMPLEMENTO,
+              venda[0].DESCONTO,
+              venda[0].FRETE,
+              venda[0].SEGURO,
+              venda[0].TOTAL,
+              venda[0].FATURAMENTO,
+              venda[0].LIBERAFAT,
+              venda[0].LIBERANP
+            );
+            this.venda.insereTransporte(
+              venda[0].VOLUMES,
+              venda[0].PESO,
+              venda[0].TIPOFRETE,
+              venda[0].TRANSPORTADOR
+            );
+
+            this.getProdvenda(this.venda.LCTO);
+            console.log(this.venda);
+          },
+          error => console.log(error)
+        );
+    }
   }
 
   cancelaPagto() {
     this.venda.PAGAMENTO = [];
     this.cartao = [];
     this.boleto = [];
-    this.Pagar = this.venda.TOTAL;
-    this.venda.PAGAR = this.venda.TOTAL;
+    this.venda.PAGAR = new dinheiro(this.venda.TOTAL);
+    this.inputReturn();
   }
 
-  openDialog(busca, callback) {
+  openDialog(busca: string) {
     const dialogRef = this.dialog.open(ModalBuscaGenericoComponent, {
       width: "70vw",
       height: "79vh",
       hasBackdrop: true,
       disableClose: true,
-      data: busca
+      data: { tipoParc: busca }
     });
 
     dialogRef.afterClosed().subscribe(res => {
+      this.inputReturn();
       console.log("retorno", res);
-      callback(res);
+      if (busca === "V") {
+        this.getVendedor(res[0].CODIGO);
+      }
+      if (busca === "C") {
+        this.getCliente(res[0].CODIGO);
+      }
     });
   }
 
@@ -354,12 +530,15 @@ export class CaixaComponent implements OnInit {
       width: "50vw",
       height: "80vh",
       hasBackdrop: true,
-      disableClose: true,
+      disableClose: false,
       data: { tipopag: pagto, valor: this.venda.PAGAR.valor }
     });
     dialogRef.afterClosed().subscribe(res => {
+      this.inputReturn();
       if (res) {
+        console.log("entrou pagamento", res);
         this.venda.PAGAR.subtrai(res.valor);
+        console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
         const data = new Date(this.venda.DATA);
         this.cartao.push({
@@ -376,10 +555,9 @@ export class CaixaComponent implements OnInit {
         console.log("cartao", this.cartao);
         if (res.fPagto.PARCELAS === 0) {
           const pgto: Deus = {
-
             CODIGO: null,
             CODDEC: null,
-            EMPRESA: this.empresa.CODIGO,
+            EMPRESA: this.empresa,
             CODPARC: this.cliente.CODIGO,
             LCTO: this.venda.LCTO,
             TIPOLCTO: "V",
@@ -406,7 +584,7 @@ export class CaixaComponent implements OnInit {
             const tarifa: Deus = {
               CODIGO: null,
               CODDEC: null,
-              EMPRESA: this.empresa.CODIGO,
+              EMPRESA: this.empresa,
               CODPARC: res.fPagto.ADQUIRENTE,
               LCTO: this.venda.LCTO,
               TIPOLCTO: "V",
@@ -437,7 +615,7 @@ export class CaixaComponent implements OnInit {
             const pgto: Deus = {
               CODIGO: null,
               CODDEC: null,
-              EMPRESA: this.empresa.CODIGO,
+              EMPRESA: this.empresa,
               CODPARC: this.cliente.CODIGO,
               LCTO: this.venda.LCTO,
               TIPOLCTO: "V",
@@ -469,7 +647,7 @@ export class CaixaComponent implements OnInit {
               const tarifa: Deus = {
                 CODIGO: null,
                 CODDEC: null,
-                EMPRESA: this.empresa.CODIGO,
+                EMPRESA: this.empresa,
                 CODPARC: res.fPagto.ADQUIRENTE,
                 LCTO: this.venda.LCTO,
                 TIPOLCTO: "V",
@@ -505,12 +683,15 @@ export class CaixaComponent implements OnInit {
       width: "50vw",
       height: "80vh",
       hasBackdrop: true,
-      disableClose: true,
+      disableClose: false,
       data: { tipopag: pagto, valor: this.venda.PAGAR.valor }
     });
     dialogRef.afterClosed().subscribe(res => {
+      this.inputReturn();
       if (res) {
+        console.log("entrou pagamento", res);
         this.venda.PAGAR.subtrai(res.valor);
+        console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
         const data = new Date(this.venda.DATA);
         this.boleto.push({
@@ -532,7 +713,7 @@ export class CaixaComponent implements OnInit {
           const pgto: Deus = {
             CODIGO: null,
             CODDEC: null,
-            EMPRESA: this.empresa.CODIGO,
+            EMPRESA: this.empresa,
             CODPARC: this.cliente.CODIGO,
             LCTO: this.venda.LCTO,
             TIPOLCTO: "V",
@@ -569,35 +750,40 @@ export class CaixaComponent implements OnInit {
       width: "40vw",
       height: "70vh",
       hasBackdrop: true,
-      disableClose: true,
+      disableClose: false,
       data: { tipopag: pagto, valor: this.venda.PAGAR.valor }
     });
     dialogRef.afterClosed().subscribe(res => {
-      this.venda.PAGAR.subtrai(res.pagar);
-      console.log("pagar", this.venda.PAGAR);
-      const data = new Date(this.venda.DATA);
-      const pgto: Deus = {
-        CODIGO: null,
-        CODDEC: null,
-        EMPRESA: this.empresa.CODIGO,
-        CODPARC: this.cliente.CODIGO,
-        LCTO: this.venda.LCTO,
-        TIPOLCTO: "V",
-        DOCUMENTO: this.venda.LCTO.toString() + "-0/0",
-        DATAEMISSAO: this.venda.DATA,
-        DATAVCTO: this.venda.DATA,
-        DATALIQUID: null,
-        DEBITO: 159,
-        CREDITO: 173,
-        VALOR: res.pagar,
-        PROJECAO: 0,
-        OBS: "",
-        PERMITEAPAGA: null,
-        TIPOOPERACAO: null,
-        TRAVACREDITO: null
-      };
-      this.venda.PAGAMENTO.push(pgto);
-      console.log(this.venda.PAGAMENTO);
+      this.inputReturn();
+      if (res) {
+        console.log("entrou pagamento", res);
+        this.venda.PAGAR.subtrai(res.pagar);
+        console.log(this.venda);
+        console.log("pagar", this.venda.PAGAR);
+        const data = new Date(this.venda.DATA);
+        const pgto: Deus = {
+          CODIGO: null,
+          CODDEC: null,
+          EMPRESA: this.empresa,
+          CODPARC: this.cliente.CODIGO,
+          LCTO: this.venda.LCTO,
+          TIPOLCTO: "V",
+          DOCUMENTO: this.venda.LCTO.toString() + "-0/0",
+          DATAEMISSAO: this.venda.DATA,
+          DATAVCTO: this.venda.DATA,
+          DATALIQUID: null,
+          DEBITO: 159,
+          CREDITO: 173,
+          VALOR: res.pagar,
+          PROJECAO: 0,
+          OBS: "",
+          PERMITEAPAGA: null,
+          TIPOOPERACAO: null,
+          TRAVACREDITO: null
+        };
+        this.venda.PAGAMENTO.push(pgto);
+        console.log(this.venda.PAGAMENTO);
+      }
     });
   }
 
@@ -605,7 +791,7 @@ export class CaixaComponent implements OnInit {
     this.venda.PAGAMENTO.unshift({
       CODIGO: null,
       CODDEC: null,
-      EMPRESA: this.empresa.CODIGO,
+      EMPRESA: this.empresa,
       CODPARC: this.cliente.CODIGO,
       LCTO: this.venda.LCTO,
       TIPOLCTO: "V",
@@ -615,7 +801,7 @@ export class CaixaComponent implements OnInit {
       DATALIQUID: this.venda.DATA,
       DEBITO: 173,
       CREDITO: 126,
-      VALOR: this.venda.TOTAL,
+      VALOR: this.venda.TOTAL.valor,
       PROJECAO: 0,
       OBS: ""
     });
@@ -623,27 +809,82 @@ export class CaixaComponent implements OnInit {
       .confirmaVenda(this.venda, this.venda.PAGAMENTO, this.cartao)
       .subscribe(rest => {
         console.log(rest);
+        this.venda = new Venda(
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        );
+        this.cliente = {
+          CODIGO: null,
+          RAZAO: "",
+          FANTASIA: "",
+          CGC: null,
+          INSC: null,
+          LIBERAFAT: null,
+          LIBERANP: null
+        };
+        this.vendedor = {
+          CODIGO: null,
+          NOME: ""
+        };
+        this.ultimoProduto = {
+          CODIGO: null,
+          DESCRICAO: "",
+          QTD: null,
+          VALOR: null,
+          UNIDADE: ""
+        };
       });
+    this.inputReturn();
   }
 
   getProdvenda(lcto: number) {
+    this.inputReturn();
     this.caixaService.getProdVenda(lcto).subscribe(
       prodVenda => {
-        const venda = this.venda;
-        let ultimo: any;
         console.log(prodVenda);
-        prodVenda.forEach(function(item) {
+        for (let item of prodVenda) {
           if (item.QTDPEDIDO > 0) {
-            ultimo = item;
-            venda.insereProduto(item);
+            this.venda.insereProduto(item);
             console.log("inseriu item");
+            this.ultimoProduto = {
+              CODIGO: item.CODIGO,
+              DESCRICAO: item.DESCRICAO,
+              QTD: item.QTDPEDIDO,
+              VALOR: item.VALOR,
+              UNIDADE: item.UNIDADE
+            };
           }
           if (item.QTDPEDIDO < 0) {
-            venda.insereDescontos(item);
+            this.venda.insereDescontos(item);
             console.log("descontou item");
           }
-          console.log(ultimo);
-        });
+        }
         // this.prodvenda = prodVenda;
       },
       error => console.log(error)
@@ -750,10 +991,12 @@ export class CaixaComponent implements OnInit {
         console.log("The file has been saved!");
       }
     );
+    this.inputReturn();
   };
 
   ngOnInit() {
     // console.log(bemafi.leituraX());
-    this.getVenda(1425697);
+    // this.getVenda(1425697);
+    this.getEmpresas();
   }
 }

@@ -168,6 +168,7 @@ export class Venda {
     this.TRANSITO.push(transito);
   }
   calculaTotal() {
+    console.log("calcula total",this.TOTAL);
     this.TOTAL = new dinheiro(
       this.PRODUTOS.reduce(function(
         valorAnterior,

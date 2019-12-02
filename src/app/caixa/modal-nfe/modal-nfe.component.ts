@@ -145,6 +145,22 @@ export class ModalNfeComponent implements OnInit {
           venda[0].TRANSPORTADOR
         );
 
+        for (let item of venda) {
+          this.venda.inserePagamento({
+            'valor': new dinheiro(item.VALOR),
+            'tipo': item.TIPOPAG,
+            'vencimento': item.VENCIMENTO,
+            'pagto': '',
+            'codban': item.CODBAN,
+            'banco': null,
+            'agencia': '',
+            'conta': '',
+            'nrcheque': '',
+            'emnome': ''
+        })
+        console.log("inseriu item")
+        }
+
         this.getProdvenda(this.venda.LCTO);
         console.log(this.venda);
       },
@@ -155,21 +171,21 @@ export class ModalNfeComponent implements OnInit {
   getProdvenda(lcto: number) {
     this.caixaService.getProdVenda(lcto).subscribe(
       prodVenda => {
-        const venda = this.venda;
+
         let ultimo: any;
         console.log(prodVenda);
-        prodVenda.forEach(function(item) {
+        for (let item of prodVenda) {
           if (item.QTDPEDIDO > 0) {
             ultimo = item;
-            venda.insereProduto(item);
+            this.venda.insereProduto(item);
             console.log("inseriu item");
           }
           if (item.QTDPEDIDO < 0) {
-            venda.insereDescontos(item);
+            this.venda.insereDescontos(item);
             console.log("descontou item");
           }
           console.log(ultimo);
-        });
+        };
         // this.prodvenda = prodVenda;
       },
       error => console.log(error)

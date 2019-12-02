@@ -7,6 +7,8 @@ import { catchError } from 'rxjs/operators';
 import { Produto } from '../shared/models/produto';
 import { Venda } from '../shared/models/venda';
 import { Cliente } from '../shared/models/cliente';
+
+import { Param } from '../shared/models/param';
 import { Deus } from '../shared/models/deus';
 import { Vendedor } from '../shared/models/vendedor';
 // import { HttpErrorHandler, HandleError } from '';
@@ -20,8 +22,8 @@ const httpOptions = {
   providedIn: 'root'
 })
 export class CaixaService {
-  // apiURL = 'http://localhost:4200/api/rotas';
-  apiURL = 'http://sistema.florestalferragens.com.br/rotas';
+  apiURL = 'http://localhost:4200/api/rotas';
+  // apiURL = 'http://sistema.florestalferragens.com.br/rotas';
   constructor(private http: HttpClient) {}
 
   getProduto(id: void): Observable<Produto> {
@@ -60,9 +62,9 @@ export class CaixaService {
   getVendedor(id: number): Observable<Vendedor> {
     return this.http.get<Vendedor>(this.apiURL + '/vendedor/' + id).pipe();
   }
-  novaVenda(codcli: number, codvend: number): Observable<Venda> {
+  novaVenda(codcli: number, codvend: number): Observable<any[]> {
     return this.http
-      .post<Venda>(this.apiURL + '/venda/', {
+      .post<any[]>(this.apiURL + '/venda/', {
         CODCLI: codcli,
         CODVEND: codvend
       })
@@ -86,6 +88,11 @@ export class CaixaService {
         pagamentos: pagamentos,
         cartao: cartao
       })
+      .pipe();
+  }
+
+  getParam(id: void): Observable<Param[]> {
+    return this.http.get<Param[]>(this.apiURL + '/pram')
       .pipe();
   }
 

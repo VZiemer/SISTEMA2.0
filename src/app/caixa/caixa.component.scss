@@ -78,6 +78,9 @@ body {
     width: 6vw;
     text-align: center;
   }
+  input[type="text"]:disabled {
+    background:rgb(189, 189, 189) ;
+  }
 }
 
 .content {
@@ -110,6 +113,9 @@ body {
     padding: 0.25em;
     width: 100%;
     text-align: center;
+  }
+  input[type="text"]:disabled {
+    background:rgb(189, 189, 189) ;
   }
 }
 .barReader {
@@ -149,6 +155,7 @@ body {
   width: 100vw;
   height: 10vh;
   display: flex;
+  overflow: hidden;
   align-content: space-around;
   justify-content: space-between;
   // padding: 15px;
@@ -162,6 +169,20 @@ body {
     span {
       vertical-align: top;
     }
+      /* Text Input */
+  input[type="text"] {
+    @extend .roundedborder;
+    background-color: darken($bg, 1%);
+    color: lighten($text, 10%);
+    font-size: 1.8em;
+    margin: 0.1em 0 0.5em;
+    padding: 0.25em;
+    width: 100%;
+    text-align: center;
+  }
+  input[type="text"]:disabled {
+    background:rgb(189, 189, 189) ;
+  }
   }
 }
 
