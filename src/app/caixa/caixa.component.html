@@ -108,7 +108,9 @@
             <td class="number">{{ item.QTDFISCAL }}</td>
             <td class="text">{{ item.UNIDADE }}</td>
             <td class="number">{{ item.VALOR }}</td>
-            <td class="number">{{ item.VALOR * item.QTDFISCAL | currency: " " }}</td>
+            <td class="number">
+              {{ item.VALOR * item.QTDFISCAL | currency: " " }}
+            </td>
           </tr>
         </tbody>
         <tbody *ngIf="cartao.length || boleto.length">
@@ -138,7 +140,11 @@
             </td>
             <td class="number">{{ item.PARCELAS ? item.PARCELAS : 1 }}x</td>
             <td class="number">
-              {{ item.PARCELAS ? (item.VALOR / item.PARCELAS).toFixed(2) : item.VALOR.toFixed(2) }}
+              {{
+                item.PARCELAS
+                  ? (item.VALOR / item.PARCELAS).toFixed(2)
+                  : item.VALOR.toFixed(2)
+              }}
             </td>
           </tr>
           <tr *ngFor="let item of boleto; let i = index">
@@ -205,7 +211,7 @@
           type="text"
           disabled
           name="restante"
-          [value]="venda.PAGAR"
+          [value]="venda.PAGAR.valor"
           id="qtd"
         />
       </div>
@@ -214,18 +220,44 @@
   <aside class="sidebar column">
     <button
       *ngIf="empresa"
-      mat-raised-button
-      color="Accent"
+      [disabled] = "venda.PAGAR.valor > 0 && venda.LCTO || !venda.PRODUTOS.length && venda.LCTO"
+      mat-raised-button color="accent"
       (click)="gerarNfe()"
       class=""
     >
       NFE
     </button>
     <button
+    *ngIf="venda.LCTO && empresa"
+    [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
+    mat-raised-button color="accent"
+    (click)="confirmaCupom()"
+    class=""
+  >
+  CUPOM
+  </button>
+  <button
+  *ngIf="venda.LCTO && empresa"
+  [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
+  mat-raised-button color="accent"
+  (click)="confirmaVenda()"
+  class=""
+>
+  CONFIRMA
+</button>
+  <button
+    *ngIf="venda.LCTO && empresa"
+    [disabled]="!venda.PAGAMENTO.length"
+    mat-raised-button color="warn"
+    (click)="cancelaPagto()"
+    class=""
+  >
+    CANCELA PAGTO
+  </button>
+    <button
       *ngIf="venda.LCTO && empresa"
       [disabled]="!venda.PAGAR.valor"
       mat-raised-button
-      color="Accent"
       (click)="inserePagtoCartao('cartão')"
       class=""
     >
@@ -235,7 +267,6 @@
       *ngIf="venda.LCTO && empresa"
       [disabled]="!venda.PAGAR.valor"
       mat-raised-button
-      color="Accent"
       (click)="inserePagtoDi('dinheiro')"
       class=""
     >
@@ -243,42 +274,30 @@
     </button>
     <button
       *ngIf="venda.LCTO && empresa"
-      [disabled]="!venda.PAGAR.valor"
+      [disabled]="!venda.PAGAR.valor && venda.LIBERAFAT"
       mat-raised-button
-      color="Accent"
       (click)="inserePagtoBoleto('boleto')"
       class=""
     >
       BOLETO <span *ngIf="ctrlPress">(F4) </span>
     </button>
     <button
-      *ngIf="venda.LCTO && empresa"
-      [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
+      *ngIf="venda.LCTO && empresa && saldoVale"
+      [disabled]="!venda.PAGAR.valor"
       mat-raised-button
-      color="Accent"
-      (click)="confirmaVenda()"
+      (click)="inserePagtoDi('dinheiro')"
       class=""
     >
-      CONFIRMA
+      VALE <span *ngIf="ctrlPress">(F3) </span>
     </button>
     <button
-      *ngIf="venda.LCTO && empresa"
-      [disabled]="!venda.PAGAMENTO.length"
+      *ngIf="venda.LCTO && empresa && venda.LIBERANP"
+      [disabled]="!venda.PAGAR.valor"
       mat-raised-button
-      color="Accent"
-      (click)="cancelaPagto()"
+      (click)="inserePagtoNP('NP')"
       class=""
     >
-      CANCELA PAGTO
-    </button>
-    <button
-      *ngIf="venda.LCTO && empresa"
-      mat-raised-button
-      color="Accent"
-      (click)="imprime(venda)"
-      class=""
-    >
-      imprime
+      NP <span *ngIf="ctrlPress">(F3) </span>
     </button>
   </aside>
   <footer class="footer column">
@@ -288,31 +307,22 @@
       <span>F4 - Cliente</span>
       <span>F5 - Vendedor</span>
       <span>F6 - Vendas</span>
+      <span>F7 - Reservas</span>
     </div>
-
-    <div>
-      <mat-form-field name="Empresa" appearance="fill">
-        <mat-label>Empresa</mat-label>
-        <mat-select
-          [(ngModel)]="empresa"
-          (selectionChange)="inputReturn()"
-          (blur)="inputReturn()"
-          (change)="inputReturn()"
-          [ngModelOptions]="{ standalone: true }"
-        >
-          <mat-option
-            *ngFor="let item of listaEmpresas"
-            [value]="item.CODIGO"
-            >{{ item.NOMESYS }}</mat-option
-          >
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <!-- <button mat-raised-button (click)=getProduto(441)>teste</button>
-    <button mat-raised-button (click)="openDialog()">Pick one</button>
-    You selected: <p style="font-weight: bold">{{color}}</p>
-    <button mat-raised-button (click)="clicaCliente()">Cliente</button>
-    <button mat-raised-button (click)="clicaProduto()">Produto</button> -->
+    <mat-form-field name="Empresa" appearance="fill">
+      <mat-label>Empresa</mat-label>
+      <mat-select
+        [(ngModel)]="empresa"
+        (selectionChange)="inputReturn()"
+        (blur)="inputReturn()"
+        (change)="inputReturn()"
+        [disabled]="venda.LCTO"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        <mat-option *ngFor="let item of listaEmpresas" [value]="item.CODIGO">{{
+          item.NOMESYS
+        }}</mat-option>
+      </mat-select>
+    </mat-form-field>
   </footer>
 </div>

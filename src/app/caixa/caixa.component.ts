@@ -1,10 +1,17 @@
-import { Component, OnInit, Renderer2, HostListener } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  Renderer2,
+  HostListener,
+  AfterViewInit
+} from "@angular/core";
 import { CaixaService } from "./caixa.service";
 import { ElectronService } from "../core/services/electron/electron.service";
 import { MatDialog } from "@angular/material";
 import { ModalPagtoCartaoComponent } from "./modal-pagto-cartao/modal-pagto-cartao.component";
 import { ModalPagtoBoletoComponent } from "./modal-pagto-boleto/modal-pagto-boleto.component";
 import { ModalPagtoDiComponent } from "./modal-pagto-di/modal-pagto-di.component";
+import { ModalPagtoNPComponent } from "./modal-pagto-np/modal-pagto-np.component";
 import { ModalBuscaVendaComponent } from "./modal-busca-venda/busca-venda.component";
 import { ModalBuscaGenericoComponent } from "../shared/components/modal-busca-generico/busca-generico.component";
 import { ModalNfeComponent } from "./modal-nfe/modal-nfe.component";
@@ -19,26 +26,44 @@ import { Param } from "../shared/models/param";
 import * as dinheiro from "../shared/models/dinheiro";
 
 // import * as bemafi from '../../Bemafi32';
-let escopo = this;
 
 @Component({
   selector: "app-caixa",
   templateUrl: "./caixa.component.html",
   styleUrls: ["./caixa.component.scss"]
 })
-export class CaixaComponent implements OnInit {
+export class CaixaComponent implements OnInit, AfterViewInit {
   ctrlPress: boolean;
   empresa = null;
+  saldoVale: number = null;
   name: string;
   color: string;
   listaEmpresas: Param[];
+  contasEmpresas = {
+    "1": {
+      CARTAO: 272,
+      BOLETO: 268,
+      CAIXA: 159,
+      CLIENTES: 273,
+      RECEITA: 274,
+      CAIXAPROJECAO: 258
+    },
+    "2": {
+      CARTAO: 242,
+      BOLETO: 173,
+      CAIXA: 255,
+      CLIENTES: 126,
+      RECEITA: 225,
+      CAIXAPROJECAO: 259
+    }
+  };
+
   input = {
     codbar: null,
     qtd: 1
   };
   venda: Venda = new Venda(
-    "",
-    "",
+    null,
     "",
     "",
     "",
@@ -71,6 +96,7 @@ export class CaixaComponent implements OnInit {
   boleto = [];
   pagamento: Deus[] = [];
   prodvenda: Produto[] = [];
+  tipoOperacao: any[];
   cliente: Cliente = {
     CODIGO: null,
     RAZAO: "",
@@ -114,7 +140,6 @@ export class CaixaComponent implements OnInit {
     public electron: ElectronService
   ) {}
 
-  // tslint:disable-next-line: use-lifecycle-interface
   ngAfterViewInit() {
     this.DOM.inputProd = this.renderer.selectRootElement("#codbar");
     this.DOM.inputCli = this.renderer.selectRootElement("#inputCli");
@@ -146,12 +171,6 @@ export class CaixaComponent implements OnInit {
       if (event.key === "F4") {
         this.inserePagtoBoleto("boleto");
       }
-      if (event.key === "F5") {
-        this.clicaVendedor();
-      }
-      if (event.key === "F6") {
-        this.clicaAbreVenda();
-      }
     } else {
       if (event.key === "F2") {
         this.novaVenda();
@@ -166,27 +185,14 @@ export class CaixaComponent implements OnInit {
         this.clicaVendedor();
       }
       if (event.key === "F6") {
-        this.clicaAbreVenda();
+        this.clicaAbreVenda("C");
+      }
+      if (event.key === "F7") {
+        this.clicaAbreVenda("R");
       }
     }
   }
-
-  // função que volta o input
-  inputReturn() {
-    this.DOM.inputProd.focus();
-    console.log("volta o input");
-  }
-
-  // funções dos botões
-  clicaCliente() {
-    this.selectedFunction.text = "Digite o clinte ou Enter para Buscar";
-    this.DOM.inputCli.focus();
-  }
-  clicaProduto() {
-    this.selectedFunction.text = "Leia o código do Produto";
-    this.DOM.inputProd.focus();
-  }
-
+  // funções inicial para escolha da empresa
   getEmpresas() {
     this.caixaService.getParam().subscribe(
       res => {
@@ -196,19 +202,81 @@ export class CaixaComponent implements OnInit {
       error => console.log(error)
     );
   }
-
+  // função que volta o input
+  inputReturn() {
+    this.DOM.inputProd.focus();
+    console.log("volta o input");
+  }
+  // funções dos botões
+  clicaCliente() {
+    this.selectedFunction.text = "Digite o clinte ou Enter para Buscar";
+    this.DOM.inputCli.focus();
+  }
+  clicaProduto() {
+    this.selectedFunction.text = "Leia o código do Produto";
+    this.DOM.inputProd.focus();
+  }
   clicaVendedor() {
     this.selectedFunction.text = "Digite o vendedor ou Enter para Buscar";
     this.DOM.inputVend.focus();
   }
-  clicaAbreVenda() {
+  clicaAbreVenda(tipo) {
+    this.venda = new Venda(
+      null,
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    );
+    this.cliente = {
+      CODIGO: null,
+      RAZAO: "",
+      FANTASIA: "",
+      CGC: null,
+      INSC: null,
+      LIBERAFAT: null,
+      LIBERANP: null
+    };
+    this.vendedor = {
+      CODIGO: null,
+      NOME: ""
+    };
+    this.ultimoProduto = {
+      CODIGO: null,
+      DESCRICAO: "",
+      QTD: null,
+      VALOR: null,
+      UNIDADE: ""
+    };
     if (this.empresa) {
       const dialogRef = this.dialog.open(ModalBuscaVendaComponent, {
         width: "70vw",
         height: "100vh",
         hasBackdrop: true,
         disableClose: false,
-        data: "venda"
+        data: tipo
       });
 
       dialogRef.afterClosed().subscribe(res => {
@@ -232,7 +300,6 @@ export class CaixaComponent implements OnInit {
             this.venda = new Venda(
               venda[0].LCTO,
               venda[0].DATA,
-              venda[0].ID_TRANSITO,
               venda[0].CGC,
               venda[0].INSC,
               venda[0].CODCLI,
@@ -265,6 +332,32 @@ export class CaixaComponent implements OnInit {
               venda[0].TIPOFRETE,
               venda[0].TRANSPORTADOR
             );
+            for (const item of venda) {
+              console.log(item.ID_TRANSITO);
+              this.venda.insereLcto({
+                TRANSITO: item.ID_TRANSITO,
+                TIPO: item.TIPO_TRANSITO,
+                STATUS: item.TIPO_TRANSITO == 5 ? 8 : item.STATUS,
+                CGC: item.CGC,
+                INSC: item.INSC,
+                EMAIL: item.EMAIL,
+                FONE: item.FONE,
+                RAZAO: item.RAZAO,
+                ENDERECO: item.ENDERECO,
+                NUMERO: item.NUMERO,
+                BAIRRO: item.BAIRRO,
+                CEP: item.CEP,
+                CODIBGE: item.CODIBGE,
+                CODCIDADE: item.CODCIDADE,
+                CIDADE: item.CIDADE,
+                ESTADO: item.ESTADO,
+                COMPLEMENTO: item.COMPLEMENTO,
+                VALOR: new dinheiro(item.VTRANSITO),
+                DESCONTO: item.DESCONTO,
+                FRETE: item.FRETE,
+                SEGURO: item.SEGURO
+              });
+            }
             this.getProdvenda(this.venda.LCTO);
             console.log(this.venda);
           },
@@ -273,22 +366,33 @@ export class CaixaComponent implements OnInit {
       });
     }
   }
-
+  // função para geração da NF
   gerarNfe() {
     const dialogRef = this.dialog.open(ModalNfeComponent, {
       width: "100vw",
       height: "100vh",
       hasBackdrop: true,
       disableClose: false,
-      data: this.venda
+      data: { venda: this.venda, empresa: this.empresa }
     });
 
     dialogRef.afterClosed().subscribe(res => {
       console.log("retorno", res);
-      this.inputReturn();
+      // confirma a venda
+      if (this.venda.LCTO !== null && res) {
+        // altera as contas projeção para as contas fiscais em todos meios de pagamento (tipo 5)
+        for (const pagto of this.venda.PAGAMENTO) {
+          if (
+            pagto.CREDITO == this.contasEmpresas[this.empresa].CLIENTES &&
+            pagto.DOCUMENTO == res
+          ) {
+            pagto.CREDITO = this.contasEmpresas[this.empresa].RECEITA;
+          }
+        }
+        this.confirmaVenda();
+      }
     });
   }
-
   // insere um novo produto com pelo id (alterar para codbar)
   getProduto(id: number, qtd: number) {
     console.log("getProduto");
@@ -300,7 +404,7 @@ export class CaixaComponent implements OnInit {
         // produto.QTD = qtd;
         this.ultimoProduto = {
           CODIGO: produto.CODPRO,
-          DESCRICAO:  produto.DESCRICAO,
+          DESCRICAO: produto.DESCRICAO,
           QTD: produto.QTDFISCAL,
           VALOR: produto.VALOR,
           UNIDADE: produto.UNIDADE
@@ -311,7 +415,6 @@ export class CaixaComponent implements OnInit {
       error => console.log(error)
     );
   }
-
   // insere um novo produto com pelo id (alterar para codbar)
   getCliente(id: number = null) {
     this.input.codbar = null;
@@ -329,7 +432,6 @@ export class CaixaComponent implements OnInit {
       this.openDialog("C");
     }
   }
-
   getVendedor(id: number): void {
     console.log("id", id);
     this.input.codbar = null;
@@ -337,9 +439,9 @@ export class CaixaComponent implements OnInit {
     this.inputReturn();
     console.log("getVendedor", this);
     if (id) {
-      this.caixaService.getParceiro(id).subscribe(
+      this.caixaService.getVendedor(id).subscribe(
         parceiro => {
-          console.log('parceiro', parceiro)
+          console.log("parceiro", parceiro);
           this.vendedor = { NOME: parceiro.FANTASIA, CODIGO: parceiro.CODIGO };
           this.clicaProduto();
         },
@@ -349,7 +451,6 @@ export class CaixaComponent implements OnInit {
       this.openDialog("V");
     }
   }
-
   getVenda(id: number = null) {
     this.input.codbar = null;
     this.input.qtd = 1;
@@ -360,7 +461,6 @@ export class CaixaComponent implements OnInit {
           this.venda = new Venda(
             venda[0].LCTO,
             venda[0].DATA,
-            venda[0].ID_TRANSITO,
             venda[0].CGC,
             venda[0].INSC,
             venda[0].CODCLI,
@@ -400,16 +500,42 @@ export class CaixaComponent implements OnInit {
         error => console.log(error)
       );
     } else {
-      this.clicaAbreVenda();
+      this.clicaAbreVenda("C");
     }
   }
-
+  getProdvenda(lcto: number) {
+    this.inputReturn();
+    this.caixaService.getProdVenda(lcto).subscribe(
+      prodVenda => {
+        console.log(prodVenda);
+        for (const item of prodVenda) {
+          if (item.QTDPEDIDO > 0) {
+            this.venda.insereProduto(item);
+            console.log("inseriu item");
+            this.ultimoProduto = {
+              CODIGO: item.CODIGO,
+              DESCRICAO: item.DESCRICAO,
+              QTD: item.QTDPEDIDO,
+              VALOR: item.VALOR,
+              UNIDADE: item.UNIDADE
+            };
+          }
+          if (item.QTDPEDIDO < 0) {
+            this.venda.insereDescontos(item);
+            console.log("descontou item");
+          }
+        }
+      },
+      error => console.log(error)
+    );
+  }
+  // TODO
   novaVenda() {
     this.input.codbar = null;
     this.input.qtd = 1;
+
     this.venda = new Venda(
-      "",
-      "",
+      null,
       "",
       "",
       "",
@@ -440,70 +566,57 @@ export class CaixaComponent implements OnInit {
 
     if (!this.cliente.CODIGO) {
       this.openDialog("C");
-    } else if (!this.vendedor.CODIGO) {
-      this.openDialog("V");
     } else {
       console.log("else nova venda");
-      console.log('cliente', this.cliente)
-      console.log('vendedor', this.vendedor)
-      this.caixaService
-        .novaVenda(this.cliente.CODIGO, this.vendedor.CODIGO)
-        .subscribe(
-          venda => {
-            console.log("retornou venda", venda);
-            this.venda = new Venda(
-              venda[0].LCTO,
-              venda[0].DATA,
-              venda[0].ID_TRANSITO,
-              venda[0].CGC,
-              venda[0].INSC,
-              venda[0].CODCLI,
-              venda[0].NOMECLI,
-              venda[0].CODVEND,
-              venda[0].NOMEVEND,
-              venda[0].EMAIL,
-              venda[0].FONE,
-              venda[0].RAZAO,
-              venda[0].ENDERECO,
-              venda[0].NUMERO,
-              venda[0].BAIRRO,
-              venda[0].CEP,
-              venda[0].CODIBGE,
-              venda[0].CODCIDADE,
-              venda[0].CIDADE,
-              venda[0].ESTADO,
-              venda[0].COMPLEMENTO,
-              venda[0].DESCONTO,
-              venda[0].FRETE,
-              venda[0].SEGURO,
-              venda[0].TOTAL,
-              venda[0].FATURAMENTO,
-              venda[0].LIBERAFAT,
-              venda[0].LIBERANP
-            );
-            this.venda.insereTransporte(
-              venda[0].VOLUMES,
-              venda[0].PESO,
-              venda[0].TIPOFRETE,
-              venda[0].TRANSPORTADOR
-            );
+      console.log("cliente", this.cliente);
+      console.log("vendedor", this.vendedor);
+      this.caixaService.novaVenda(this.cliente.CODIGO, 1).subscribe(
+        venda => {
+          console.log("retornou venda", venda);
+          this.venda = new Venda(
+            venda[0].LCTO,
+            venda[0].DATA,
+            venda[0].CGC,
+            venda[0].INSC,
+            venda[0].CODCLI,
+            venda[0].NOMECLI,
+            venda[0].CODVEND,
+            venda[0].NOMEVEND,
+            venda[0].EMAIL,
+            venda[0].FONE,
+            venda[0].RAZAO,
+            venda[0].ENDERECO,
+            venda[0].NUMERO,
+            venda[0].BAIRRO,
+            venda[0].CEP,
+            venda[0].CODIBGE,
+            venda[0].CODCIDADE,
+            venda[0].CIDADE,
+            venda[0].ESTADO,
+            venda[0].COMPLEMENTO,
+            venda[0].DESCONTO,
+            venda[0].FRETE,
+            venda[0].SEGURO,
+            venda[0].TOTAL,
+            venda[0].FATURAMENTO,
+            venda[0].LIBERAFAT,
+            venda[0].LIBERANP
+          );
+          this.venda.insereTransporte(
+            venda[0].VOLUMES,
+            venda[0].PESO,
+            venda[0].TIPOFRETE,
+            venda[0].TRANSPORTADOR
+          );
 
-            this.getProdvenda(this.venda.LCTO);
-            console.log(this.venda);
-          },
-          error => console.log(error)
-        );
+          this.getProdvenda(this.venda.LCTO);
+          console.log(this.venda);
+        },
+        error => console.log(error)
+      );
     }
   }
-
-  cancelaPagto() {
-    this.venda.PAGAMENTO = [];
-    this.cartao = [];
-    this.boleto = [];
-    this.venda.PAGAR = new dinheiro(this.venda.TOTAL);
-    this.inputReturn();
-  }
-
+  // abre modal de busca genérico
   openDialog(busca: string) {
     const dialogRef = this.dialog.open(ModalBuscaGenericoComponent, {
       width: "70vw",
@@ -524,14 +637,19 @@ export class CaixaComponent implements OnInit {
       }
     });
   }
-
+  // funções de Pagamento
+  // Pagamento com Cartão
   inserePagtoCartao(pagto) {
     const dialogRef = this.dialog.open(ModalPagtoCartaoComponent, {
       width: "50vw",
       height: "80vh",
       hasBackdrop: true,
       disableClose: false,
-      data: { tipopag: pagto, valor: this.venda.PAGAR.valor }
+      data: {
+        tipopag: pagto,
+        valor: this.venda.PAGAR.valor,
+        empresa: this.empresa
+      }
     });
     dialogRef.afterClosed().subscribe(res => {
       this.inputReturn();
@@ -541,6 +659,7 @@ export class CaixaComponent implements OnInit {
         console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
         const data = new Date(this.venda.DATA);
+        // entra os dados para a tabela cartão
         this.cartao.push({
           ID: null,
           VALOR: res.valor,
@@ -552,9 +671,35 @@ export class CaixaComponent implements OnInit {
           TID: null,
           AUTORIZACAO: null
         });
+        // se tipo transito = 3 o valor vai para a conta cliente, do contrário vai para a receita
+        for (const transito of this.venda.TRANSITO) {
+          console.log(transito);
+          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
+          console.log(percent);
+          this.venda.PAGAMENTO.push({
+            CODIGO: null,
+            CODDEC: null,
+            EMPRESA: this.empresa,
+            CODPARC: this.cliente.CODIGO,
+            LCTO: this.venda.LCTO,
+            TIPOLCTO: "V",
+            DOCUMENTO: transito.TRANSITO.toString(),
+            DATAEMISSAO: this.venda.DATA,
+            DATAVCTO: this.venda.DATA,
+            DATALIQUID: this.venda.DATA,
+            DEBITO: this.contasEmpresas[this.empresa].CARTAO,
+            CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
+            VALOR: new dinheiro(res.valor * percent),
+            PROJECAO: 0,
+            OBS: "",
+            PERMITEAPAGA: null,
+            TIPOOPERACAO: 5,
+            TRAVACREDITO: null
+          });
+        }
         console.log("cartao", this.cartao);
         if (res.fPagto.PARCELAS === 0) {
-          const pgto: Deus = {
+          const pgto = {
             CODIGO: null,
             CODDEC: null,
             EMPRESA: this.empresa,
@@ -568,12 +713,15 @@ export class CaixaComponent implements OnInit {
             ),
             DATALIQUID: null,
             DEBITO: res.fPagto.DOMICILIO_BANCARIO,
-            CREDITO: 173,
-            VALOR: res.valor,
+            CREDITO: this.contasEmpresas[this.empresa].CARTAO,
+            VALOR: new dinheiro(
+              res.valor -
+                Number(((res.valor * res.fPagto.TARIFA) / 100).toFixed(2))
+            ),
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
-            TIPOOPERACAO: null,
+            TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
             TRAVACREDITO: null
           };
           this.venda.PAGAMENTO.push(pgto);
@@ -591,14 +739,14 @@ export class CaixaComponent implements OnInit {
               DOCUMENTO: this.venda.LCTO.toString() + "-0/0",
               DATAEMISSAO: this.venda.DATA,
               DATAVCTO: data,
-              DATALIQUID: null,
+              DATALIQUID: data,
               DEBITO: res.fPagto.CONTA_DESPESA,
-              CREDITO: res.fPagto.DOMICILIO_BANCARIO,
-              VALOR: valorTarifa,
+              CREDITO: this.contasEmpresas[this.empresa].CARTAO,
+              VALOR: new dinheiro(valorTarifa),
               PROJECAO: 0,
               OBS: "",
               PERMITEAPAGA: null,
-              TIPOOPERACAO: null,
+              TIPOOPERACAO: 7,
               TRAVACREDITO: null
             };
             this.venda.PAGAMENTO.push(tarifa);
@@ -612,7 +760,7 @@ export class CaixaComponent implements OnInit {
             (res.valor - valor * res.fPagto.PARCELAS).toFixed(2)
           );
           for (let index = 0; index < res.fPagto.PARCELAS; index++) {
-            const pgto: Deus = {
+            const pgto = {
               CODIGO: null,
               CODDEC: null,
               EMPRESA: this.empresa,
@@ -631,12 +779,26 @@ export class CaixaComponent implements OnInit {
               ),
               DATALIQUID: null,
               DEBITO: res.fPagto.DOMICILIO_BANCARIO,
-              CREDITO: 173,
-              VALOR: index + 1 === res.fPagto.PARCELAS ? valor + resto : valor,
+              CREDITO: this.contasEmpresas[this.empresa].CARTAO,
+              VALOR:
+                index + 1 === res.fPagto.PARCELAS
+                  ? new dinheiro(
+                      valor +
+                        resto -
+                        Number(
+                          (((valor + resto) * res.fPagto.TARIFA) / 100).toFixed(
+                            2
+                          )
+                        )
+                    )
+                  : new dinheiro(
+                      valor -
+                        Number(((valor * res.fPagto.TARIFA) / 100).toFixed(2))
+                    ),
               PROJECAO: 0,
               OBS: "",
               PERMITEAPAGA: null,
-              TIPOOPERACAO: null,
+              TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
               TRAVACREDITO: null
             };
             this.venda.PAGAMENTO.push(pgto);
@@ -661,12 +823,12 @@ export class CaixaComponent implements OnInit {
                 DATAVCTO: new Date(newDate),
                 DATALIQUID: null,
                 DEBITO: res.fPagto.CONTA_DESPESA,
-                CREDITO: res.fPagto.DOMICILIO_BANCARIO,
-                VALOR: valorTarifa,
+                CREDITO: this.contasEmpresas[this.empresa].CARTAO,
+                VALOR: new dinheiro(valorTarifa),
                 PROJECAO: 0,
                 OBS: "",
                 PERMITEAPAGA: null,
-                TIPOOPERACAO: null,
+                TIPOOPERACAO: 7,
                 TRAVACREDITO: null
               };
               this.venda.PAGAMENTO.push(tarifa);
@@ -677,7 +839,7 @@ export class CaixaComponent implements OnInit {
       }
     });
   }
-
+  // Pagamento com Boleto
   inserePagtoBoleto(pagto) {
     const dialogRef = this.dialog.open(ModalPagtoBoletoComponent, {
       width: "50vw",
@@ -710,7 +872,7 @@ export class CaixaComponent implements OnInit {
           (res.valor - valor * res.fPagto.PARCELAS).toFixed(2)
         );
         for (let index = 0; index < res.fPagto.PARCELAS; index++) {
-          const pgto: Deus = {
+          const pgto = {
             CODIGO: null,
             CODDEC: null,
             EMPRESA: this.empresa,
@@ -730,11 +892,14 @@ export class CaixaComponent implements OnInit {
             DATALIQUID: null,
             DEBITO: res.fPagto.DOMICILIO_BANCARIO,
             CREDITO: 173,
-            VALOR: index + 1 === res.fPagto.PARCELAS ? valor + resto : valor,
+            VALOR:
+              index + 1 === res.fPagto.PARCELAS
+                ? new dinheiro(valor + resto)
+                : new dinheiro(valor),
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
-            TIPOOPERACAO: null,
+            TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
             TRAVACREDITO: null
           };
           this.venda.PAGAMENTO.push(pgto);
@@ -744,7 +909,7 @@ export class CaixaComponent implements OnInit {
       }
     });
   }
-
+  // Pagamento com Dinheiro
   inserePagtoDi(pagto) {
     const dialogRef = this.dialog.open(ModalPagtoDiComponent, {
       width: "40vw",
@@ -757,11 +922,79 @@ export class CaixaComponent implements OnInit {
       this.inputReturn();
       if (res) {
         console.log("entrou pagamento", res);
-        this.venda.PAGAR.subtrai(res.pagar);
+        this.venda.PAGAR.subtrai(res.valor);
         console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
         const data = new Date(this.venda.DATA);
-        const pgto: Deus = {
+
+        // se tipo transito = 3 o valor vai para a conta cliente, do contrário vai para a receita
+        for (const transito of this.venda.TRANSITO) {
+          console.log(transito);
+          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
+          console.log(percent);
+          this.venda.PAGAMENTO.push({
+            CODIGO: null,
+            CODDEC: null,
+            EMPRESA: this.empresa,
+            CODPARC: this.cliente.CODIGO,
+            LCTO: this.venda.LCTO,
+            TIPOLCTO: "V",
+            DOCUMENTO: transito.TRANSITO.toString(),
+            DATAEMISSAO: this.venda.DATA,
+            DATAVCTO: new Date(),
+            DATALIQUID: new Date(),
+            DEBITO: this.contasEmpresas[this.empresa].CAIXA,
+            CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
+            VALOR: new dinheiro(res.valor * percent),
+            PROJECAO: 1,
+            OBS: "",
+            PERMITEAPAGA: null,
+            TIPOOPERACAO: 5,
+            TRAVACREDITO: null
+          });
+        }
+        this.venda.PAGAMENTO.push({
+          CODIGO: null,
+          CODDEC: null,
+          EMPRESA: this.empresa,
+          CODPARC: this.cliente.CODIGO,
+          LCTO: this.venda.LCTO,
+          TIPOLCTO: "V",
+          DOCUMENTO: this.venda.LCTO.toString(),
+          DATAEMISSAO: this.venda.DATA,
+          DATAVCTO: this.venda.DATA,
+          DATALIQUID: null,
+          DEBITO: this.contasEmpresas[this.empresa].CAIXAPROJECAO,
+          CREDITO: this.contasEmpresas[this.empresa].CAIXA,
+          VALOR: new dinheiro(res.valor),
+          PROJECAO: 1,
+          OBS: "",
+          PERMITEAPAGA: null,
+          TIPOOPERACAO: 6,
+          TRAVACREDITO: null
+        });
+        console.log(this.venda.PAGAMENTO);
+      }
+    });
+  }
+  // Pagamento com NP (se cliente habilitado)
+  inserePagtoNP(pagto) {
+    const dialogRef = this.dialog.open(ModalPagtoNPComponent, {
+      width: "40vw",
+      height: "70vh",
+      hasBackdrop: true,
+      disableClose: false,
+      data: { tipopag: pagto, valor: this.venda.PAGAR.valor }
+    });
+    dialogRef.afterClosed().subscribe(res => {
+      this.inputReturn();
+      if (res) {
+        console.log("entrou pagamento", res);
+        this.venda.PAGAR.subtrai(res.valor);
+        console.log(this.venda);
+        console.log("pagar", this.venda.PAGAR);
+        const data = new Date(this.venda.DATA);
+        const pgto = {
           CODIGO: null,
           CODDEC: null,
           EMPRESA: this.empresa,
@@ -771,14 +1004,14 @@ export class CaixaComponent implements OnInit {
           DOCUMENTO: this.venda.LCTO.toString() + "-0/0",
           DATAEMISSAO: this.venda.DATA,
           DATAVCTO: this.venda.DATA,
-          DATALIQUID: null,
-          DEBITO: 159,
-          CREDITO: 173,
-          VALOR: res.pagar,
-          PROJECAO: 0,
+          DATALIQUID: this.venda.DATA,
+          DEBITO: this.contasEmpresas[this.empresa].RECEITA,
+          CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
+          VALOR: new dinheiro(res.valor),
+          PROJECAO: 1,
           OBS: "",
           PERMITEAPAGA: null,
-          TIPOOPERACAO: null,
+          TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
           TRAVACREDITO: null
         };
         this.venda.PAGAMENTO.push(pgto);
@@ -786,217 +1019,207 @@ export class CaixaComponent implements OnInit {
       }
     });
   }
+  // Cancela Pagamentos Inseridos
+  cancelaPagto() {
+    this.venda.PAGAMENTO = [];
+    this.cartao = [];
+    this.boleto = [];
+    this.venda.PAGAR = new dinheiro(this.venda.TOTAL);
+    this.inputReturn();
+  }
 
+  confirmaCupom() {
+    // confirma a venda
+    if (this.venda.LCTO !== null) {
+      // altera as contas projeção para as contas fiscais em todos meios de pagamento (tipo 5)
+      for (const pagto of this.venda.PAGAMENTO) {
+        if (
+          pagto.CREDITO == this.contasEmpresas[this.empresa].CLIENTES &&
+          pagto.DOCUMENTO
+        ) {
+          pagto.CREDITO = this.contasEmpresas[this.empresa].RECEITA;
+        }
+      }
+      this.confirmaVenda();
+    }
+  }
+
+  // Confirma a Venda
   confirmaVenda() {
-    this.venda.PAGAMENTO.unshift({
-      CODIGO: null,
-      CODDEC: null,
-      EMPRESA: this.empresa,
-      CODPARC: this.cliente.CODIGO,
-      LCTO: this.venda.LCTO,
-      TIPOLCTO: "V",
-      DOCUMENTO: this.venda.LCTO.toString(),
-      DATAEMISSAO: this.venda.DATA,
-      DATAVCTO: this.venda.DATA,
-      DATALIQUID: this.venda.DATA,
-      DEBITO: 173,
-      CREDITO: 126,
-      VALOR: this.venda.TOTAL.valor,
-      PROJECAO: 0,
-      OBS: ""
-    });
     this.caixaService
-      .confirmaVenda(this.venda, this.venda.PAGAMENTO, this.cartao)
+      .confirmaVenda(
+        this.venda,
+        this.venda.PAGAMENTO,
+        this.cartao,
+        this.boleto,
+        this.empresa
+      )
       .subscribe(rest => {
         console.log(rest);
-        this.venda = new Venda(
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          ""
-        );
-        this.cliente = {
-          CODIGO: null,
-          RAZAO: "",
-          FANTASIA: "",
-          CGC: null,
-          INSC: null,
-          LIBERAFAT: null,
-          LIBERANP: null
-        };
-        this.vendedor = {
-          CODIGO: null,
-          NOME: ""
-        };
-        this.ultimoProduto = {
-          CODIGO: null,
-          DESCRICAO: "",
-          QTD: null,
-          VALOR: null,
-          UNIDADE: ""
-        };
+        this.imprime(this.venda).then(res => {
+          this.inputReturn();
+          this.venda = new Venda(
+            null,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          );
+          this.cliente = {
+            CODIGO: null,
+            RAZAO: "",
+            FANTASIA: "",
+            CGC: null,
+            INSC: null,
+            LIBERAFAT: null,
+            LIBERANP: null
+          };
+          this.vendedor = {
+            CODIGO: null,
+            NOME: ""
+          };
+          this.ultimoProduto = {
+            CODIGO: null,
+            DESCRICAO: "",
+            QTD: null,
+            VALOR: null,
+            UNIDADE: ""
+          };
+        });
       });
-    this.inputReturn();
   }
-
-  getProdvenda(lcto: number) {
-    this.inputReturn();
-    this.caixaService.getProdVenda(lcto).subscribe(
-      prodVenda => {
-        console.log(prodVenda);
-        for (let item of prodVenda) {
-          if (item.QTDPEDIDO > 0) {
-            this.venda.insereProduto(item);
-            console.log("inseriu item");
-            this.ultimoProduto = {
-              CODIGO: item.CODIGO,
-              DESCRICAO: item.DESCRICAO,
-              QTD: item.QTDPEDIDO,
-              VALOR: item.VALOR,
-              UNIDADE: item.UNIDADE
-            };
-          }
-          if (item.QTDPEDIDO < 0) {
-            this.venda.insereDescontos(item);
-            console.log("descontou item");
-          }
-        }
-        // this.prodvenda = prodVenda;
-      },
-      error => console.log(error)
-    );
-  }
-
+  // Imprime a via da venda
   imprime = async function(venda) {
-    var html =
-      "<html><head><style>@page { size: portrait;margin: 1%; }table,td,tr,span{font-size:8pt;font-family:Arial;}table {width:80mm;}td {min-width:2mm;}hr{border-top:1pt dashed #000;} </style></head><body ng-controller='BaixaController'>";
-    var conteudo =
-      "<div><span>DOCUMENTO SEM VALOR FISCAL</span><hr><span class='pull-left'>" +
-      "</span><br><span class='pull-left'>Pedido: " +
-      venda.LCTO +
-      "   Emissão: " +
-      new Date().toLocaleDateString() +
-      "</span><br><span>Cliente: " +
-      venda.NOMECLI +
-      "</span><br><span>Cod. Cliente" +
-      venda.CODCLI +
-      "</span><br><span>Vendedor: " +
-      venda.NOMEVEND +
-      "</span><br>";
-    conteudo +=
-      "<span>Forma de Pagamento--------------------------------</span><br>";
-    conteudo += "<table>";
-    for (let x of venda.PAGAMENTO) {
-      conteudo +=
-        "<tr><td colspan='3'>" +
-        x.vencimento.toLocaleDateString() +
-        "</td><td>" +
-        x.valor.toString() +
-        "</td><td>" +
-        x.tipo +
-        "</td><td colspan='3'> </td></tr>";
-    }
-    conteudo +=
-      "</table><hr><table><tr><td colspan='8'>Descricao<td></tr><tr><td></td><td>Qtd</td><td>UN</td><td colspan='3'>Código</td><td>Vl. Unit.</td><td>Subtotal</td>";
-    for (let x of venda.PRODUTOS) {
-      let emb = "";
-      if (x.CODPRO != x.CODPROFISCAL) {
-        emb = " emb. c/" + x.MULTQTD;
+    let html = `<html>
+      <head>
+      <style>
+      @page { size: portrait;margin: 1%; }
+      table,td,tr,span{font-size:8pt;font-family:Arial;}
+      table {width:80mm;}
+      td {min-width:2mm;}
+      hr{border-top:1pt dashed #000;}
+      </style>
+      </head>
+      <body>`;
+    let conteudo = `<div>
+      <span>DOCUMENTO SEM VALOR FISCAL</span><hr><span class='pull-left'></span>
+      <br>
+      <span class='pull-left'>Pedido: ${
+        venda.LCTO
+      }  Emissão: ${new Date().toLocaleDateString()}</span>
+      <br>
+      <span>Cliente: ${venda.NOMECLI}</span>
+      <br>
+      <span>Cod. Cliente ${venda.CODCLI}</span>
+      <br>
+      <span>Vendedor:${venda.NOMEVEND}</span>
+      <br>
+      <span>Forma de Pagamento--------------------------------</span><br>
+    <table>
+    ${venda.PAGAMENTO.filter(
+      item => item.TIPOOPERACAO !== 5 && item.TIPOOPERACAO !== 7
+    )
+      .map(
+        (item, i) => `<tr>
+        <td colspan='3'>${item.DATAVCTO.toLocaleDateString()}</td>
+        <td>${item.VALOR.toString()}</td>
+        <td colspan='3'>${this.tipoOperacao.find(x => item.TIPOOPERACAO == x.CODIGO).SIGLA}</td>
+        </tr>`
+      )
+      .join("")}
+    `;
+    conteudo += `</table><hr><table>
+      <tr><td colspan='8'>Descricao<td></tr>
+      <tr><td></td><td>Qtd</td><td>UN</td><td colspan='3'>Código</td><td>Vl. Unit.</td><td>Subtotal</td>`;
+    for (const x of venda.PRODUTOS) {
+      if (!x.QTDRESERVA) {
+        conteudo += `<tr>
+          <td colspan='8'>${x.DESCRICAO}</td>
+          </tr>
+          <tr>
+          <td></td>
+          <td>${x.QTD}</td>
+          <td>${x.UNIDADE}</td>
+          <td colspan='3'>${x.CODPRO}</td>
+          <td>${x.VALOR.toString()}</td>
+          <td>${x.TOTAL.toString()}</td>
+          </tr>`;
       }
-      if (!x.QTDRESERVA)
-        conteudo +=
-          "<tr><td colspan='8'>" +
-          x.DESCRICAO +
-          "</td></tr><tr><td></td><td>" +
-          x.QTD +
-          emb +
-          "</td><td>" +
-          x.UNIDADE +
-          "</td><td colspan='3'>" +
-          x.CODPRO +
-          "</td><td>" +
-          x.VALOR.toString() +
-          "</td><td>" +
-          x.TOTAL.toString() +
-          "</td></tr>";
     }
     venda.PRODUTOS.every(function(element, index) {
       if (element.QTDRESERVA) {
-        conteudo += "<tr><td colspan='8'>ITENS DE ENCOMENDA</td</tr>";
+        conteudo += `<tr><td colspan='8'>ITENS DE ENCOMENDA</td</tr>`;
         return false;
-      } else return true;
-    });
-    for (let x of venda.PRODUTOS) {
-      let emb = "";
-      if (x.CODPRO != x.CODPROFISCAL) {
-        emb = " emb. c/" + x.MULTQTD;
+      } else {
+        return true;
       }
-      if (x.QTDRESERVA)
-        conteudo +=
-          "<tr><td colspan='8'>" +
-          x.DESCRICAO +
-          "</td></tr><tr><td></td><td>" +
-          x.QTD +
-          emb +
-          "</td><td>" +
-          x.UNIDADE +
-          "</td><td colspan='3'>" +
-          x.CODPRO +
-          "</td><td>" +
-          x.VALOR.toString() +
-          "</td><td>" +
-          x.TOTAL.toString() +
-          "</td></tr>";
+    });
+    for (const x of venda.PRODUTOS) {
+      if (x.QTDRESERVA) {
+        conteudo += `<tr>
+          <td colspan='8'>${x.DESCRICAO}</td>
+          </tr>
+          <tr>
+          <td></td>
+          <td>${x.QTD}</td>
+          <td>${x.UNIDADE}</td>
+          <td colspan='3'>${x.CODPRO}</td>
+          <td>${x.VALOR.toString()}</td>
+          <td>${x.TOTAL.toString()}</td>
+          </tr>`;
+      }
     }
-    conteudo +=
-      "</table><br><span class='pull-right'>Total Produtos: " +
-      venda.TOTALDESC.toString() +
-      "</span>";
-    conteudo +=
-      "<br><br><span>CONFERENTE.________________________________</span><br>";
-    conteudo +=
-      "<br><br><span>ASS._______________________________________</span></div></br><hr>";
+    conteudo += `</table><br>
+      <span class='pull-right'>Total Produtos: ${venda.TOTALDESC.toString()}</span>
+      <br><br>
+      <span>CONFERENTE.________________________________</span>
+      <br><br><br>
+      <span>ASS._______________________________________</span></div>
+      </br>
+      <hr>`;
     conteudo += conteudo;
-    html += conteudo + "</body></html>";
+    html += conteudo + `</body></html>`;
     const janela = await this.electron.fs.writeFile(
       "c:/temp/teste.html",
       html,
       err => {
-        if (err) throw err;
-        let modal = window.open("", "impressao");
+        if (err) {
+          throw err;
+        }
+        const modal = window.open("", "impressao");
         console.log("The file has been saved!");
+        return "ok";
       }
     );
-    this.inputReturn();
+    return "ok";
   };
-
+  // funcção de Inicialização
   ngOnInit() {
-    // console.log(bemafi.leituraX());
-    // this.getVenda(1425697);
     this.getEmpresas();
+    this.caixaService
+    .getTipoOperacao()
+    .subscribe(tipos => (this.tipoOperacao = tipos));
   }
 }

@@ -17,12 +17,12 @@
         [disabled]="!novaNota"
         [ngModelOptions]="{ standalone: true }"
       >
-        <mat-option value="1">Venda de Mercadoria</mat-option>
-        <mat-option value="2">Venda de Ativo</mat-option>
-        <mat-option value="3">Devolução de Mercadoria</mat-option>
-        <mat-option value="4">Remessa Para Conserto</mat-option>
-        <mat-option value="5">Remessa de Amostra Grátis</mat-option>
-        <mat-option value="6">Retorno de Bem em Comodato</mat-option>
+        <mat-option value=1>Venda de Mercadoria</mat-option>
+        <mat-option value=2>Venda de Ativo</mat-option>
+        <mat-option value=3>Devolução de Mercadoria</mat-option>
+        <mat-option value=4>Remessa Para Conserto</mat-option>
+        <mat-option value=5>Remessa de Amostra Grátis</mat-option>
+        <mat-option value=6>Retorno de Bem em Comodato</mat-option>
       </mat-select>
     </mat-form-field>
     <button mat-button (click)="geraNota()" [disabled]="!novaNota || !operacao">
@@ -202,8 +202,8 @@
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>TESTE</mat-label>
-                <mat-select>
+                <mat-label>Contribuinte</mat-label>
+                <mat-select [value]="nota.getDestinatario().getIdenfificaContribuinteIcms()">
                   <mat-option value="C">Contribuinte</mat-option>
                   <mat-option value="I">Isento</mat-option>
                   <mat-option value="N">Não Contrib.</mat-option>
@@ -384,7 +384,7 @@
     <mat-tab label="Pagamento" *ngIf="venda.LCTO">
       <form>
         <table md-table>
-          <thead fix-head md-head>
+          <thead md-head>
             <tr md-row>
               <th md-column>
                 <span>Forma Pagto</span>
@@ -522,5 +522,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">cancela</button>
-  <button mat-button [mat-dialog-close]="" cdkFocusInitial>Ok</button>
+  <!-- <button mat-button [mat-dialog-close]="" cdkFocusInitial>Ok</button> -->
 </div>

@@ -18,7 +18,8 @@ export class ModalBuscaVendaComponent implements OnInit {
     codigo: '',
     razao: ''
   };
-  titulo: string;
+  titulo = 'Vendas';
+  tipo: string;
 
   displayedColumns: string[] = ['select', 'LCTO', 'NOMECLI', 'TOTAL'];
   dataSource = new MatTableDataSource<any[]>(this.Vendas);
@@ -29,7 +30,7 @@ export class ModalBuscaVendaComponent implements OnInit {
     private caixaService: CaixaService,
     @Inject(MAT_DIALOG_DATA) public data: string) {
 
-    this.titulo = data;
+    this.tipo = data;
 
   }
 
@@ -38,7 +39,7 @@ export class ModalBuscaVendaComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.buscaVendas('C');
+    this.buscaVendas(this.tipo);
   }
 
 
@@ -68,11 +69,8 @@ export class ModalBuscaVendaComponent implements OnInit {
       this.selection.clear() :
       this.dataSource.data.forEach(row => this.selection.select(row));
   }
-
   /** The label for the checkbox on the passed row */
   checkboxLabel(row?: any): string {
-    console.log('row', row);
-    console.log('select', this.selection.selected);
     if (!row) {
       return `${this.isAllSelected() ? 'select' : 'deselect'} all`;
     }

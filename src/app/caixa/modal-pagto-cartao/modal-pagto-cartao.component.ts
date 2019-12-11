@@ -1,18 +1,18 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { MatTableDataSource } from '@angular/material/table';
-import { SelectionModel } from '@angular/cdk/collections';
-import { ModalData } from '../../modal-data';
-import { CaixaService } from '../caixa.service';
-import { FormControl, Validators } from '@angular/forms';
+import { Component, OnInit, Inject } from "@angular/core";
+import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material";
+import { MatTableDataSource } from "@angular/material/table";
+import { SelectionModel } from "@angular/cdk/collections";
+import { ModalData } from "../../modal-data";
+import { CaixaService } from "../caixa.service";
+import { FormControl, Validators } from "@angular/forms";
 
 
 
 
 @Component({
-  selector: 'app-modal-pagto-cartao',
-  templateUrl: './modal-pagto-cartao.component.html',
-  styleUrls: ['./modal-pagto-cartao.component.scss']
+  selector: "app-modal-pagto-cartao",
+  templateUrl: "./modal-pagto-cartao.component.html",
+  styleUrls: ["./modal-pagto-cartao.component.scss"]
 })
 export class ModalPagtoCartaoComponent implements OnInit {
   Cartao: any[];
@@ -20,8 +20,9 @@ export class ModalPagtoCartaoComponent implements OnInit {
   titulo: string;
   cartaoSelecionado: string;
   Pagar: number;
+  empresa: number;
   Total: number;
-  selecionado = '';
+  selecionado = "";
   // displayedColumns: string[] = ['select', 'CODIGO', 'RAZAO'];
   // dataSource = new MatTableDataSource<any[]>(this.Clientes);
   // selection = new SelectionModel<any[]>(false, []);
@@ -34,6 +35,7 @@ console.log(data);
     this.titulo = data.tipopag;
     this.Pagar = data.valor;
     this.Total = data.valor;
+    this.empresa = data.empresa;
   }
 
   onNoClick(): void {
@@ -41,10 +43,10 @@ console.log(data);
   }
 
   ngOnInit() {
-    this.getCartao(1);
+    this.getCartao(this.empresa);
   }
   limpa() {
-    this.cartaoSelecionado = '';
+    this.cartaoSelecionado = "";
   }
   getCartao(estabelecimento: number) {
     this.caixaService.getCartao(estabelecimento)
