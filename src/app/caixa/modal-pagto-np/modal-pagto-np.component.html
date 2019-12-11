@@ -1,0 +1,29 @@
+<h1 mat-dialog-title class="titte">Pagamento com NP</h1>
+<hr />
+<div mat-dialog-content class="container">
+  <div class="painel-valor">
+    <mat-form-field appearance="fill">
+      <mat-label>valor a pagar</mat-label>
+      <input
+        matInput type="text"
+        [(ngModel)]="Pagar"
+        [ngModelOptions]="{standalone: true }"
+      />
+      <span matPrefix>R$&nbsp;</span>
+    </mat-form-field>
+  </div>
+</div>
+<hr />
+<div mat-dialog-actions class="footer">
+  <button mat-raised-button (click)="onNoClick()">cancela</button>
+  <button
+    mat-raised-button
+    [mat-dialog-close]="{
+      fPagto: 'NP',
+      valor: Pagar
+    }"
+    cdkFocusInitial
+  >
+    Confirma
+  </button>
+</div>

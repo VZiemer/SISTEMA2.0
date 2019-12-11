@@ -9,7 +9,7 @@ export class Venda {
   public NOMECLI: string;
   public EMPRESA: number;
   public NOMEVEND: string;
-  public TRANSITO: number[];
+  public TRANSITO: any[];
   public CGC: string;
   public CPFCupom: string;
   public INSC: string;
@@ -54,9 +54,8 @@ export class Venda {
   public LIBERANP: number;
 
   constructor(
-    lcto: any,
+    lcto: number,
     data: any,
-    transito: any,
     cgc: any,
     insc: any,
     codcli: any,
@@ -89,7 +88,6 @@ export class Venda {
     this.NOMEVEND = nomevend || null;
     // dados do transito
     this.TRANSITO = [];
-    this.TRANSITO.push(transito);
     // cliente
     this.CGC = cgc || null;
     this.CPFCupom = null;
@@ -160,7 +158,7 @@ export class Venda {
   insereNfe(nfe) {
     this.NFE = nfe;
   }
-  insereLcto(transito) {
+  insereLcto(transito: any) {
     // lcto
     console.log('inserelcto' + transito);
 
@@ -168,6 +166,7 @@ export class Venda {
     this.TRANSITO.push(transito);
   }
   calculaTotal() {
+    console.log("calcula total",this.TOTAL);
     this.TOTAL = new dinheiro(
       this.PRODUTOS.reduce(function(
         valorAnterior,
@@ -262,7 +261,39 @@ export class Venda {
         produto.CODFISCAL,
         produto.MULTQTD,
         produto.QTDFISCAL,
-        produto.VALORUNITFISCAL
+        produto.VALORUNITFISCAL,
+        produto.TRANSITO
+      )
+    );
+    this.calculaTotal();
+  }
+  removeProduto(produto: any) {
+    this.PRODUTOS.push(
+      new Produto(
+        produto.CODIGO,
+        produto.VALOR,
+        produto.QTDPEDIDO,
+        produto.QTDRESERVA,
+        produto.UNIDADE,
+        produto.CODPRODVENDA,
+        produto.VALORINI,
+        produto.PRPROMO,
+        produto.DESCRICAO,
+        produto.CODINTERNO,
+        produto.SITTRIB,
+        produto.NCM,
+        produto.ORIG,
+        produto.GRUPO,
+        produto.ALIQ,
+        produto.CEST,
+        produto.BASECALC,
+        produto.FRETEPROD,
+        produto.ALIQIPI,
+        produto.CODFISCAL,
+        produto.MULTQTD,
+        produto.QTDFISCAL,
+        produto.VALORUNITFISCAL,
+        produto.TRANSITO
       )
     );
     this.calculaTotal();
@@ -311,6 +342,7 @@ class Produto {
   public ALIQIPI: number;
   public QTDFISCAL: number;
   public VALORUNITFISCAL: dinheiro;
+  public TRANSITO: number;
   CODFISCAL: any;
 
   constructor(
@@ -336,7 +368,8 @@ class Produto {
     codprofiscal: any,
     multqtd: any,
     qtdfiscal: any,
-    valorunitfiscal: any
+    valorunitfiscal: any,
+    transito: any
   ) {
     this.CODPRO = codpro || null;
     this.CODPROFISCAL = codprofiscal || null;
@@ -363,5 +396,6 @@ class Produto {
     this.ALIQIPI = aliqipi || null;
     this.QTDFISCAL = qtdfiscal;
     this.VALORUNITFISCAL = new dinheiro(valorunitfiscal);
+    this.TRANSITO = transito;
   }
 }
