@@ -2,22 +2,28 @@
 
 <h4 mat-dialog-title *ngIf="param==3">saldo: {{saldoFinal}}</h4>
 
-<div>
-    <div *ngIf="param==3 || param==4">
-        <label *ngIf="param==3">Data Transferência</label>
-        <label *ngIf="param==4">Data Vencimento</label>
-        <input class="select" type="date" [(ngModel)]="dataMovimento" (change)="verificaliberaBtnConsulta()">
-    </div>
-    <div *ngIf="param==2">
-        <label>Data Inicio</label>
-        <input class="select" type="date" [(ngModel)]="dataInicio" (change)="verificaliberaBtnConsulta()">
-    </div>
-    <div *ngIf="param==1">
+
+<div *ngIf="param==1">
+    <div>
         <label>Data Fim</label>
         <input class="select" type="date" [(ngModel)]="dataFim" (change)="verificaliberaBtnConsulta()">
     </div>
     <p></p>
-    <div *ngIf="param==2 || param==3">
+
+    <div>
+        <button [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
+            (click)="FechaModal()">Concluir</button>
+
+    </div>
+</div>
+
+<div *ngIf="param==2">
+    <div>
+        <label>Data Inicio</label>
+        <input class="select" type="date" [(ngModel)]="dataInicio" (change)="verificaliberaBtnConsulta()">
+    </div>
+    <p></p>
+    <div>
         <label>Tipo Contas </label>
         <select class="select" [disabled]="parametroBuscaContas==1000" [(ngModel)]="parametroBuscaContas"
             (change)="carregaContas()">
@@ -25,14 +31,61 @@
             <option [value]="6">Transição</option>
             <option [value]="7">Sócio</option>
             <option [value]="14">Parceiro</option>
-
-
-
         </select>
     </div>
     <p></p>
 
-    <div *ngIf="param==2 || param==3">
+    <div>
+        <label>Contas</label>
+        <select [disabled]="!parametroBuscaContas" class="select" [(ngModel)]="codigoConta"
+            (change)="verificaliberaBtnConsulta()">
+            <option *ngFor="let item of listaContas" [value]="item.CODIGO">{{item.DESCRICAO}} </option>
+        </select>
+    </div>
+
+    <p></p>
+    
+    <div *ngIf="parametroBuscaContas==14">
+        <label>Parceiro</label>
+        <input class="select" type="text" [(ngModel)]="parceiro.FANTASIA" [disabled]="true">
+        <p></p>
+    
+        <button [disabled]="!codigoConta" mat-raised-button color="primary" (click)="buscaParceiro()">Parceiro</button>
+    
+    </div>
+    <p></p>
+
+    <div>
+        <button [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
+            (click)="FechaModal()">Concluir</button>
+
+    </div>
+
+
+
+</div>
+
+<div *ngIf="param==3">
+
+    <div>
+        <label *ngIf="param==3">Data Transferência</label>
+        <input class="select" type="date" [(ngModel)]="dataMovimento" (change)="verificaliberaBtnConsulta()">
+    </div>
+
+    <p></p>
+    <div>
+        <label>Tipo Contas </label>
+        <select class="select" [disabled]="parametroBuscaContas==1000" [(ngModel)]="parametroBuscaContas"
+            (change)="carregaContas()">
+            <option [value]="5">Bancária</option>
+            <option [value]="6">Transição</option>
+            <option [value]="7">Sócio</option>
+            <option [value]="14">Parceiro</option>
+        </select>
+    </div>
+    <p></p>
+
+    <div>
         <label>Contas</label>
         <select [disabled]="!parametroBuscaContas" class="select" [(ngModel)]="codigoConta"
             (change)="verificaliberaBtnConsulta()">
@@ -40,8 +93,29 @@
         </select>
     </div>
     <p></p>
+    <div>
+        <label>Valor</label>
+        <input class="select" type="number" [(ngModel)]="valorMovimento" (keyup)="verificaliberaBtnConsulta()">
 
-    <div *ngIf="param==4">
+    </div>
+    <p></p>
+
+    <div>
+
+        <button [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
+            (click)="insertTransferenciaRegistroDeus()">Concluir</button>
+
+    </div>
+</div>
+
+<div *ngIf="param==4">
+    <div>
+        <label>Data Vencimento</label>
+        <input class="select" type="date" [(ngModel)]="dataMovimento" (change)="verificaliberaBtnConsulta()">
+    </div>
+    <p></p>
+
+    <div>
         <label>Tipo Contas </label>
         <select class="select" [disabled]="parametroBuscaContas==1000" [(ngModel)]="parametroBuscaContas"
             (change)="carregaContas()">
@@ -57,7 +131,7 @@
     </div>
     <p></p>
 
-    <div *ngIf="param==4">
+    <div>
         <label>Contas</label>
         <select [disabled]="!parametroBuscaContas" class="select" [(ngModel)]="codigoConta"
             (change)="verificaliberaBtnConsulta()">
@@ -66,7 +140,7 @@
     </div>
     <p></p>
 
-    <div *ngIf="param==4">
+    <div>
         <label>Projeção </label>
         <select class="select" [disabled]="parametroBuscaContas==1000" [(ngModel)]="projecao">
             <option [value]="1">Sim</option>
@@ -76,52 +150,41 @@
     </div>
     <p></p>
 
-
-
-    <div *ngIf="param==3 || param==4">
+    <div>
         <label>Valor</label>
         <input class="select" type="number" [(ngModel)]="valorMovimento" (keyup)="verificaliberaBtnConsulta()">
 
     </div>
-    
-    <div *ngIf="parametroBuscaContas==14">
-            <label>Parceiro</label>
-            <input class="select" type="text" [(ngModel)]="parceiro.FANTASIA" [disabled]="true" >
-            <p></p>
-
-            <button [disabled]="!codigoConta"  mat-raised-button color="primary" (click)="buscaParceiro()">Parceiro</button>
-
-        </div>
-    
-
-
     <p></p>
 
     <div>
-        <button *ngIf="param!=3 && param!=4" [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
-            (click)="FechaModal()">Concluir</button>
-
-    </div>
-    <p></p>
-
-    <div>
-
-        <button *ngIf="param==3" [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
-            (click)="insertTransferenciaRegistroDeus()">Concluir</button>
-
-    </div>
-    <p></p>
-
-
-    <div>
-        <button *ngIf="param==4" [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
+        <button [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
             (click)="insertDespesaRegistroDeus()">Concluir</button>
 
     </div>
 
-
-
 </div>
+
+<div *ngIf="param==5">
+    <div>
+        <label>Data Fim</label>
+        <input class="select" type="date" [(ngModel)]="dataFim" (change)="verificaliberaBtnConsulta()">
+    </div>
+    <p></p>
+
+    <div>
+        <button [disabled]="!liberaBtnConsulta" mat-raised-button color="primary"
+            (click)="FechaModal()">Concluir</button>
+
+    </div>
+</div>
+
+
+
+<p></p>
+
+
+
 <div mat-dialog-actions>
 
 </div>

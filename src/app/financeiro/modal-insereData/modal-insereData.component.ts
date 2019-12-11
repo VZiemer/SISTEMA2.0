@@ -80,7 +80,7 @@ export class ModalInsereDataComponent implements OnInit {
 
   buscaParceiro() {
     let tipoparc = 'C';
-    if (this.codigoConta == 241) { tipoparc = 'F'; }
+    if (this.codigoConta == 241 || this.codigoConta == 277) { tipoparc = 'F'; }
 
 
     const dialogRef = this.dialog.open(ModalBuscaGenericoComponent, {
@@ -138,6 +138,9 @@ export class ModalInsereDataComponent implements OnInit {
       if (this.saldoTravaNegativo) {
         if (this.saldoFinal < this.valorMovimento) { this.liberaBtnConsulta = 0; }
       }
+    }
+    if (this.param === 5) {
+      if (this.dataFim) { this.liberaBtnConsulta = 1; }
     }
 
 

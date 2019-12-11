@@ -91,9 +91,6 @@ export class FinanceiroComponent implements OnInit {
   }
 
 
-
-
-
   RegistrosFinanceiros(param: number) {
     console.log('empresa selecionada', this.empresa);
     console.log('param', param);
@@ -127,7 +124,7 @@ export class FinanceiroComponent implements OnInit {
           this.camposTabela = ['DOCUMENTO', 'DATAVCTO', 'VALOR', 'CONTAMOSTRATELA', 'CODPARC', 'FANTASIA'];
         }
 
-        if (this.param === 2 || this.param === 3) {
+        if (this.param === 2 || this.param === 3 || this.param === 5) {
           this.camposTabela = ['DOCUMENTO', 'DATALIQUID', 'VALOR', 'CONTAMOSTRATELA', 'CODPARC', 'FANTASIA', 'SALDO'];
 
 
@@ -193,7 +190,7 @@ export class FinanceiroComponent implements OnInit {
       }, error => { console.log(error); });
 
     }
-    if (this.param == 1) {
+    if (this.param == 1 || this.param == 5) {
 
       this.saldoFinal = 0;
 
@@ -241,7 +238,7 @@ export class FinanceiroComponent implements OnInit {
   }
 
   ChamaModaInsereData(param: number) {
-    if (param == 1 || param == 2) { this.limpaLista(); };
+    if (param == 1 || param == 2 || param == 5) { this.limpaLista(); };
 
     this.param = param;
     console.log('dados enviados para modal inseredata');
@@ -252,11 +249,19 @@ export class FinanceiroComponent implements OnInit {
     console.log('codigoConta', this.codigoConta);
     console.log('descricaoConta', this.descricaoConta);
     console.log('saldoFinal', this.saldoFinal);
+    let largura = '';
+    let altura = '';
+
+    if (this.param == 1) { largura = '25vw'; altura = '40vh'; };
+    if (this.param == 2) { largura = '25vw'; altura = '65vh'; };
+    if (this.param == 3) { largura = '25vw'; altura = '85vh'; };
+    if (this.param == 4) { largura = '25vw'; altura = '85vh'; };
+    if (this.param == 5) { largura = '25vw'; altura = '40vh'; };
 
 
     const dialogRef = this.dialog.open(ModalInsereDataComponent, {
-      width: '25vw',
-      height: '75vh',
+      width: largura,
+      height: altura,
       hasBackdrop: true,
       disableClose: false,
       data: {
@@ -286,7 +291,9 @@ export class FinanceiroComponent implements OnInit {
     this.financeiroService.getLctoDeus(item.CODDEC).subscribe(reslcto => {
       console.log('reslcto', reslcto);
 
+
       this.listaLctoDeus = reslcto;
+
 
       this.financeiroService.getContas(this.parametroBuscaContas, this.empresa, item.PROJECAO, null)
 
@@ -311,7 +318,7 @@ export class FinanceiroComponent implements OnInit {
             this.contaSelecionado = 'TODOS';
 
 
-            if (this.param != 2) {
+            if (this.param == 1 || this.param == 3 || this.param == 4) {
               this.financeiroService.postLctoDeus(resmodal).subscribe(resposta => {
                 console.log(resposta);
 
@@ -327,9 +334,14 @@ export class FinanceiroComponent implements OnInit {
 
             }
 
+            if (this.param == 5) {
+              this.financeiroService.postLctoDeus(resmodal).subscribe(resposta => {
+                console.log(resposta);
 
+                this.RegistrosFinanceiros(5);
 
-
+              }, error => (console.log(error)));
+            }
 
           });
 
