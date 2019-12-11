@@ -8,8 +8,7 @@
 
 <h1>{{converteMoeda(total)}} <span class="vermelho" *ngIf="RegistroDeus[0].PROJECAO==1">PROJEÇÃO</span> </h1>
 
-<div>
-
+<div *ngIf="param==1">
     <div class="Tabela">
         <table>
             <th class=""> Conta </th>
@@ -24,28 +23,26 @@
                 <button *ngIf="item.PERMITEAPAGA && param==1" mat-raised-button color="primary"
                     (click)="deletDespesaRegistroDeus(item.CODIGO)">Apagar</button>
 
-
             </tr>
         </table>
 
         <p></p>
         <label>OBS</label>
-        <input [disabled]="param==2"  class="inputObs" type="text" [(ngModel)]="RegistroDeus[0].OBS">
+        <input class="inputObs" type="text" [(ngModel)]="RegistroDeus[0].OBS">
         <p></p>
 
 
-
         <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="FechaModal()">FECHAR</button>
-        <button *ngIf="!mostraContasDespesas && param==2" mat-raised-button color="primary" (click)="Cancelaliquid()">CANCELAR PAGTO</button>
 
-        <button *ngIf="!mostraContasDespesas && param==1" mat-raised-button color="primary"
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary"
             (click)="apresentaDespesaRegistroDeus()">NOVA DESPESA</button>
 
-        <button *ngIf="!mostraContasDespesas && param==1" mat-raised-button color="primary" (click)="AlteraPagto(1)">DIVIDE
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="AlteraPagto(1)">DIVIDE
             PAGTO</button>
 
-            
-        <button *ngIf="!mostraContasDespesas && param==1" mat-raised-button color="primary" (click)="AlteraPagto(2)">ALTERA VCTO</button>
+
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="AlteraPagto(2)">ALTERA
+            VCTO</button>
 
 
         <button *ngIf="mostraContasDespesas" mat-raised-button color="primary"
@@ -53,11 +50,12 @@
 
         <p></p>
 
+
+
         <fieldset *ngIf="mostraContasDespesas">
             <legend *ngIf="!editaPagamento">Inserir Despesa</legend>
             <legend *ngIf="editaPagamento && paramAlteraPagto==1">Valor Parcial</legend>
             <legend *ngIf="editaPagamento && paramAlteraPagto==2">Novo VCTO</legend>
-
 
 
             <div *ngIf="!editaPagamento">
@@ -76,42 +74,151 @@
                     (click)="ConcluiAlteraPagto()">CONCLUIR</button>
             </div>
             <div *ngIf="editaPagamento==1 && paramAlteraPagto==2">
-                    <input placeholder="NOVO VCTO" class="inputData" type="date" [(ngModel)]="novoVcto">
-                    <button [disabled]="!novoVcto" mat-raised-button color="primary"
-                        (click)="ConcluiAlteraPagto()">CONCLUIR</button>
-                </div>
-    
+                <input placeholder="NOVO VCTO" class="inputData" type="date" [(ngModel)]="novoVcto">
+                <button [disabled]="!novoVcto" mat-raised-button color="primary"
+                    (click)="ConcluiAlteraPagto()">CONCLUIR</button>
+            </div>
+        </fieldset>
+        <p></p>
 
+        <fieldset *ngIf="!mostraContasDespesas">
+            <legend>Conta de liquidação</legend>
+            <h3>Saldo: {{converteMoeda(-saldoFinal)}} </h3>
+            <input class="inputData" type="date" (change)="verificaliberaBtnLiquidar()" [(ngModel)]="dataLiquid">
 
+            <select [disabled]="travaSelectConta" class="inputConta" [(ngModel)]="CREDITO" (change)="calculaSaldo()">
+                <option *ngFor="let item of contas" [value]="item.CODIGO">{{item.CODIGO}} - {{item.DESCRICAO}} </option>
+            </select>
+
+            <button mat-raised-button color="primary" [disabled]="!liberaBtnLiquidar"
+                (click)="updateRegistroDeus()">LIQUIDAR</button>
 
         </fieldset>
+    </div>
+</div>
 
+<div *ngIf="param==2">
+    <div class="Tabela">
+        <table>
+            <th class=""> Conta </th>
+            <th class=""> Descrição </th>
+            <th class=""> Vencimento </th>
+            <th class=""> Valor </th>
+            <tr *ngFor="let item of RegistroDeus">
+                <td class="centro"><a *ngIf="item.DEBITO">{{item.DEBITO}}</a></td>
+                <td class="esquerda">{{item.CDEBITO}}</td>
+                <td class="centro">{{item.DATAVCTO | date: 'dd/MM/yy'}}</td>
+                <td class="direita">{{converteMoeda(item.VALOR)}}</td>
+                <button *ngIf="item.PERMITEAPAGA && param==1" mat-raised-button color="primary"
+                    (click)="deletDespesaRegistroDeus(item.CODIGO)">Apagar</button>
+            </tr>
+        </table>
 
+        <p></p>
+        <label>OBS</label>
+        <input [disabled]="true" class="inputObs" type="text" [(ngModel)]="RegistroDeus[0].OBS">
+        <p></p>
 
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="FechaModal()">FECHAR</button>
+
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="Cancelaliquid()">CANCELAR
+            PAGTO</button>
+
+        <button *ngIf="mostraContasDespesas" mat-raised-button color="primary"
+            (click)="desapresentaDespesaRegistroDeus()">CANCELA</button>
+
+        <p></p>
+
+        <fieldset *ngIf="mostraContasDespesas">
+            <legend *ngIf="!editaPagamento">Inserir Despesa</legend>
+            <legend *ngIf="editaPagamento && paramAlteraPagto==1">Valor Parcial</legend>
+            <legend *ngIf="editaPagamento && paramAlteraPagto==2">Novo VCTO</legend>
+
+            <div *ngIf="!editaPagamento">
+                <select class="inputConta" [(ngModel)]="DESPESA">
+                    <option *ngFor="let item of listaContasDespesas" [value]="item.CODIGO">{{item.CODIGO}} -
+                        {{item.DESCRICAO}} </option>
+                </select>
+                <input placeholder="VALOR DESPESA" class="inputData" type="number" [(ngModel)]="valorDespesa">
+                <button [disabled]="!DESPESA" mat-raised-button color="primary"
+                    (click)="insertDespesaRegistroDeus()">INCLUIR</button>
+            </div>
+
+            <div *ngIf="editaPagamento==1 && paramAlteraPagto==1">
+                <input placeholder="VALOR PARCIAL" class="inputData" type="number" [(ngModel)]="valorParcial">
+                <button [disabled]="!valorParcial" mat-raised-button color="primary"
+                    (click)="ConcluiAlteraPagto()">CONCLUIR</button>
+            </div>
+            <div *ngIf="editaPagamento==1 && paramAlteraPagto==2">
+                <input placeholder="NOVO VCTO" class="inputData" type="date" [(ngModel)]="novoVcto">
+                <button [disabled]="!novoVcto" mat-raised-button color="primary"
+                    (click)="ConcluiAlteraPagto()">CONCLUIR</button>
+            </div>
+        </fieldset>
+        <p></p>
+    </div>
+</div>
+
+<div *ngIf="param==5">
+    <div class="Tabela">
+        <table>
+            <th class=""> Conta </th>
+            <th class=""> Descrição </th>
+            <th class=""> Vencimento </th>
+            <th class=""> Valor </th>
+            <tr *ngFor="let item of RegistroDeus">
+                <td class="centro"><a *ngIf="item.DEBITO">{{item.DEBITO}}</a></td>
+                <td class="esquerda">{{item.CDEBITO}}</td>
+                <td class="centro">{{item.DATAVCTO | date: 'dd/MM/yy'}}</td>
+                <td class="direita">{{converteMoeda(item.VALOR)}}</td>
+                <button *ngIf="item.PERMITEAPAGA && param==1" mat-raised-button color="primary"
+                    (click)="deletDespesaRegistroDeus(item.CODIGO)">Apagar</button>
+            </tr>
+        </table>
+
+        <p></p>
+        <label>OBS</label>
+        <input class="inputObs" type="text" [(ngModel)]="RegistroDeus[0].OBS">
+        <p></p>
+
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="FechaModal()">FECHAR</button>
+
+        <button *ngIf="!mostraContasDespesas" mat-raised-button color="primary" (click)="AlteraPagto(2)">ALTERA
+            VCTO</button>
+
+        <button *ngIf="mostraContasDespesas" mat-raised-button color="primary"
+            (click)="desapresentaDespesaRegistroDeus()">CANCELA</button>
 
         <p></p>
 
 
+
+        <fieldset *ngIf="mostraContasDespesas">
+            <legend *ngIf="editaPagamento && paramAlteraPagto==2">Novo VCTO</legend>
+
+
+            <div *ngIf="editaPagamento==1 && paramAlteraPagto==2">
+                <input placeholder="NOVO VCTO" class="inputData" type="date" [(ngModel)]="novoVcto">
+                <button [disabled]="!novoVcto" mat-raised-button color="primary"
+                    (click)="ConcluiAlteraPagto()">CONCLUIR</button>
+            </div>
+        </fieldset>
+        <p></p>
+
+        <fieldset *ngIf="!mostraContasDespesas">
+            <legend>Liquidação</legend>
+            <input class="inputData" type="date" (change)="verificaliberaBtnLiquidar()" [(ngModel)]="dataLiquid">
+
+
+            <button mat-raised-button color="primary" [disabled]="!liberaBtnLiquidar"
+                (click)="updateRegistroDeus()">LIQUIDAR</button>
+
+        </fieldset>
     </div>
-
-
-
-
-    <fieldset *ngIf="!mostraContasDespesas && param==1">
-        <legend>Conta de liquidação</legend>
-        <h3>Saldo: {{converteMoeda(-saldoFinal)}} </h3>
-        <input class="inputData" type="date" (change)="verificaliberaBtnLiquidar()" [(ngModel)]="dataLiquid">
-
-        <select [disabled]="travaSelectConta" class="inputConta" [(ngModel)]="CREDITO" (change)="calculaSaldo()">
-            <option *ngFor="let item of contas" [value]="item.CODIGO">{{item.CODIGO}} - {{item.DESCRICAO}} </option>
-        </select>
-
-        <button mat-raised-button color="primary" [disabled]="!liberaBtnLiquidar"
-            (click)="updateRegistroDeus()">LIQUIDAR</button>
-
-    </fieldset>
-
 </div>
+
+
+
 <div mat-dialog-actions>
 
 </div>

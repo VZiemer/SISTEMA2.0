@@ -84,7 +84,7 @@ export class ModalRegistroDeusComponent implements OnInit {
 
   updateRegistroDeus() {
 
-    if (this.param == 1) {
+    if (this.param == 1 || this.param == 5) {
 
       for (let i = 0; i < this.dados.listaLctoDeus.length; i++) {
         this.dados.listaLctoDeus[i].CREDITO = this.CREDITO || null;
@@ -289,13 +289,13 @@ export class ModalRegistroDeusComponent implements OnInit {
     }
     console.log('this.RegistroDeus', this.RegistroDeus);
 
-    if (this.RegistroDeus[0].TIPOLCTO.substr(0,1) == 'M') {
+    if (this.RegistroDeus[0].TIPOLCTO.substr(0, 1) == 'M') {
 
       this.financeiroService.postDeleteDeus(this.RegistroDeus[0].CODIGO).
-      subscribe(res => {
-        console.log('resgistro apagado');
-        this.FechaModal();
-      }, error => { console.log(error); });
+        subscribe(res => {
+          console.log('resgistro apagado');
+          this.FechaModal();
+        }, error => { console.log(error); });
 
 
     } else {
@@ -312,7 +312,7 @@ export class ModalRegistroDeusComponent implements OnInit {
 
     if (this.RegistroDeus[0].CREDITO == null) { this.CREDITO = null; }
 
-    if (this.param == 1) { this.dataLiquid = null; }
+    if (this.param == 1 || this.param == 5) { this.dataLiquid = null; }
     this.updateRegistroDeus();
   }
   converteMoeda(valor) {

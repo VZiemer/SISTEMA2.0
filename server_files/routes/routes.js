@@ -313,62 +313,64 @@ routes
     });
   });
 
-routes
-  .route("/cliente")
+  routes.route('/parceiro')
   //buscas
   .get((req, res) => {
-    console.log(req.query);
+    console.log(req.query)
     var CODIGO = req.query.CODIGO;
-    var RAZAO = req.query.NOME;
+    var FANTASIA = req.query.NOME;
+    var tipoParc = req.query.TIPOPARC;
+    var nomeCampo = ` cliente.cli = 'S'`;
+    if (tipoParc == 'F') { nomeCampo = ` cliente.fornec = 'S'`; }
+    if (tipoParc == 'T') { nomeCampo = ` cliente.transp = 'S'`; }
+    if (tipoParc == 'V') { nomeCampo = ` cliente.func = 'S'`; }
     if (CODIGO) {
       var termos = CODIGO;
-      sql =
-        "select codigo,razao,CGC,INSC,liberafat,LIBERANP from cliente where codigo=?";
+      sql = `select CODIGO,FANTASIA from cliente where codigo=? and ${nomeCampo}`;
     } else {
-      sql =
-        "select codigo,razao,CGC,INSC,liberafat,LIBERANP from cliente where ativo = 'S' and ";
-      var termos = RAZAO.toUpperCase().split("?");
-      if (RAZAO.charAt(0) == "?") {
-        sql += "razao containing ?";
+      sql = `select CODIGO,FANTASIA from cliente where ativo = 'S' and ${nomeCampo} and `;
+      var termos = FANTASIA.toUpperCase().split("?");
+      if (FANTASIA.charAt(0) == "?") {
+        sql += "fantasia containing ?";
         for (i = 1; i < termos.length; i++) {
-          sql += " and razao containing ?";
+          sql += " and fantasia containing ?";
         }
       } else {
-        sql += "razao starting with ?";
+        sql += "fantasia starting with ?";
         for (i = 1; i < termos.length; i++) {
-          sql += " and razao containing ?";
+          sql += " and fantasia containing ?";
         }
       }
     }
-    estoque.get(function(err, db) {
-      if (err) throw err;
-      db.query(sql, termos, function(err, result) {
-        if (err) throw err;
-        db.detach(function() {
+    console.log('sql',sql)
+    estoque.get(function (err, db) {
+      if (err)
+        throw err;
+      db.query(sql, termos, function (err, result) {
+        if (err)
+          throw err;
+        db.detach(function () {
           res.json(result);
         });
       });
     });
   });
 
-routes
-  .route("/cliente/:id")
+routes.route('/parceiro/:id')
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function(err, db) {
-      if (err) throw err;
+    estoque.get(function (err, db) {
+      if (err)
+        throw err;
       // db = DATABASE
-      db.query(
-        `select CODIGO,RAZAO,CGC,INSC,LIBERAFAT,LIBERANP from CLIENTE where codigo = ${req.params.id}`,
-        function(err, result) {
-          // IMPORTANT: close the connection
-          db.detach(function() {
-            console.log("retornou", result);
-            res.status(200).json(result[0]);
-          });
-        }
-      );
+      db.query(`select CODIGO,RAZAO,CGC,INSC,LIBERAFAT,LIBERANP from CLIENTE where codigo = ${req.params.id}`, function (err, result) {
+        // IMPORTANT: close the connection
+        db.detach(function () {
+          console.log('retornou', result)
+          res.status(200).json(result[0]);
+        });
+      });
     });
   });
 routes
@@ -879,6 +881,8 @@ routes.route('/contas')
     if (parametroBusca == 11) { tipoSelect = ',L,' } //contas Desp. TRIBUTÁRIA
     if (parametroBusca == 12) { tipoSelect = ',M,' } //contas Desp. INDEDUTIVEL
     if (parametroBusca == 13) { tipoSelect = ',N,' } //contas RES. NEGATIVO NA ALIEN. IMOBILIZ
+    if (parametroBusca == 14) { tipoSelect = ',O,' } //contas PARCEIROS
+
 
 
 
@@ -945,6 +949,7 @@ routes.route('/deus')
     if (paremetro == 1) { whereDeus = ` where uniao.tipolcto in ('E','D') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
     if (paremetro == 2) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) ` }
     if (paremetro == 3) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) ` }
+    if (paremetro == 5) { whereDeus = ` where uniao.tipolcto in ('V') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
 
 
 
@@ -962,6 +967,7 @@ routes.route('/deus')
 
   `
     console.log('sql', sql)
+    
     estoque.get(function (err, db) {
       if (err)
         throw err;
@@ -1025,7 +1031,8 @@ routes.route('/Atualizadeuslcto')
                                  deus.valor='${dados[i].VALOR}',
                                  deus.documento='${dados[i].DOCUMENTO}',
                                  deus.obs='${dados[i].OBS}',
-                                 deus.dataliquid=${dataFirebird(dados[i].DATALIQUID)}
+                                 deus.dataliquid=${dataFirebird(dados[i].DATALIQUID)},
+                                 deus.datavcto=${dataFirebird(dados[i].DATAVCTO)}
          where deus.codigo=${dados[i].CODIGO} ; `
     }
     sql += `end`

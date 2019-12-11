@@ -9,7 +9,7 @@
       </mat-form-field>
 
 
-      <mat-form-field name="Projecao" appearance="outline" *ngIf="param==1">
+      <mat-form-field name="Projecao" appearance="outline" *ngIf="param==1 || param==5">
         <mat-label>Projeção</mat-label>
         <mat-select [(ngModel)]="projecaoSelecionado" (selectionChange)="FiltraLista()"
           [ngModelOptions]="{standalone: true}">
@@ -18,7 +18,7 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field name="Fantasia" appearance="outline" *ngIf="param==1">
+      <mat-form-field name="Fantasia" appearance="outline" *ngIf="param==1 || param==5">
         <mat-label>Fantasia</mat-label>
         <mat-select [(ngModel)]="fantasiaSelecionado" (selectionChange)="FiltraLista()"
           [ngModelOptions]="{standalone: true}">
@@ -27,7 +27,7 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field name="Conta" appearance="outline" *ngIf="param==1">
+      <mat-form-field name="Conta" appearance="outline" *ngIf="param==1 || param==5">
         <mat-label>Conta</mat-label>
         <mat-select [(ngModel)]="contaSelecionado" (selectionChange)="FiltraLista()"
           [ngModelOptions]="{standalone: true}">
@@ -43,7 +43,7 @@
     <h2 *ngIf="param==2 || param==3">{{tituloPagina}}</h2>
 
     <h2 *ngIf="saldoDataInicio">Saldo em {{dataInicio | date: 'dd/MM/yy'}} {{converteMoeda(saldoDataInicio)}}</h2>
-    <h2 *ngIf="param==1 || param==4">CONTAS EM ABERTO ATÉ {{dataFim | date: 'dd/MM/yy'}}</h2>
+    <h2 *ngIf="param==1 || param==4 || param==5">CONTAS EM ABERTO ATÉ {{dataFim | date: 'dd/MM/yy'}}</h2>
 
 
   </header>
