@@ -103,7 +103,11 @@ export class CaixaService {
       })
       .pipe();
   }
-
+  gravaCupom(dados: any): Observable<any> {
+    return this.http
+      .post<any>(this.apiURL + `/numerocupom`, { dados: dados })
+      .pipe();
+  }
   getParam(id: void): Observable<Param[]> {
     return this.http.get<Param[]>(this.apiURL + "/pram").pipe();
   }

@@ -9,7 +9,8 @@ import { Deus } from "../../shared/models/deus";
 import * as dinheiro from "../../shared/models/dinheiro";
 import * as nfe from "node-nfe";
 import * as ini from "ini";
-import * as fs from "fs";
+// import * as fs from "fs";
+import * as net from "net";
 
 import { ModalSelectTransitoComponent } from "../modal-select-transito/modal-select-transito.component";
 
@@ -83,7 +84,28 @@ export class ModalNfeComponent implements OnInit {
     }
   };
 
-  transito: number;
+  transito: {
+    TRANSITO: number;
+    TIPO: string;
+    CGC: string;
+    INSC: string;
+    EMAIL: string;
+    FONE: string;
+    RAZAO: string;
+    ENDERECO: string;
+    NUMERO: string;
+    BAIRRO: string;
+    CEP: string;
+    CODIBGE: string;
+    CODCIDADE: string;
+    CIDADE: string;
+    ESTADO: string;
+    COMPLEMENTO: string;
+    VALOR: dinheiro;
+    DESCONTO: number;
+    FRETE: number;
+    SEGURO: number;
+  };
   emitente = new Emitente();
   destinatario = new Destinatario();
   transportador = new Transportador();
@@ -198,6 +220,7 @@ export class ModalNfeComponent implements OnInit {
           this.venda.insereLcto({
             TRANSITO: item.ID_TRANSITO,
             TIPO: item.TIPO_TRANSITO,
+            STATUS: item.STATUS,
             CGC: venda[0].CGC,
             INSC: venda[0].INSC,
             EMAIL: venda[0].EMAIL,
@@ -232,6 +255,7 @@ export class ModalNfeComponent implements OnInit {
     );
   }
   getPagamentos(lcto) {
+    console.log('getpagtos')
     this.caixaService
       .getPagamentosVenda(lcto)
       .subscribe(pagamentos => (this.venda.PAGAMENTO = pagamentos));
@@ -271,7 +295,7 @@ export class ModalNfeComponent implements OnInit {
     dialogRef.afterClosed().subscribe(res => {
       console.log("retorno", res);
       this.transito = res;
-      this.geraNfe(this.empresa, this.venda, res).subscribe(danfe => {
+      this.geraNfe(this.empresa, this.venda, res.TRANSITO).subscribe(danfe => {
         console.log("danfe", danfe);
         this.nota = danfe;
         this.tabSelect = 1;
@@ -470,7 +494,7 @@ export class ModalNfeComponent implements OnInit {
                   const duplicata = new Duplicata();
                   duplicata
                     .comNumero(this.zeroEsq(_numDuplicata, 3, 0))
-                    .comValor(item.VALOR)
+                    .comValor(item.VALOR.valor)
                     .comVencimento(item.DATAVCTO);
                   this.danfe._duplicatas.push(duplicata);
                 } else if (sigla.SIGLA === "CV") {
@@ -506,7 +530,7 @@ export class ModalNfeComponent implements OnInit {
                 const pagamento = new Pagamento();
                 pagamento
                   .comFormaDePagamento(_formaPagto)
-                  .comValor(item.VALOR.valor)
+                  .comValor(item.VALOR)
                   .comMeioDePagamento(_meioPagto)
                   .comIntegracaoDePagamento(_integracaoPagto)
                   .comBandeiraDoCartao(_bandeiraCartao ? _bandeiraCartao : "")
@@ -817,7 +841,7 @@ export class ModalNfeComponent implements OnInit {
       console.log("gravaNfe");
       console.log(this.transito);
       this.caixaService
-        .gravaNfe(dados, this.tributos, itens, this.transito)
+        .gravaNfe(dados, this.tributos, itens, this.transito.TRANSITO)
         .subscribe(resposta => {
           console.log(resposta);
           const Geraini = {
@@ -1173,84 +1197,99 @@ export class ModalNfeComponent implements OnInit {
 
           // grava o arquivo ini
           const textoini = ini.stringify(Geraini);
-          fs.writeFile(
-            "c:\\geral\\ent.tmp",
-            "NFe.CriarEnviarNFe(\"\n" + textoini + "\n\",1,1)",
-            err => {
-              if (err) {
-                throw err;
-              }
-              console.log("arquivo salvo com sucesso");
-              fs.rename("c:\\geral\\ent.tmp", "c:\\geral\\ent.txt", err => {
-                if (err) {
-                  throw err;
-                }
-                console.log("arquivo renomeado");
+
+          const socketClient = net.connect(
+            { host: "localhost", port: 3434 },
+            () => {
+              console.log("executa comando");
+              socketClient.write(
+                `NFe.CriarEnviarNFe("${textoini}",1,1)\r\n.\r\n`
+              );
+              socketClient.on("data", data => {
+                console.log(data.toString());
+                this.leituraRetorno(data.toString());
               });
             }
           );
-          const watcher = fs.watch(
-            "c:\\geral",
-            {
-              persistent: true
-            },
-            (eventType, filename) => {
-              console.log(filename);
-              console.log(eventType);
-              if (filename === "sai.txt" && eventType === "change") {
-                console.log("fechado watcher");
-                this.leituraRetorno();
-                watcher.close();
 
-              }
-            }
-          );
+          // fs.writeFile(
+          //   "c:\\geral\\ent.tmp",
+          //   "NFe.CriarEnviarNFe(\"\n" + textoini + "\n\",1,1)",
+          //   err => {
+          //     if (err) {
+          //       throw err;
+          //     }
+          //     console.log("arquivo salvo com sucesso");
+          //     fs.rename("c:\\geral\\ent.tmp", "c:\\geral\\ent.txt", err => {
+          //       if (err) {
+          //         throw err;
+          //       }
+          //       console.log("arquivo renomeado");
+          //     });
+          //   }
+          // );
+          // const watcher = fs.watch(
+          //   "c:\\geral",
+          //   {
+          //     persistent: true
+          //   },
+          //   (eventType, filename) => {
+          //     console.log(filename);
+          //     console.log(eventType);
+          //     if (filename === "sai.txt" && eventType === "change") {
+          //       console.log("fechado watcher");
+          //       this.leituraRetorno();
+          //       watcher.close();
+
+          //     }
+          //   }
+          // );
         });
     });
   }
-  leituraRetorno = function() {
+  leituraRetorno = function(res) {
     console.log("chamou leitura retorno");
-    fs.readFile("c:\\geral\\sai.txt", "utf-8", (error, res) => {
-      if (error) {
-        throw error;
+    // fs.readFile("c:\\geral\\sai.txt", "utf-8", (error, res) => {
+    // if (error) {
+    //   throw error;
+    // }
+    const nota = this.nota.getNumero();
+    const retorno = ini.parse(res);
+    if (retorno.ERRO) {
+      alert(retorno.ERRO);
+    }
+    if (retorno.Retorno) {
+      if (retorno.Retorno.XMotivo === "Autorizado o uso da NF-e") {
+        const protocoloretorno = retorno["NFe" + nota].nProt;
+        const chave = retorno["NFe" + nota].chNFe;
+        const arquivo = ["NFe" + nota];
+        const protocolo = new Protocolo();
+        protocolo.comCodigo(protocoloretorno);
+        protocolo.comData(new Date());
+        this.nota.comProtocolo(protocolo);
+        this.nota.comChaveDeAcesso(chave);
+        const data = {
+          EMPRESA: this.empresa, // EMPRESA
+          NOTA: this.danfe.getNumero(), // NOTA
+          CHAVE: this.danfe.getChaveDeAcesso(), // CHAVE
+          PROTOCOLO: this.danfe.getProtocolo().getCodigo(), // PROTOCOLO
+          PROTOCOLOCANCELA: "" // PROTOCOLOCANCELA
+        };
+        this.caixaService.gravaProtocolo(data).subscribe(res => {
+          console.log(res);
+          this.dialogRef.close(this.transito);
+        });
+        // fs.writeFile("c:\\geral\\sai.txt", "", err => {
+        //   if (err) {
+        //     throw err;
+        //   }
+        //   console.log("arquivo limpo");
+        // });
+      } else {
+        alert(retorno.RETORNO.XMotivo);
       }
-      const nota = this.nota.getNumero();
-      const retorno = ini.parse(res);
-      if (retorno.ERRO) {
-        alert(retorno.ERRO);
-      }
-      if (retorno.Retorno) {
-        if (retorno.Retorno.XMotivo === "Autorizado o uso da NF-e") {
-          const protocoloretorno = retorno["NFe" + nota].nProt;
-          const chave = retorno["NFe" + nota].chNFe;
-          const arquivo = ["NFe" + nota];
-          const protocolo = new Protocolo();
-          protocolo.comCodigo(protocoloretorno);
-          protocolo.comData(new Date());
-          this.nota.comProtocolo(protocolo);
-          this.nota.comChaveDeAcesso(chave);
-          const data = {
-            EMPRESA: this.empresa, // EMPRESA
-            NOTA: this.danfe.getNumero(), // NOTA
-            CHAVE: this.danfe.getChaveDeAcesso(), // CHAVE
-            PROTOCOLO: this.danfe.getProtocolo().getCodigo(), // PROTOCOLO
-            PROTOCOLOCANCELA: "" // PROTOCOLOCANCELA
-          };
-          this.caixaService.gravaProtocolo(data).subscribe(res => {
-            console.log(res);
-            this.dialogRef.close(this.transito);
-          });
-          fs.writeFile("c:\\geral\\sai.txt", "", err => {
-            if (err) {
-              throw err;
-            }
-            console.log("arquivo limpo");
-          });
-        } else {
-          alert(retorno.RETORNO.XMotivo);
-        }
-      }
-      console.log(retorno);
-    });
+    }
+    console.log(retorno);
+    // });
   };
 }

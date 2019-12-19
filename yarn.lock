@@ -6417,10 +6417,10 @@ node-libs-browser@^2.0.0:
     util "^0.11.0"
     vm-browserify "^1.0.1"
 
-node-nfe@^1.0.12:
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/node-nfe/-/node-nfe-1.0.12.tgz#f072e595e0e726a86a96b172d6bfbb25c7e13a4f"
-  integrity sha512-pWoRyG5jU9lRDxEw14zd+oHOtLHxbt+zh2+ZbPMCVZ/ykXf5sj8XPHYZD67hHUS37IfojNu6UGYWzRa7svJU6A==
+node-nfe@^1.0.13:
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/node-nfe/-/node-nfe-1.0.13.tgz#6427ab495ca633bb9093e74e757be28d88a1638e"
+  integrity sha512-aeQw7ptOQZgopoL5dMLnjuahh7IbSi5TX2CrnRF1+s2Ad2BuT4NEKcVqskx3lNsI+9cURjGmO6jyyoLHbFZymw==
   dependencies:
     busca-cep "^0.5.0"
     gammautils "^0.0.81"

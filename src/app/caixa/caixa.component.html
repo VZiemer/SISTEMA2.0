@@ -141,9 +141,9 @@
             <td class="number">{{ item.PARCELAS ? item.PARCELAS : 1 }}x</td>
             <td class="number">
               {{
-                item.PARCELAS
-                  ? (item.VALOR / item.PARCELAS).toFixed(2)
-                  : item.VALOR.toFixed(2)
+                item.PARCELAS === 0
+                  ? (item.VALOR * 1).toFixed(2)
+                  : (item.VALOR / item.PARCELAS).toFixed(2)
               }}
             </td>
           </tr>
@@ -220,40 +220,47 @@
   <aside class="sidebar column">
     <button
       *ngIf="empresa"
-      [disabled] = "venda.PAGAR.valor > 0 && venda.LCTO || !venda.PRODUTOS.length && venda.LCTO"
-      mat-raised-button color="accent"
+      [disabled]="
+        (venda.PAGAR.valor > 0 && venda.LCTO) ||
+        (!venda.PRODUTOS.length && venda.LCTO)
+      "
+      mat-raised-button
+      color="accent"
       (click)="gerarNfe()"
       class=""
     >
       NFE
     </button>
     <button
-    *ngIf="venda.LCTO && empresa"
-    [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
-    mat-raised-button color="accent"
-    (click)="confirmaCupom()"
-    class=""
-  >
-  CUPOM
-  </button>
-  <button
-  *ngIf="venda.LCTO && empresa"
-  [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
-  mat-raised-button color="accent"
-  (click)="confirmaVenda()"
-  class=""
->
-  CONFIRMA
-</button>
-  <button
-    *ngIf="venda.LCTO && empresa"
-    [disabled]="!venda.PAGAMENTO.length"
-    mat-raised-button color="warn"
-    (click)="cancelaPagto()"
-    class=""
-  >
-    CANCELA PAGTO
-  </button>
+      *ngIf="venda.LCTO && empresa"
+      [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
+      mat-raised-button
+      color="accent"
+      (click)="clicaCupom()"
+      class=""
+    >
+      CUPOM
+    </button>
+    <button
+      *ngIf="venda.LCTO && empresa"
+      [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
+      mat-raised-button
+      color="accent"
+      (click)="confirmaVenda()"
+      class=""
+    >
+      CONFIRMA
+    </button>
+    <button
+      *ngIf="venda.LCTO && empresa"
+      [disabled]="!venda.PAGAMENTO.length"
+      mat-raised-button
+      color="warn"
+      (click)="cancelaPagto()"
+      class=""
+    >
+      CANCELA PAGTO
+    </button>
     <button
       *ngIf="venda.LCTO && empresa"
       [disabled]="!venda.PAGAR.valor"

@@ -15,6 +15,7 @@ import { ModalPagtoNPComponent } from "./modal-pagto-np/modal-pagto-np.component
 import { ModalBuscaVendaComponent } from "./modal-busca-venda/busca-venda.component";
 import { ModalBuscaGenericoComponent } from "../shared/components/modal-busca-generico/busca-generico.component";
 import { ModalNfeComponent } from "./modal-nfe/modal-nfe.component";
+import { ModalSelectTransitoComponent } from "./modal-select-transito/modal-select-transito.component";
 
 import { Produto } from "../shared/models/produto";
 import { Cliente } from "../shared/models/Cliente";
@@ -24,7 +25,8 @@ import { Deus } from "../shared/models/deus";
 import { Param } from "../shared/models/param";
 
 import * as dinheiro from "../shared/models/dinheiro";
-
+import * as net from "net";
+import * as ini from "ini";
 // import * as bemafi from '../../Bemafi32';
 
 @Component({
@@ -92,6 +94,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
     ""
   );
   Pagar: number;
+  cupom = "";
   cartao = [];
   boleto = [];
   pagamento: Deus[] = [];
@@ -221,6 +224,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
     this.DOM.inputVend.focus();
   }
   clicaAbreVenda(tipo) {
+    this.venda.PAGAMENTO = [];
     this.venda = new Venda(
       null,
       "",
@@ -675,7 +679,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         for (const transito of this.venda.TRANSITO) {
           console.log(transito);
           const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
-          console.log(percent);
+          console.log("percentual", percent);
           this.venda.PAGAMENTO.push({
             CODIGO: null,
             CODDEC: null,
@@ -752,7 +756,6 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             this.venda.PAGAMENTO.push(tarifa);
           }
         } else {
-          const newDate = new Date(data);
           const valor: number = Number(
             (res.valor / res.fPagto.PARCELAS).toFixed(2)
           );
@@ -760,6 +763,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             (res.valor - valor * res.fPagto.PARCELAS).toFixed(2)
           );
           for (let index = 0; index < res.fPagto.PARCELAS; index++) {
+            const newDate = new Date(data);
             const pgto = {
               CODIGO: null,
               CODDEC: null,
@@ -856,21 +860,60 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
         const data = new Date(this.venda.DATA);
-        this.boleto.push({
-          ID: null,
-          VALOR: res.valor,
-          LCTO: this.venda.LCTO,
-          VENCIMENTOS: res.fPagto.VENCIMENTOS,
-          BANDEIRA: res.fPagto.NOME_BANCO,
-          PARCELAS: res.fPagto.PARCELAS
-        });
-        const newDate = new Date(data);
         const valor: number = Number(
           (res.valor / res.fPagto.PARCELAS).toFixed(2)
         );
         const resto: number = Number(
           (res.valor - valor * res.fPagto.PARCELAS).toFixed(2)
         );
+        for (let index = 0; index < res.fPagto.PARCELAS; index++) {
+          const newDate = new Date();
+          this.boleto.push({
+            CODIGO: null,
+            VALOR:
+              index + 1 === res.fPagto.PARCELAS
+                ? new dinheiro(valor + resto)
+                : new dinheiro(valor),
+            LCTO: this.venda.LCTO,
+            VENCIMENTO: new Date(
+              newDate.setDate(newDate.getDate() + res.fPagto.PERIODO)
+            ),
+            DOCUMENTO:
+              this.venda.LCTO.toString() +
+              "-" +
+              (index + 1) +
+              "/" +
+              res.fPagto.PARCELAS,
+            STATUS: "GERADO"
+          });
+        }
+        // se tipo transito = 3 o valor vai para a conta cliente, do contrário vai para a receita
+        for (const transito of this.venda.TRANSITO) {
+          console.log(transito);
+          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
+          console.log(percent);
+          this.venda.PAGAMENTO.push({
+            CODIGO: null,
+            CODDEC: null,
+            EMPRESA: this.empresa,
+            CODPARC: this.cliente.CODIGO,
+            LCTO: this.venda.LCTO,
+            TIPOLCTO: "V",
+            DOCUMENTO: transito.TRANSITO.toString(),
+            DATAEMISSAO: this.venda.DATA,
+            DATAVCTO: new Date(),
+            DATALIQUID: new Date(),
+            DEBITO: this.contasEmpresas[this.empresa].BOLETO,
+            CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
+            VALOR: new dinheiro(res.valor * percent),
+            PROJECAO: 1,
+            OBS: "",
+            PERMITEAPAGA: null,
+            TIPOOPERACAO: 5,
+            TRAVACREDITO: null
+          });
+        }
+        const newDate = new Date();
         for (let index = 0; index < res.fPagto.PARCELAS; index++) {
           const pgto = {
             CODIGO: null,
@@ -899,7 +942,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
-            TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
+            TIPOOPERACAO: 21,
             TRAVACREDITO: null
           };
           this.venda.PAGAMENTO.push(pgto);
@@ -1028,20 +1071,99 @@ export class CaixaComponent implements OnInit, AfterViewInit {
     this.inputReturn();
   }
 
-  confirmaCupom() {
+  clicaCupom() {
+    const dialogRef = this.dialog.open(ModalSelectTransitoComponent, {
+      width: "40vw",
+      height: "70vh",
+      hasBackdrop: true,
+      disableClose: false,
+      data: { transitos: this.venda.TRANSITO, tipo: "CPF" }
+    });
+
+    dialogRef.afterClosed().subscribe(res => {
+      console.log("retorno", res);
+      this.confirmaCupom(res.CPF, res.TRANSITO);
+    });
+  }
+
+  confirmaCupom(cpfcupom: string, trSelecionado) {
     // confirma a venda
-    if (this.venda.LCTO !== null) {
-      // altera as contas projeção para as contas fiscais em todos meios de pagamento (tipo 5)
-      for (const pagto of this.venda.PAGAMENTO) {
-        if (
-          pagto.CREDITO == this.contasEmpresas[this.empresa].CLIENTES &&
-          pagto.DOCUMENTO
-        ) {
-          pagto.CREDITO = this.contasEmpresas[this.empresa].RECEITA;
+    const caixaService = this.caixaService;
+    const confirmaVenda = this.confirmaVenda;
+    const transito = this.venda.TRANSITO.find(
+      element => element.TRANSITO === trSelecionado
+    );
+    const comandos = [];
+    comandos.push(`ECF.AbreCupom("${cpfcupom}","","")\r\n.\r\n`);
+    comandos.push(`ECF.NumCupom\r\n.\r\n`);
+    for (const item of this.venda.PRODUTOS) {
+      if (item.TRANSITO === transito.TRANSITO) {
+        if (item.SITTRIB == "060") {
+          item.ALIQ = "FF";
+        } else if (!item.ALIQ) {
+          item.ALIQ = "FF";
+        } else {
+          item.ALIQ = item.ALIQ;
+        }
+        let descr = item.DESCRICAO;
+        if (descr.length > 29) {
+          descr = descr.slice(0, 28);
+        }
+        comandos.push(
+          `ECF.VendeItem
+          ("${item.CODPROFISCAL.toString()}",
+          "${descr}", "${item.ALIQ.toString()}",
+          ${item.QTDFISCAL.toString()},
+          ${item.VALORUNITFISCAL.valueStr()})\r\n.\r\n`
+        );
+      }
+    }
+    comandos.push(`ECF.SubtotalizaCupom\r\n.\r\n`);
+    comandos.push(
+      `ECF.EfetuaPagamento("01", ${transito.VALOR.valor})\r\n.\r\n`
+    );
+    comandos.push(`ECF.FechaCupom\r\n.\r\n`);
+    const socketClient = net.connect({ host: "localhost", port: 3434 }, () => {
+      console.log(comandos);
+      let contador = 0;
+      let cupom = "";
+      const venda = this.venda;
+      const contasEmpresas = this.contasEmpresas;
+      const empresa = this.empresa;
+      function executaComandos() {
+        console.log("executa comando");
+        if (contador <= comandos.length) {
+          console.log(comandos[contador]);
+          socketClient.write(comandos[contador]);
+          socketClient.on("data", data => {
+            if (contador == 1) {
+              cupom = data.toString().slice(3);
+            }
+            console.log(data.toString());
+            contador++;
+            executaComandos();
+          });
+        } else {
+          socketClient.destroy();
+          if (venda.LCTO !== null) {
+            // altera as contas projeção para as contas fiscais em todos meios de pagamento (tipo 5)
+            for (const pagto of venda.PAGAMENTO) {
+              if (
+                pagto.CREDITO == contasEmpresas[empresa].CLIENTES &&
+                pagto.DOCUMENTO == trSelecionado
+              ) {
+                pagto.CREDITO = contasEmpresas[empresa].RECEITA;
+              }
+            }
+          }
+          caixaService
+            .gravaCupom({ transito: trSelecionado, cupom: cupom })
+            .subscribe(ok => console.log(ok));
+          confirmaVenda();
         }
       }
-      this.confirmaVenda();
-    }
+      executaComandos();
+    });
   }
 
   // Confirma a Venda
@@ -1058,6 +1180,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         console.log(rest);
         this.imprime(this.venda).then(res => {
           this.inputReturn();
+          this.venda.PAGAMENTO = [];
+          this.cartao = [];
+          this.boleto = [];
           this.venda = new Venda(
             null,
             "",
@@ -1145,7 +1270,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         (item, i) => `<tr>
         <td colspan='3'>${item.DATAVCTO.toLocaleDateString()}</td>
         <td>${item.VALOR.toString()}</td>
-        <td colspan='3'>${this.tipoOperacao.find(x => item.TIPOOPERACAO == x.CODIGO).SIGLA}</td>
+        <td colspan='3'>${
+          this.tipoOperacao.find(x => item.TIPOOPERACAO == x.CODIGO).SIGLA
+        }</td>
         </tr>`
       )
       .join("")}
@@ -1217,9 +1344,38 @@ export class CaixaComponent implements OnInit, AfterViewInit {
   };
   // funcção de Inicialização
   ngOnInit() {
+    const socketClient = net.connect({ host: "localhost", port: 3434 }, () => {
+      let contador = 0;
+      function testaCupom() {
+        console.log("testa cupom");
+        socketClient.write("ECF.TestaPodeAbrirCupom\r\n.\r\n");
+      }
+      socketClient.on("data", data => {
+        testaCupom();
+        console.log(data.toString());
+        const retorno = ini.parse(data.toString());
+        console.log(retorno);
+        contador++;
+        if (contador === 10) {
+          socketClient.destroy();
+        }
+      });
+      socketClient.on("end", data => {
+        console.log("end", data.toString());
+        // socketClient.destroy();
+      });
+      socketClient.on("error", data => {
+        console.log("erros", data);
+        // socketClient.destroy();
+      });
+      socketClient.on("close", () => {
+        console.log("conexão terminada");
+        // socketClient.destroy();
+      });
+    });
     this.getEmpresas();
     this.caixaService
-    .getTipoOperacao()
-    .subscribe(tipos => (this.tipoOperacao = tipos));
+      .getTipoOperacao()
+      .subscribe(tipos => (this.tipoOperacao = tipos));
   }
 }

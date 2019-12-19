@@ -141,6 +141,17 @@ routes.route("/confirmavenda").post((req, res) => {
           return string;
         })
         .join("")}
+        ${boleto
+          .map((item, i) => {
+            console.log("cartao", item);
+            const string = `INSERT INTO BOLETO
+          (CODIGO, STATUS, DOCUMENTO, LCTO, VALOR, VENCIMENTO)
+          VALUES
+          (${item.CODIGO},'${item.STATUS}','${item.DOCUMENTO}',${item.LCTO},'${item.VALOR.valor}',${dataFirebird(item.VENCIMENTO)});
+          `;
+            return string;
+          })
+          .join("")}
       ${pagamentos
         .map((item, i) => {
           const string = `INSERT INTO DEUS
@@ -605,6 +616,29 @@ routes
     VALUES (${dados.EMPRESA},${dados.NOTA},'${dados.CHAVE}',
     '${dados.PROTOCOLO}','${dados.PROTOCOLOCANCELA}')
     MATCHING (EMPRESA,NOTA)`;
+    console.log(sql);
+    estoque.get(function(err, db) {
+      if (err) throw err;
+      db.query(sql, function(err, result) {
+        console.log("gravou");
+        if (err) throw err;
+        db.detach(function() {
+          res.json("ok");
+        });
+      });
+      // IMPORTANT: close the connection
+    });
+  });
+  routes
+  .route("/numerocupom")
+  // funçao da do cupom fiscal
+  .post((req, res) => {
+    let dados = req.body.dados;
+    console.log(dados);
+    let sql = `
+    update TRANSITO
+    SET CUPOM = ${Number(dados.cupom)}
+    where ID_TRANSITO = ${dados.transito}`;
     console.log(sql);
     estoque.get(function(err, db) {
       if (err) throw err;
@@ -1167,7 +1201,7 @@ routes
 
   `
     console.log('sql', sql)
-    
+
     estoque.get(function (err, db) {
       if (err)
         throw err;
@@ -1247,7 +1281,7 @@ routes.route("/Atualizadeuslcto").post((req, res) => {
       });
     });
   });
-});
+
 
 routes.route("/Deletedeus").post((req, res) => {
   console.log("estou aqui");

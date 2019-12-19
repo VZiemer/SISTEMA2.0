@@ -1,26 +1,34 @@
 <h1 mat-dialog-title class="titte">Pagamento com Dinheiro</h1>
 <hr />
 <div mat-dialog-content class="container">
-  <mat-form-field appearance="fill">
-    <mat-label>Transito</mat-label>
-    <mat-select
-      [(ngModel)]="transito"
-      [ngModelOptions]="{ standalone: true }"
-    >
-      <mat-option *ngFor="let item of transitos" [value]="item.TRANSITO">{{
-        item.TRANSITO
-      }}({{item.VALOR}})</mat-option>
-    </mat-select>
-  </mat-form-field>
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Transito</mat-label>
+      <mat-select
+        [(ngModel)]="transito"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        <mat-option *ngFor="let item of transitos" [value]="item.TRANSITO"
+          >{{ item.TRANSITO }}({{ item.VALOR }})</mat-option
+        >
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div>
+    <mat-form-field appearance="fill" *ngIf="mostraCPF">
+      <mat-label>CPF</mat-label>
+      <input
+        matInput
+        [(ngModel)]="cpf"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </mat-form-field>
+  </div>
 </div>
 <hr />
 <div mat-dialog-actions class="footer">
   <button mat-raised-button (click)="onNoClick()">cancela</button>
-  <button
-    mat-raised-button
-    [mat-dialog-close]="transito"
-    cdkFocusInitial
-  >
+  <button mat-raised-button [mat-dialog-close]="{TRANSITO: transito, CPF: cpf}" cdkFocusInitial>
     Confirma
   </button>
 </div>

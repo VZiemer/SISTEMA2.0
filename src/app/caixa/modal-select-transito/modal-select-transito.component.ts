@@ -14,11 +14,16 @@ import { FormControl, Validators } from "@angular/forms";
 export class ModalSelectTransitoComponent implements OnInit {
   transitos: [];
   transito: number;
+  cpf = "";
+  mostraCPF = false;
   constructor(
     public dialogRef: MatDialogRef<ModalSelectTransitoComponent>,
     private caixaService: CaixaService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
+    if (data.tipo == "CPF") {
+      this.mostraCPF = true;
+    }
     console.log(
       data.transitos.filter(item => {
         if (item.STATUS == 8) { return item; }
