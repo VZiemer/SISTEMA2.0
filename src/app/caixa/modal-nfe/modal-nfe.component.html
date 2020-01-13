@@ -117,7 +117,7 @@
             <div>
               <mat-form-field appearance="outline">
                 <mat-label>Nota Fiscal</mat-label>
-                <input matInput type="text" value="teste" />
+                <input matInput type="text" value="" />
               </mat-form-field>
 
               <mat-form-field>
@@ -365,16 +365,16 @@
           </thead>
           <tbody>
             <tr *ngFor="let item of nota.getItens(); let i = index">
-              <td>{{ item.getCodigo() }}</td>
-              <td>{{ item.getDescricao() }}</td>
-              <td>{{ item.getNcmSh() }}</td>
-              <td>{{ item.getIcms().getSituacaoTributaria() }}</td>
-              <td>{{ item.getIcms().getCfop() }}</td>
-              <td>{{ item.getQuantidade() }}</td>
-              <td>{{ item.getUnidade() }}</td>
-              <td>{{ item.getValorUnitario() | currency }}</td>
-              <td>{{ item.getValorTotal() | currency }}</td>
-              <td>{{ item.getIcms().getValorDoIcms() }}</td>
+              <td md-column>{{ item.getCodigo() }}</td>
+              <td md-column>{{ item.getDescricao() }}</td>
+              <td md-column>{{ item.getNcmSh() }}</td>
+              <td md-column>{{ item.getIcms().getSituacaoTributaria() }}</td>
+              <td md-column>{{ item.getIcms().getCfop() }}</td>
+              <td md-column>{{ item.getQuantidade() }}</td>
+              <td md-column>{{ item.getUnidade() }}</td>
+              <td md-column>{{ item.getValorUnitario() | currency }}</td>
+              <td md-column>{{ item.getValorTotal() | currency }}</td>
+              <td md-column>{{ item.getIcms().getValorDoIcms() }}</td>
             </tr>
           </tbody>
         </table>
@@ -507,10 +507,9 @@
           <legend>Informações Adicionais</legend>
           <div layout-gt-xs="row">
             <mat-form-field appearance="outline">
-              <label>Informações</label>
-              <textarea
+              <textarea  #ta (blur)="nota.getInformacoesComplementares(ta.value)"
                 matInput
-                [value]="nota._informacoesComplementares"
+                [value]="nota.getInformacoesComplementares()"
                 rows="4"
               ></textarea>
             </mat-form-field>

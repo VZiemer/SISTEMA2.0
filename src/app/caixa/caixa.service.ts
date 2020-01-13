@@ -24,7 +24,13 @@ const httpOptions = {
 export class CaixaService {
   // apiURL = "http://localhost:4200/api/rotas";
   apiURL = "http://sistema.florestalferragens.com.br/rotas";
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+
+
+  getTributosIbpt(ncm: string, uf: string): Observable<any> {
+    return this.http.get<any>(`http://ibpt.nfe.io/ncm/${uf}/${ncm}.json`).pipe();
+  }
 
   getProduto(id: void): Observable<Produto> {
     return this.http.get<Produto>(this.apiURL + "/produto/" + id).pipe();
@@ -50,8 +56,8 @@ export class CaixaService {
     return this.http
       .get<[]>(
         this.apiURL +
-          "/parceiro" +
-          `?CODIGO=${codigo}&NOME=${nome}&TIPOPARC=${tipoParc}`
+        "/parceiro" +
+        `?CODIGO=${codigo}&NOME=${nome}&TIPOPARC=${tipoParc}`
       )
       .pipe();
   }

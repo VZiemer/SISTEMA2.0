@@ -1,7 +1,24 @@
 import { app, BrowserWindow, screen } from "electron";
+import * as log from "electron-log";
+import { autoUpdater } from "electron-updater"
 import * as path from "path";
 import * as url from "url";
 import * as fs from "fs";
+
+
+export default class AppUpdater {
+  constructor() {
+    const log = require("electron-log")
+    log.transports.file.level = "debug"
+    autoUpdater.logger = log
+    autoUpdater.checkForUpdatesAndNotify()
+  }
+}
+
+autoUpdater.logger = require("electron-log")
+
+
+
 
 let win, serve;
 const args = process.argv.slice(1);
@@ -82,12 +99,29 @@ function createWindow() {
     }
   );
 }
+autoUpdater.on('update-downloaded', (ev, info) => {
+  // Wait 5 seconds, then quit and install
+  // In your application, you don't need to wait 5 seconds.
+  // You could call autoUpdater.quitAndInstall(); immediately
+  setTimeout(function() {
+    autoUpdater.quitAndInstall();  
+  }, 5000)
+})
 
 try {
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
+  app.on('ready', function()  {
+    autoUpdater.checkForUpdates();
+  });
+  
   app.on("ready", createWindow);
+
+
+  
+
+
 
   // Quit when all windows are closed.
   app.on("window-all-closed", () => {

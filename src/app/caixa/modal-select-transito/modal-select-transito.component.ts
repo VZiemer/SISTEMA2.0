@@ -26,11 +26,11 @@ export class ModalSelectTransitoComponent implements OnInit {
     }
     console.log(
       data.transitos.filter(item => {
-        if (item.STATUS == 8) { return item; }
+        if (item.STATUS == 8 || item.STATUS == 4 && !item.NFE && !item.CUPOM) { return item; }
       })
     );
     this.transitos = data.transitos.filter(item => {
-      if (item.STATUS == 8) { return item; }
+      if (item.STATUS == 8 || item.STATUS == 4 && !item.NFE && !item.CUPOM) { return item; }
     });
   }
 

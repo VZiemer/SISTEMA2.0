@@ -14,6 +14,7 @@ import { ModalPagtoBoletoComponent } from "./modal-pagto-boleto/modal-pagto-bole
 import { ModalBuscaVendaComponent } from "./modal-busca-venda/busca-venda.component";
 import { ModalNfeComponent } from "./modal-nfe/modal-nfe.component";
 import { ModalSelectTransitoComponent } from "./modal-select-transito/modal-select-transito.component";
+import { ModalErrorComponent } from "./modal-error/modal-error.component";
 
 import { MatTableModule } from "@angular/material/table";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -34,7 +35,8 @@ import { AngularMaterialModule } from "../angular-material.module";
     ModalPagtoBoletoComponent,
     ModalBuscaVendaComponent,
     ModalNfeComponent,
-    ModalSelectTransitoComponent
+    ModalSelectTransitoComponent,
+    ModalErrorComponent
   ],
   imports: [
     CommonModule,
@@ -60,7 +62,8 @@ import { AngularMaterialModule } from "../angular-material.module";
     ModalPagtoNPComponent,
     ModalPagtoBoletoComponent,
     ModalNfeComponent,
-    ModalSelectTransitoComponent
+    ModalSelectTransitoComponent,
+    ModalErrorComponent
   ]
 })
 export class CaixaModule {}

@@ -201,7 +201,7 @@ routes
       db.query(
         `select v.lcto,v.data,v.codcli,v.nomecli,v.empresa,v.codvend,v.frete,v.total,
         tr.id_transito,tr.status, tr.peso,tr.volumes,tr.outra_desp,tr.desconto,tr.total_nota,
-        tr.tipofrete,tr.tipo as tipo_transito,tr.vnf as vtransito,
+        tr.tipofrete,tr.nfe,tr.cupom,tr.tipo as tipo_transito,tr.vnf as vtransito,
         c.liberafat,c.liberanp,c.cgc,c.razao,c.insc,c.endereco,c.numero,c.bairro,
         c.complemento,c.cidade,c.cep,c.fone,c.email,
         ci.codibge,c.codcidade,ci.estado,ci.cod_estado,
@@ -565,30 +565,6 @@ routes
   `
       )
       .join("")}
-  ${tributos
-    .map((item, i) => {
-      const string = `INSERT INTO DEUS
-    (CODIGO, CODDEC, EMPRESA, CODPARC, LCTO, TIPOLCTO, DOCUMENTO, DATAEMISSAO, DATAVCTO, DATALIQUID, DEBITO, CREDITO, VALOR, PROJECAO, OBS,PERMITEAPAGA,TIPOOPERACAO,TRAVACREDITO)
-    VALUES
-    (${item.CODIGO},${
-        ultimoDoc === item.DOCUMENTO
-          ? `(select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador}`
-          : item.CODDEC
-      },${item.EMPRESA},${item.CODPARC},${item.LCTO},'${item.TIPOLCTO}','${
-        item.DOCUMENTO
-      }',${dataFirebird(item.DATAEMISSAO)},${dataFirebird(
-        item.DATAVCTO
-      )},${dataFirebird(item.DATALIQUID)},${item.DEBITO},${item.CREDITO},${
-        item.VALOR.valor
-      },${item.PROJECAO},'${item.OBS}',${item.PERMITEAPAGA},${
-        item.TIPOOPERACAO
-      },${item.TRAVACREDITO});
-    `;
-      item.DOCUMENTO === ultimoDoc ? acumulador++ : (acumulador = 0);
-      ultimoDoc = item.DOCUMENTO;
-      return string;
-    })
-    .join("")}
   end`;
     console.log(sql);
     estoque.get(function(err, db) {
@@ -681,7 +657,10 @@ routes
       if (err) throw err;
       // db = DATABASE
       db.query(
-        `select * from deus where lcto = ${req.query.lcto} and tipooperacao not in(5,7)`,
+        `select deus.*, dd.tipooperacao,tipooperacao.* from (
+          select sum(valor) as valor,coddec, datavcto from deus where lcto=${req.query.lcto} and tipooperacao <> 5 group by deus.coddec ,deus.datavcto ) as deus
+          join deus as dd on deus.coddec = dd.codigo
+          join tipooperacao on dd.tipooperacao=tipooperacao.codigo`,
         function(err, result) {
           // IMPORTANT: close the connection
           if (err) res.status(500).send(err);

@@ -5,7 +5,7 @@ import { Observable } from "rxjs";
 import { Venda } from "../../shared/models/venda";
 import { CaixaService } from "../../caixa/caixa.service";
 import { Deus } from "../../shared/models/deus";
-
+import { remote } from 'electron';
 import * as dinheiro from "../../shared/models/dinheiro";
 import * as nfe from "node-nfe";
 import * as ini from "ini";
@@ -13,6 +13,7 @@ import * as ini from "ini";
 import * as net from "net";
 
 import { ModalSelectTransitoComponent } from "../modal-select-transito/modal-select-transito.component";
+import { ModalErrorComponent } from "../modal-error/modal-error.component";
 
 function zeroEsq(valor, comprimento, digito) {
   const length = comprimento - valor.toString().length + 1;
@@ -24,7 +25,7 @@ function converteData(texto) {
   }
   const data = texto
     .match(/(\d{2,4})(\/|-|\.)(\d{2})\2(\d{2,4})/)
-    .filter(function(elem, index, array) {
+    .filter(function (elem, index, array) {
       return Number(elem);
     });
   if (data[2].length === 4) {
@@ -238,7 +239,9 @@ export class ModalNfeComponent implements OnInit {
             VALOR: new dinheiro(venda[0].VTRANSITO),
             DESCONTO: venda[0].DESCONTO,
             FRETE: venda[0].FRETE,
-            SEGURO: venda[0].SEGURO
+            SEGURO: venda[0].SEGURO,
+            NFE: venda[0].NFE,
+            CUPOM: venda[0].CUPOM
           });
         }
         this.venda.insereTransporte(
@@ -299,6 +302,17 @@ export class ModalNfeComponent implements OnInit {
         console.log("danfe", danfe);
         this.nota = danfe;
         this.tabSelect = 1;
+      }, error => {
+        console.log(error);
+        const dialogRef = this.dialog.open(ModalErrorComponent, {
+          width: "40vw",
+          height: "70vh",
+          hasBackdrop: true,
+          disableClose: false,
+          data: { error: error }
+        });
+
+        dialogRef.afterClosed().subscribe(res => { })
       });
     });
   }
@@ -320,7 +334,7 @@ export class ModalNfeComponent implements OnInit {
             .comTelefone(dadosEmpresa.FONE)
             .comEmail(dadosEmpresa.EMAIL)
             .comCrt(dadosEmpresa.CRT)
-            .comIcmsSimples(dadosEmpresa.ICMS_SIMPLES)
+            // .comIcmsSimples(dadosEmpresa.ICMS_SIMPLES)
             .comEndereco(
               new Endereco()
                 .comLogradouro(dadosEmpresa.ENDERECO)
@@ -333,25 +347,33 @@ export class ModalNfeComponent implements OnInit {
                 .comCodMunicipio(dadosEmpresa.CODIBGE)
                 .comUf(dadosEmpresa.ESTADO)
             );
-          this.destinatario
-            .comNome(venda.RAZAO)
-            .comCodigo(venda.CODCLI)
-            .comRegistroNacional(venda.CGC)
-            .comInscricaoEstadual(venda.INSC)
-            .comTelefone(venda.FONE)
-            .comEmail(venda.EMAIL)
-            .comEndereco(
-              new Endereco()
-                .comLogradouro(transito.ENDERECO)
-                .comNumero(transito.NUMERO)
-                .comComplemento(transito.COMPLEMENTO)
-                .comCep(transito.CEP)
-                .comBairro(transito.BAIRRO)
-                .comMunicipio(transito.CIDADE)
-                .comCidade(transito.CIDADE)
-                .comUf(transito.ESTADO)
-                .comCodMunicipio(transito.CODIBGE)
-            );
+
+          try {
+            this.destinatario
+              .comNome(venda.RAZAO)
+              .comCodigo(venda.CODCLI)
+              .comRegistroNacional(venda.CGC)
+              .comInscricaoEstadual(venda.INSC)
+              .comTelefone(venda.FONE)
+              .comEmail(venda.EMAIL)
+              .comEndereco(
+                new Endereco()
+                  .comLogradouro(transito.ENDERECO)
+                  .comNumero(transito.NUMERO)
+                  .comComplemento(transito.COMPLEMENTO)
+                  .comCep(transito.CEP)
+                  .comBairro(transito.BAIRRO)
+                  .comMunicipio(transito.CIDADE)
+                  .comCidade(transito.CIDADE)
+                  .comUf(transito.ESTADO)
+                  .comCodMunicipio(transito.CODIBGE)
+              );
+          }
+          catch (error) {
+            observable.error(error);
+          }
+
+
           this.transportador
             .comNome(venda.TRANSPORTE.TRANSPORTADOR)
             .comCodigo(venda.TRANSPORTE.TRANSPORTADOR)
@@ -399,10 +421,10 @@ export class ModalNfeComponent implements OnInit {
               .getDestinatario()
               .getEndereco()
               .getUf() !==
-              this.danfe
-                .getEmitente()
-                .getEndereco()
-                .getUf()
+            this.danfe
+              .getEmitente()
+              .getEndereco()
+              .getUf()
           ) {
             naturezaOperacao =
               " Devolução de venda de mercadoria fora do estado";
@@ -417,10 +439,10 @@ export class ModalNfeComponent implements OnInit {
               .getDestinatario()
               .getEndereco()
               .getUf() !==
-              this.danfe
-                .getEmitente()
-                .getEndereco()
-                .getUf()
+            this.danfe
+              .getEmitente()
+              .getEndereco()
+              .getUf()
           ) {
             naturezaOperacao = " AMOSTRA GRÁTIS";
           }
@@ -430,10 +452,10 @@ export class ModalNfeComponent implements OnInit {
               .getDestinatario()
               .getEndereco()
               .getUf() !==
-              this.danfe
-                .getEmitente()
-                .getEndereco()
-                .getUf()
+            this.danfe
+              .getEmitente()
+              .getEndereco()
+              .getUf()
           ) {
             naturezaOperacao =
               "Retorno de bem recebido por conta de contrato de comodato";
@@ -445,10 +467,10 @@ export class ModalNfeComponent implements OnInit {
               .getDestinatario()
               .getEndereco()
               .getUf() !==
-              this.danfe
-                .getEmitente()
-                .getEndereco()
-                .getUf()
+            this.danfe
+              .getEmitente()
+              .getEndereco()
+              .getUf()
           ) {
             naturezaOperacao = "VENDA DE MERCADORIA FORA DO ESTADO";
           }
@@ -494,9 +516,29 @@ export class ModalNfeComponent implements OnInit {
                   const duplicata = new Duplicata();
                   duplicata
                     .comNumero(this.zeroEsq(_numDuplicata, 3, 0))
-                    .comValor(item.VALOR.valor)
+                    .comValor(item.VALOR)
                     .comVencimento(item.DATAVCTO);
                   this.danfe._duplicatas.push(duplicata);
+                } else if (sigla.SIGLA === "CV") {
+                  (_formaPagto = "Á Prazo"),
+                    (_meioPagto = "Cartão de Crédito"),
+                    (_integracaoPagto = "Não Integrado"),
+                    (_bandeiraCartao = "Visa");
+                } else if (sigla.SIGLA === "CH") {
+                  (_formaPagto = "Á Prazo"),
+                    (_meioPagto = "Cartão de Crédito"),
+                    (_integracaoPagto = "Não Integrado"),
+                    (_bandeiraCartao = "Visa");
+                } else if (sigla.SIGLA === "CV") {
+                  (_formaPagto = "Á Prazo"),
+                    (_meioPagto = "Cartão de Crédito"),
+                    (_integracaoPagto = "Não Integrado"),
+                    (_bandeiraCartao = "Visa");
+                } else if (sigla.SIGLA === "CV") {
+                  (_formaPagto = "Á Prazo"),
+                    (_meioPagto = "Cartão de Crédito"),
+                    (_integracaoPagto = "Não Integrado"),
+                    (_bandeiraCartao = "Visa");
                 } else if (sigla.SIGLA === "CV") {
                   (_formaPagto = "Á Prazo"),
                     (_meioPagto = "Cartão de Crédito"),
@@ -519,8 +561,9 @@ export class ModalNfeComponent implements OnInit {
                     (_bandeiraCartao = "Mastercard");
                 } else if (sigla.SIGLA === "CH") {
                   (_formaPagto = "Á Vista"),
-                    (_meioPagto = "Cheque"),
-                    (_integracaoPagto = "Não Integrado");
+                    (_meioPagto = "Cartão de Crédito"),
+                    (_integracaoPagto = "Não Integrado"),
+                    (_bandeiraCartao = "Hipercard");
                 } else {
                   // se nenhum atender considerar Dinheiro
                   (_formaPagto = "Á Vista"),
@@ -561,6 +604,8 @@ export class ModalNfeComponent implements OnInit {
             this.danfe._pagamentos.push(pagamento);
           }
 
+
+
           for (const item of venda.PRODUTOS) {
             if (item.TRANSITO === transito.TRANSITO) {
               console.log(item);
@@ -584,6 +629,9 @@ export class ModalNfeComponent implements OnInit {
                 this.operacao,
                 this.danfe.getEmitente().getIcmsSimples()
               );
+
+              // this.caixaService.getTributosIbpt(item.NCM, this.danfe.getDestinatario().getEndereco().getUf().toLowerCase()).subscribe(tributos => {
+              // })
               this.danfe.adicionarItem(
                 new Item()
                   .comCodigo(item.CODPROFISCAL)
@@ -591,10 +639,13 @@ export class ModalNfeComponent implements OnInit {
                   .comDescricao(item.DESCRICAO)
                   .comNcmSh(item.NCM)
                   .comIcms(icms)
+                  .comTributoAproximado(item.BASECALC,this.danfe.getDestinatario().getEndereco().getUf(),item.NCM,item.ORIG)
                   // .comOCst('020')
                   // .comCfop('6101')
                   .comUnidade(item.UNIDADE)
                   .comQuantidade(item.QTDFISCAL)
+                  .comValorDaCofins(item.BASECALC)
+                  .comValorDoPis(item.BASECALC)
                   .comValorUnitario(item.VALORUNITFISCAL)
                   .comValorDoFrete(item.FRETEPROD)
                   .comValorDoIpiDevolucao(
@@ -603,57 +654,72 @@ export class ModalNfeComponent implements OnInit {
                       : 0
                   )
               );
+
             }
           }
+
           const impostos = new Impostos();
           impostos.comBaseDeCalculoDoIcms(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               return a.soma(item.getIcms().getBaseDeCalculoDoIcms());
             }, new dinheiro(0))
           );
           impostos.comValorDoIcms(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               return a.soma(item.getIcms().getValorDoIcms());
             }, new dinheiro(0))
           );
           impostos.comBaseDeCalculoDoIcmsSt(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               return a.soma(item.getIcms().getBaseDeCalculoDoIcmsSt());
             }, new dinheiro(0))
           );
           impostos.comValorDoIcmsSt(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               return a.soma(item.getIcms().getValorDoIcmsSt());
             }, new dinheiro(0))
           );
           impostos.comValorDoImpostoDeImportacao(0);
-          impostos.comValorDoPis(0);
+          impostos.comValorDoPis(
+            this.danfe.getItens().reduce(function (a, item) {
+              return a.soma(item.getValorDoPis());
+            }, new dinheiro(0))
+          );
           impostos.comValorTotalDoIpi(0);
-          impostos.comValorDaCofins(0);
+          impostos.comValorDaCofins(
+            this.danfe.getItens().reduce(function (a, item) {
+              return a.soma(item.getValorDaCofins());
+            }, new dinheiro(0))
+          );
+          impostos.comValorTotalFundoCombatePobreza(
+            this.danfe.getItens().reduce(function (a, item) {
+              return a.soma(item.getIcms().getValorFundoCombatePobrezaDestino());
+            }, new dinheiro(0))
+          );
           impostos.comBaseDeCalculoDoIssqn(0);
           impostos.comValorTotalDoIssqn(0);
           this.danfe.comImpostos(impostos);
 
           this.danfe.comValorTotalDoIpiDevol(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               return a.soma(item.getValorDoIpiDevolucao());
             }, new dinheiro(0))
           );
           this.danfe.comValorTotalDaNota(
             this.danfe.getValorTotalDoIpiDevol().valor +
-              this.danfe.getItens().reduce(function(a, item) {
-                return a
-                  .soma(item.getValorDoFrete())
-                  .soma(item.getValorTotal());
-              }, new dinheiro(0))
+            this.danfe.getItens().reduce(function (a, item) {
+              return a
+                .soma(item.getValorDoFrete())
+                .soma(item.getValorTotal());
+            }, new dinheiro(0))
           );
           this.danfe.comValorTotalDosProdutos(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               return a.soma(item.getValorTotal());
             }, new dinheiro(0))
           );
           this.danfe.comValorBaseCalculoDoIpiDevol(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               if (item.getPorcentagemDoIpiDevolucao()) {
                 return a.soma(item.getValorTotal());
               } else {
@@ -662,13 +728,13 @@ export class ModalNfeComponent implements OnInit {
             }, new dinheiro(0))
           );
           this.danfe.comValorTotalDoIcmsSn(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               return a.soma(item.getIcms().getvalorCredICMSSN());
             }, new dinheiro(0))
           );
           this.danfe.comValorTotalDosServicos(0);
           this.danfe.comValorDoFrete(
-            this.danfe.getItens().reduce(function(a, item) {
+            this.danfe.getItens().reduce(function (a, item) {
               return a.soma(item.getValorDoFrete());
             }, new dinheiro(0))
           );
@@ -676,57 +742,71 @@ export class ModalNfeComponent implements OnInit {
           this.danfe.comDesconto(0);
           this.danfe.comOutrasDespesas(0);
 
-          let infoComplementar =
-            "Documento emitido por ME ou EPP optante pelo simples nacional;";
-          console.log(
-            "codregime",
-            this.danfe.getEmitente().getCodigoRegimeTributario()
-          );
-          if (
-            this.danfe.getEmitente().getCodigoRegimeTributario() === "1" &&
-            this.operacao == 1
-          ) {
-            infoComplementar +=
-              "Valor dos produtos Tributado pelo Simples Nacional R$" +
-              this.danfe.getItens().reduce(function(a, item) {
-                return a.soma(item.getValorTotal());
-              }, new dinheiro(0)) +
-              ";";
-            infoComplementar +=
-              "Valor dos produtos Substituicao Tributaria " +
-              this.danfe.getImpostos().getBaseDeCalculoDoIcmsStFormatada() +
-              ";";
-            if (
-              this.danfe.getDestinatario().getIdenfificaContribuinteIcms() ==
-                1 &&
-              this.operacao == 1
-            ) {
-              infoComplementar +=
-                "PERMITE O APROVEITAMENTO DO CRÉDITO DE ICMS NO VALOR DE R$" +
-                this.danfe.getValorTotalDoIcmsSn() +
-                "; CORRESPONDENTE À ALÍQUOTA DE " +
-                this.danfe.getEmitente().getIcmsSimples() +
-                "%, NOS TERMOS DO ARTIGO 23 DA LC 123";
-            }
-          } else if (
-            this.danfe.getEmitente().getCodigoRegimeTributario() === "2" &&
-            this.operacao === 1
-          ) {
-            infoComplementar +=
-              "Estabelecimento impedido de recolher o ICMS pelo simples nacional no inciso 1 do art. 2 da LC 123/2006;";
-            infoComplementar +=
-              "Imposto recolhido por substituição ART 313-Y DO RICMS;";
-            if (this.operacao === 1) {
-              infoComplementar +=
-                "Valor dos produtos Tributado pelo Simples Nacional " +
-                this.danfe.getImpostos().getBaseDeCalculoDoIcmsFormatada() +
-                ";";
-              infoComplementar +=
-                "Valor dos produtos Substituicao Tributaria " +
-                this.danfe.getImpostos().getBaseDeCalculoDoIcmsStFormatada() +
-                ";";
-            }
-          }
+          console.log('informação complementar');
+          let impostoFed = this.danfe.getItens().reduce(function (a, item) {
+            console.log('reducefed', item.getTributoAproximadoFederal())
+            return a.soma(item.getTributoAproximadoFederal());
+          }, new dinheiro(0))
+          let impostoEst = this.danfe.getItens().reduce(function (a, item) {
+            console.log('reduce est', item.getTributoAproximadoEstadual())
+            return a.soma(item.getTributoAproximadoEstadual());
+          }, new dinheiro(0))
+          let impostoMun = this.danfe.getItens().reduce(function (a, item) {
+            console.log('reduce mun', item.getTributoAproximadoMunicipal())
+            return a.soma(item.getTributoAproximadoMunicipal());
+          }, new dinheiro(0))
+
+          let infoComplementar = `Trib Aprox R$ ${impostoFed} Fed, R$ ${impostoEst} Est e R$ ${impostoMun} Mun. Fonte:IBPT/empresometro.com.br`;
+          //   "Documento emitido por ME ou EPP optante pelo simples nacional;";
+          // console.log(
+          //   "codregime",
+          //   this.danfe.getEmitente().getCodigoRegimeTributario()
+          // );
+          // if (
+          //   this.danfe.getEmitente().getCodigoRegimeTributario() === "1" &&
+          //   this.operacao == 1
+          // ) {
+          //   infoComplementar +=
+          //     "Valor dos produtos Tributado pelo Simples Nacional R$" +
+          //     this.danfe.getItens().reduce(function(a, item) {
+          //       return a.soma(item.getValorTotal());
+          //     }, new dinheiro(0)) +
+          //     ";";
+          //   infoComplementar +=
+          //     "Valor dos produtos Substituicao Tributaria " +
+          //     this.danfe.getImpostos().getBaseDeCalculoDoIcmsStFormatada() +
+          //     ";";
+          //   if (
+          //     this.danfe.getDestinatario().getIdenfificaContribuinteIcms() ==
+          //       1 &&
+          //     this.operacao == 1
+          //   ) {
+          //     infoComplementar +=
+          //       "PERMITE O APROVEITAMENTO DO CRÉDITO DE ICMS NO VALOR DE R$" +
+          //       this.danfe.getValorTotalDoIcmsSn() +
+          //       "; CORRESPONDENTE À ALÍQUOTA DE " +
+          //       this.danfe.getEmitente().getIcmsSimples() +
+          //       "%, NOS TERMOS DO ARTIGO 23 DA LC 123";
+          //   }
+          // } else if (
+          //   this.danfe.getEmitente().getCodigoRegimeTributario() === "2" &&
+          //   this.operacao === 1
+          // ) {
+          //   infoComplementar +=
+          //     "Estabelecimento impedido de recolher o ICMS pelo simples nacional no inciso 1 do art. 2 da LC 123/2006;";
+          //   infoComplementar +=
+          //     "Imposto recolhido por substituição ART 313-Y DO RICMS;";
+          //   if (this.operacao === 1) {
+          //     infoComplementar +=
+          //       "Valor dos produtos Tributado pelo Simples Nacional " +
+          //       this.danfe.getImpostos().getBaseDeCalculoDoIcmsFormatada() +
+          //       ";";
+          //     infoComplementar +=
+          //       "Valor dos produtos Substituicao Tributaria " +
+          //       this.danfe.getImpostos().getBaseDeCalculoDoIcmsStFormatada() +
+          //       ";";
+          //   }
+          // }
           if (this.operacao === 3) {
             infoComplementar +=
               "Valor da Base de calculo do IPI devolvido R$ " +
@@ -753,11 +833,13 @@ export class ModalNfeComponent implements OnInit {
           }
           this.danfe.comInformacoesComplementares(infoComplementar);
 
+
+
+
           console.log("emitente", this.emitente);
           observable.next(this.danfe);
           observable.complete();
-        },
-        error => console.log("deu merda", error)
+        }, () => console.log('finish him')
       );
     });
   }
@@ -863,10 +945,10 @@ export class ModalNfeComponent implements OnInit {
                   .getEmitente()
                   .getEndereco()
                   .getUf() ===
-                this.nota
-                  .getDestinatario()
-                  .getEndereco()
-                  .getUf()
+                  this.nota
+                    .getDestinatario()
+                    .getEndereco()
+                    .getUf()
                   ? "1"
                   : "2",
               tpImp: "1", // 1=DANFE normal, Retrato;
@@ -1037,10 +1119,14 @@ export class ModalNfeComponent implements OnInit {
               vII: "",
               vIPI: "",
               vIPIDevol: this.nota.getValorTotalDoIpiDevol().valor || 0,
-              vPIS: "",
-              vCOFINS: "",
+              vPIS: this.nota.getImpostos().getValorDoPis().valor || 0,
+              vCOFINS: this.nota.getImpostos().getValorDaCofins().valor || 0,
               vOutro: this.nota.getOutrasDespesas(),
-              vNF: this.nota.getValorTotalDaNota()
+              vNF: this.nota.getValorTotalDaNota(),
+              vICMSUFDest: this.danfe.getItens().reduce(function (a, item) {
+                return a.soma(item.getIcms().getValorDoIcmsUFDestino());
+              }, new dinheiro(0)).valor,
+              vICMSUFRemet:0
             },
             DadosAdicionais: {
               infCpl: this.nota.getInformacoesComplementares()
@@ -1164,21 +1250,21 @@ export class ModalNfeComponent implements OnInit {
               vICMSDif: ""
             };
             Geraini["ICMSUFDEST" + zeroEsq(i + 1, 3, 0)] = {
-              vBCUFDest: itens[i].getIcms().getBaseDeCalculoUFDestino(),
+              vBCUFDest: itens[i].getIcms().getBaseDeCalculoUFDestino().valor,
               pICMSUFDest: itens[i].getIcms().getAliquotaDoIcmsUFDestino(),
               pICMSInter: itens[i].getIcms().getAliquotaDoIcmsInterna(),
               pICMSInterPart: itens[i].getIcms().getPercentualIcmsUFDestino(),
-              vICMSUFDest: itens[i].getIcms().getValorDoIcmsUFDestino(),
-              vICMSUFRemet: itens[i].getIcms().getValorDoIcmsUFRemetente(),
-              pFCPUFDest: itens[i]
-                .getIcms()
-                .getPercentualFundoCombatePobrezaDestino(),
-              vFCPUFDest: itens[i]
-                .getIcms()
-                .getValorFundoCombatePobrezaDestino(),
-              vBCFCPUFDest: itens[i]
-                .getIcms()
-                .getBaseDeCalculoFundoCombatePobrezaDestino()
+              vICMSUFDest: itens[i].getIcms().getValorDoIcmsUFDestino().valor,
+              vICMSUFRemet: 0,
+              // pFCPUFDest: itens[i]
+              //   .getIcms()
+              //   .getPercentualFundoCombatePobrezaDestino(),
+              // vFCPUFDest: itens[i]
+              //   .getIcms()
+              //   .getValorFundoCombatePobrezaDestino().valor,
+              // vBCFCPUFDest: itens[i]
+              //   .getIcms()
+              //   .getBaseDeCalculoFundoCombatePobrezaDestino().valor
             };
             Geraini["IPI" + zeroEsq(i + 1, 3, 0)] = {
               CST: 51,
@@ -1192,6 +1278,18 @@ export class ModalNfeComponent implements OnInit {
               vUnid: "",
               pIPI: "",
               vIPI: ""
+            };
+            Geraini["PIS" + zeroEsq(i + 1, 3, 0)] = {
+              CST: "01",
+              vBC: itens[i].getIcms().getBaseDeCalculoDoIcms(),
+              pPIS: 0.65,
+              vPIS: itens[i].getValorDoPis()
+            };
+            Geraini["COFINS" + zeroEsq(i + 1, 3, 0)] = {
+              CST: "01",
+              vBC: itens[i].getIcms().getBaseDeCalculoDoIcms(),
+              pCOFINS: 3,
+              vCOFINS: itens[i].getValorDaCofins()
             };
           }
 
@@ -1247,7 +1345,7 @@ export class ModalNfeComponent implements OnInit {
         });
     });
   }
-  leituraRetorno = function(res) {
+  leituraRetorno = function (res) {
     console.log("chamou leitura retorno");
     // fs.readFile("c:\\geral\\sai.txt", "utf-8", (error, res) => {
     // if (error) {
