@@ -2,12 +2,12 @@
 <hr />
 <div mat-dialog-content class="container">
   <div class="painel-valor">
-    <mat-form-field>
+    <mat-form-field appearance="fill">
       <mat-label>Valor a Pagar</mat-label>
       <input matInput [value]="Total" disabled />
       <span matPrefix>R$&nbsp;</span>
     </mat-form-field>
-    <mat-form-field>
+    <mat-form-field appearance="fill">
       <mat-label>Dinheiro</mat-label>
       <input
         matInput type="text"
@@ -16,7 +16,7 @@
       />
       <span matPrefix>R$&nbsp;</span>
     </mat-form-field>
-    <mat-form-field>
+    <mat-form-field appearance="fill">
       <mat-label>troco</mat-label>
       <input
         matInput
@@ -33,7 +33,7 @@
     mat-raised-button
     [mat-dialog-close]="{
       fPagto: 'DINHEIRO',
-      valor: Pagar > Total ? Pagar : Total
+      valor: Pagar > Total ? Total : Pagar
     }"
     cdkFocusInitial
   >

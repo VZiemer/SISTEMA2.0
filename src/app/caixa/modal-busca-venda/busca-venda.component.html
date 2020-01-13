@@ -1,55 +1,63 @@
-<h1 mat-dialog-title>buscar {{titulo}} aaaaaa</h1>
+<h1 mat-dialog-title>buscar Vendas</h1>
 <div mat-dialog-content>
-  <table cellspacing=0>
-    <tr>
-      <td>
-        <mat-form-field>
-          <input matInput [(ngModel)]="busca.razao" placeholder="nome">
-        </mat-form-field>
-      </td>
-    </tr>
-  </table>
+  <!-- <mat-form-field>
+    <input matInput [(ngModel)]="busca.razao" placeholder="nome" />
+  </mat-form-field> -->
   <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-
     <!-- Checkbox Column -->
     <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef>
-        <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
-          [indeterminate]="selection.hasValue() && !isAllSelected()" [aria-label]="checkboxLabel()">
-        </mat-checkbox>
+        <!-- <mat-checkbox
+          (change)="$event ? masterToggle() : null"
+          [checked]="selection.hasValue() && isAllSelected()"
+          [indeterminate]="selection.hasValue() && !isAllSelected()"
+          [aria-label]="checkboxLabel()"
+        >
+        </mat-checkbox> -->
       </th>
       <td mat-cell *matCellDef="let row">
-        <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
-          [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
+        <mat-checkbox
+          (click)="$event.stopPropagation()"
+          (change)="$event ? selection.toggle(row) : null"
+          [checked]="selection.isSelected(row)"
+          [aria-label]="checkboxLabel(row)"
+        >
         </mat-checkbox>
       </td>
     </ng-container>
 
-    <!-- Position Column -->
+    <!-- Lcto Column -->
     <ng-container matColumnDef="LCTO">
-      <th mat-header-cell *matHeaderCellDef> LCTO </th>
-      <td mat-cell *matCellDef="let element"> {{element.LCTO}} </td>
+      <th mat-header-cell *matHeaderCellDef>LCTO</th>
+      <td mat-cell *matCellDef="let element">{{ element.LCTO }}</td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="NOMECLI">
-      <th mat-header-cell *matHeaderCellDef> CLIENTE </th>
-      <td mat-cell *matCellDef="let element"> {{element.NOMECLI}} </td>
+      <th mat-header-cell *matHeaderCellDef>CLIENTE</th>
+      <td mat-cell *matCellDef="let element">{{ element.NOMECLI }}</td>
     </ng-container>
-
+    <!-- Total Column -->
     <ng-container matColumnDef="TOTAL">
-      <th mat-header-cell *matHeaderCellDef> TOTAL </th>
-      <td mat-cell *matCellDef="let element"> {{element.TOTAL}} </td>
+      <th mat-header-cell *matHeaderCellDef>TOTAL</th>
+      <td mat-cell *matCellDef="let element">{{ element.TOTAL }}</td>
     </ng-container>
-
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)">
-    </tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      (click)="selection.toggle(row)"
+    ></tr>
   </table>
-
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">cancela</button>
-  <button mat-button [mat-dialog-close]="selection.selected[0]" [disabled]="!selection.selected.length"
-    cdkFocusInitial>Ok</button>
+  <button
+    mat-button
+    [mat-dialog-close]="selection.selected[0]"
+    [disabled]="!selection.selected.length"
+    cdkFocusInitial
+  >
+    Ok
+  </button>
 </div>
