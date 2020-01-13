@@ -946,7 +946,7 @@ routes.route('/deus')
     var conta = req.query.conta;
     var whereDeus = ``;
 
-    if (paremetro == 1) { whereDeus = ` where uniao.tipolcto in ('E','D') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
+    if (paremetro == 1) { whereDeus = ` where uniao.tipolcto in ('E','D','F') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
     if (paremetro == 2) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) ` }
     if (paremetro == 3) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) ` }
     if (paremetro == 5) { whereDeus = ` where uniao.tipolcto in ('V') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
