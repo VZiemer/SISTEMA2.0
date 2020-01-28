@@ -6710,10 +6710,10 @@ node-libs-browser@^2.0.0:
     util "^0.11.0"
     vm-browserify "^1.0.1"
 
-node-nfe@^1.0.17:
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/node-nfe/-/node-nfe-1.0.17.tgz#35a57ec5c2c7673f0aa53347794e77e63c9a5673"
-  integrity sha512-W1yWqjcGRY0grgLH1OQ08SI4+QzZRRq/6VOhqtMt49kYDqzRsxPXp/Rhije6ozClRhnW0Fhca6Lz4DUwMr97Kg==
+node-nfe@^1.0.19:
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/node-nfe/-/node-nfe-1.0.19.tgz#79e4f8fdf627bbaf3374d5e729424a91438e821c"
+  integrity sha512-K7DzAzVoP5ipXkEZiJvQESQuRpp+lcDUXuAUmIstnf1KPzweAeUSfN0uHVS4NRF12dVjUpUXNyu0FvmmPkZuhA==
   dependencies:
     busca-cep "^0.5.0"
     gammautils "^0.0.81"
@@ -6991,7 +6991,6 @@ npm@^6.3.0:
     cmd-shim "^3.0.3"
     columnify "~1.5.4"
     config-chain "^1.1.12"
-    debuglog "*"
     detect-indent "~5.0.0"
     detect-newline "^2.1.0"
     dezalgo "~1.0.3"
@@ -7006,7 +7005,6 @@ npm@^6.3.0:
     has-unicode "~2.0.1"
     hosted-git-info "^2.8.5"
     iferr "^1.0.2"
-    imurmurhash "*"
     infer-owner "^1.0.4"
     inflight "~1.0.6"
     inherits "^2.0.4"
@@ -7025,14 +7023,8 @@ npm@^6.3.0:
     libnpx "^10.2.0"
     lock-verify "^2.1.0"
     lockfile "^1.0.4"
-    lodash._baseindexof "*"
     lodash._baseuniq "~4.6.0"
-    lodash._bindcallback "*"
-    lodash._cacheindexof "*"
-    lodash._createcache "*"
-    lodash._getnative "*"
     lodash.clonedeep "~4.5.0"
-    lodash.restparam "*"
     lodash.union "~4.6.0"
     lodash.uniq "~4.5.0"
     lodash.without "~4.4.0"
