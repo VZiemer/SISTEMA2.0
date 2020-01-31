@@ -1,7 +1,7 @@
 <div class="container" (focus)="inputReturn()">
   <header class="header column" (focus)="inputReturn()">
     <div>
-      <span>Venda:</span
+      <span class="center-text">Venda:</span
       ><input
         type="text"
         id="inputVenda"
@@ -32,7 +32,7 @@
         [disabled]="venda.PAGAMENTO.length || !empresa"
       /><span>{{ cliente.RAZAO }}</span>
     </div>
-    <div>07/08/2019 10:40:38</div>
+    <div>{{clock | date:"dd/MM/yyyy HH:mm:ss"}}</div>
   </header>
   <main class="content column" (focus)="inputReturn()">
     <div class="multQtd">
@@ -162,7 +162,7 @@
     </div>
 
     <div class="item">
-      <div>
+      <!-- <div>
         <label for="vlunit">VALOR UNITÁRIO:</label>
         <input
           type="text"
@@ -171,9 +171,9 @@
           [value]="ultimoProduto.VALOR"
           id="vlunit"
         />
-      </div>
+      </div> -->
 
-      <div>
+      <!-- <div>
         <label for="qtd">QUANTIDADE:</label>
         <input
           type="text"
@@ -182,9 +182,9 @@
           [value]="ultimoProduto.QTD + ' ' + ultimoProduto.UNIDADE"
           id="qtd"
         />
-      </div>
+      </div> -->
 
-      <div>
+      <!-- <div>
         <label for="subtotal">SUBTOTAL:</label>
         <input
           type="text"
@@ -193,10 +193,10 @@
           [value]="ultimoProduto.VALOR * ultimoProduto.QTD"
           id="qtd"
         />
-      </div>
+      </div> -->
 
       <div>
-        <label for="total">TOTAL VENDA:</label>
+        <label for="total">TOTAL ITENS:</label>
         <input
           type="text"
           disabled
@@ -206,6 +206,36 @@
         />
       </div>
       <div>
+        <label for="frete">FRETE:</label>
+        <input
+          type="text"
+          disabled
+          name="frete"
+          [value]="venda.FRETE"
+          id="qtd"
+        />
+      </div>
+      <div>
+        <label for="celd">TAXA NEGOCIAL:</label>
+        <input
+          type="text"
+          disabled
+          name="celd"
+          [value]="venda.TXCELD"
+          id="qtd"
+        />
+      </div>
+      <div>
+        <div>
+          <label for="total">TOTAL GERAL:</label>
+          <input
+            type="text"
+            disabled
+            name="total"
+            [value]="venda.TOTAL"
+            id="qtd"
+          />
+        </div>
         <label for="restante">RESTANTE À PAGAR:</label>
         <input
           type="text"
@@ -308,13 +338,13 @@
     </button>
   </aside>
   <footer class="footer column">
-    <div class="column">
-      <span>F2 - Nova venda</span>
-      <span>F3 - Produto</span>
-      <span>F4 - Cliente</span>
-      <span>F5 - Vendedor</span>
-      <span>F6 - Vendas</span>
-      <span>F7 - Reservas</span>
+    <div class="column" >
+      <span *ngIf='empresa != 2'>F2 - Nova venda</span>
+      <span *ngIf='empresa != 2'>F3 - Produto</span>
+      <span *ngIf='empresa != 2'>F4 - Cliente</span>
+      <span *ngIf='empresa != 2'>F5 - Vendedor</span>
+      <span *ngIf='empresa != 2'>F6 - Vendas</span>
+      <span *ngIf='empresa != 2'>F7 - Reservas</span>
     </div>
     <mat-form-field name="Empresa" appearance="fill">
       <mat-label>Empresa</mat-label>

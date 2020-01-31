@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { CaixaRoutingModule } from "./caixa-routing.module";
 import { CaixaComponent } from "./caixa.component";
 import { SharedModule } from "../shared/shared.module";
+import { ClockService } from "./clock.service";
 
 import { MyModalComponent } from "./my-modal/my-modal.component";
 import { ModalPagtoCartaoComponent } from "./modal-pagto-cartao/modal-pagto-cartao.component";
@@ -54,6 +55,7 @@ import { AngularMaterialModule } from "../angular-material.module";
     MatTabsModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [ClockService],
   entryComponents: [
     MyModalComponent,
     ModalBuscaVendaComponent,

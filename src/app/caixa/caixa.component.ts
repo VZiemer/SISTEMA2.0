@@ -6,6 +6,7 @@ import {
   AfterViewInit
 } from "@angular/core";
 import { CaixaService } from "./caixa.service";
+import { ClockService } from "./clock.service";
 import { ElectronService } from "../core/services/electron/electron.service";
 import { MatDialog } from "@angular/material";
 import { ModalPagtoCartaoComponent } from "./modal-pagto-cartao/modal-pagto-cartao.component";
@@ -27,6 +28,7 @@ import { Param } from "../shared/models/param";
 import * as dinheiro from "../shared/models/dinheiro";
 import * as net from "net";
 import * as ini from "ini";
+import { Timestamp } from "rxjs";
 // import * as bemafi from '../../Bemafi32';
 
 @Component({
@@ -39,6 +41,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
   empresa = null;
   saldoVale: number = null;
   name: string;
+  clock: any;
   color: string;
   listaEmpresas: Param[];
   contasEmpresas = {
@@ -57,6 +60,14 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       CLIENTES: 126,
       RECEITA: 225,
       CAIXAPROJECAO: 259
+    },
+    "3": {
+      CARTAO: 282,
+      BOLETO: 173,
+      CAIXA: 283,
+      CLIENTES: 285,
+      RECEITA: 225,
+      CAIXAPROJECAO: 284
     }
   };
 
@@ -66,6 +77,8 @@ export class CaixaComponent implements OnInit, AfterViewInit {
   };
   venda: Venda = new Venda(
     null,
+    "",
+    "",
     "",
     "",
     "",
@@ -138,10 +151,13 @@ export class CaixaComponent implements OnInit, AfterViewInit {
 
   constructor(
     private caixaService: CaixaService,
+    private _clockService: ClockService,
     public dialog: MatDialog,
     private renderer: Renderer2,
     public electron: ElectronService
-  ) {}
+  ) {
+
+  }
 
   ngAfterViewInit() {
     this.DOM.inputProd = this.renderer.selectRootElement("#codbar");
@@ -166,32 +182,41 @@ export class CaixaComponent implements OnInit, AfterViewInit {
     } else if (event.ctrlKey) {
       this.ctrlPress = false;
       if (event.key === "F2") {
-        this.inserePagtoCartao("cartão");
+        if (this.empresa != 2)
+          this.inserePagtoCartao("cartão");
       }
       if (event.key === "F3") {
-        this.inserePagtoDi("dinheiro");
+        if (this.empresa != 2)
+          this.inserePagtoDi("dinheiro");
       }
       if (event.key === "F4") {
-        this.inserePagtoBoleto("boleto");
+        if (this.empresa != 2)
+          this.inserePagtoBoleto("boleto");
       }
     } else {
       if (event.key === "F2") {
-        this.novaVenda();
+        if (this.empresa != 2)
+          this.novaVenda();
       }
       if (event.key === "F3") {
-        this.clicaProduto();
+        if (this.empresa != 2)
+          this.clicaProduto();
       }
       if (event.key === "F4") {
-        this.clicaCliente();
+        if (this.empresa != 2)
+          this.clicaCliente();
       }
       if (event.key === "F5") {
-        this.clicaVendedor();
+        if (this.empresa != 2)
+          this.clicaVendedor();
       }
       if (event.key === "F6") {
-        this.clicaAbreVenda("C");
+        if (this.empresa != 2)
+          this.clicaAbreVenda("C");
       }
       if (event.key === "F7") {
-        this.clicaAbreVenda("R");
+        if (this.empresa != 2)
+          this.clicaAbreVenda("R");
       }
     }
   }
@@ -227,6 +252,8 @@ export class CaixaComponent implements OnInit, AfterViewInit {
     this.venda.PAGAMENTO = [];
     this.venda = new Venda(
       null,
+      "",
+      "",
       "",
       "",
       "",
@@ -328,7 +355,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               venda[0].TOTAL,
               venda[0].FATURAMENTO,
               venda[0].LIBERAFAT,
-              venda[0].LIBERANP
+              venda[0].LIBERANP,
+              venda[0].TXCELD,
+              venda[0].TXPROJ
             );
             this.venda.insereTransporte(
               venda[0].VOLUMES,
@@ -489,7 +518,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             venda[0].TOTAL,
             venda[0].FATURAMENTO,
             venda[0].LIBERAFAT,
-            venda[0].LIBERANP
+            venda[0].LIBERANP,
+            venda[0].TXCELD,
+            venda[0].TXPROJ
           );
           this.venda.insereTransporte(
             venda[0].VOLUMES,
@@ -565,6 +596,8 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       "",
       "",
       "",
+      "",
+      "",
       ""
     );
 
@@ -604,7 +637,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             venda[0].TOTAL,
             venda[0].FATURAMENTO,
             venda[0].LIBERAFAT,
-            venda[0].LIBERANP
+            venda[0].LIBERANP,
+            venda[0].TXCELD,
+            venda[0].TXPROJ
           );
           this.venda.insereTransporte(
             venda[0].VOLUMES,
@@ -720,7 +755,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             CREDITO: this.contasEmpresas[this.empresa].CARTAO,
             VALOR: new dinheiro(
               res.valor -
-                Number(((res.valor * res.fPagto.TARIFA) / 100).toFixed(2))
+              Number(((res.valor * res.fPagto.TARIFA) / 100).toFixed(2))
             ),
             PROJECAO: 0,
             OBS: "",
@@ -787,18 +822,18 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               VALOR:
                 index + 1 === res.fPagto.PARCELAS
                   ? new dinheiro(
-                      valor +
-                        resto -
-                        Number(
-                          (((valor + resto) * res.fPagto.TARIFA) / 100).toFixed(
-                            2
-                          )
-                        )
+                    valor +
+                    resto -
+                    Number(
+                      (((valor + resto) * res.fPagto.TARIFA) / 100).toFixed(
+                        2
+                      )
                     )
+                  )
                   : new dinheiro(
-                      valor -
-                        Number(((valor * res.fPagto.TARIFA) / 100).toFixed(2))
-                    ),
+                    valor -
+                    Number(((valor * res.fPagto.TARIFA) / 100).toFixed(2))
+                  ),
               PROJECAO: 0,
               OBS: "",
               PERMITEAPAGA: null,
@@ -1168,6 +1203,48 @@ export class CaixaComponent implements OnInit, AfterViewInit {
 
   // Confirma a Venda
   confirmaVenda() {
+    if (this.empresa == 3) {
+      this.venda.PAGAMENTO.push({
+        CODIGO: null,
+        CODDEC: null,
+        EMPRESA: 2,
+        CODPARC: this.cliente.CODIGO,
+        LCTO: this.venda.LCTO,
+        TIPOLCTO: "V",
+        DOCUMENTO: this.venda.TRANSITO[0].toString(),
+        DATAEMISSAO: this.venda.DATA,
+        DATAVCTO: new Date(),
+        DATALIQUID: new Date(),
+        DEBITO: this.contasEmpresas[2].CAIXA,
+        CREDITO: this.contasEmpresas[2].CLIENTES,
+        VALOR: this.venda.TOTALPRODUTOS,
+        PROJECAO: 1,
+        OBS: "",
+        PERMITEAPAGA: null,
+        TIPOOPERACAO: 5,
+        TRAVACREDITO: null
+      });
+    this.venda.PAGAMENTO.push({
+      CODIGO: null,
+      CODDEC: null,
+      EMPRESA: 2,
+      CODPARC: this.cliente.CODIGO,
+      LCTO: this.venda.LCTO,
+      TIPOLCTO: "V",
+      DOCUMENTO: this.venda.LCTO.toString(),
+      DATAEMISSAO: this.venda.DATA,
+      DATAVCTO: this.venda.DATA,
+      DATALIQUID: null,
+      DEBITO: this.contasEmpresas[2].CAIXAPROJECAO,
+      CREDITO: this.contasEmpresas[2].CAIXA,
+      VALOR: this.venda.TOTALPRODUTOS,
+      PROJECAO: 1,
+      OBS: "",
+      PERMITEAPAGA: null,
+      TIPOOPERACAO: 6,
+      TRAVACREDITO: null
+    });
+    }
     this.caixaService
       .confirmaVenda(
         this.venda,
@@ -1185,6 +1262,8 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           this.boleto = [];
           this.venda = new Venda(
             null,
+            "",
+            "",
             "",
             "",
             "",
@@ -1236,7 +1315,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       });
   }
   // Imprime a via da venda
-  imprime = async function(venda) {
+  imprime = async function (venda) {
     let html = `<html>
       <head>
       <style>
@@ -1252,7 +1331,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       <span>DOCUMENTO SEM VALOR FISCAL</span><hr><span class='pull-left'></span>
       <br>
       <span class='pull-left'>Pedido: ${
-        venda.LCTO
+      venda.LCTO
       }  Emissão: ${new Date().toLocaleDateString()}</span>
       <br>
       <span>Cliente: ${venda.NOMECLI}</span>
@@ -1264,18 +1343,18 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       <span>Forma de Pagamento--------------------------------</span><br>
     <table>
     ${venda.PAGAMENTO.filter(
-      item => item.TIPOOPERACAO !== 5 && item.TIPOOPERACAO !== 7
-    )
-      .map(
-        (item, i) => `<tr>
+        item => item.TIPOOPERACAO !== 5 && item.TIPOOPERACAO !== 7
+      )
+        .map(
+          (item, i) => `<tr>
         <td colspan='3'>${item.DATAVCTO.toLocaleDateString()}</td>
         <td>${item.VALOR.toString()}</td>
         <td colspan='3'>${
-          this.tipoOperacao.find(x => item.TIPOOPERACAO == x.CODIGO).SIGLA
-        }</td>
+            this.tipoOperacao.find(x => item.TIPOOPERACAO == x.CODIGO).SIGLA
+            }</td>
         </tr>`
-      )
-      .join("")}
+        )
+        .join("")}
     `;
     conteudo += `</table><hr><table>
       <tr><td colspan='8'>Descricao<td></tr>
@@ -1295,7 +1374,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           </tr>`;
       }
     }
-    venda.PRODUTOS.every(function(element, index) {
+    venda.PRODUTOS.every(function (element, index) {
       if (element.QTDRESERVA) {
         conteudo += `<tr><td colspan='8'>ITENS DE ENCOMENDA</td</tr>`;
         return false;
@@ -1344,6 +1423,10 @@ export class CaixaComponent implements OnInit, AfterViewInit {
   };
   // funcção de Inicialização
   ngOnInit() {
+    this._clockService.time.subscribe((now: Date) =>
+      // console.log("time:", now.toISOString())
+      this.clock = now
+    );
     const socketClient = net.connect({ host: "localhost", port: 3434 }, () => {
       let contador = 0;
       function testaCupom() {

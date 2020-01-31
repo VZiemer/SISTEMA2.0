@@ -34,6 +34,8 @@ export class Venda {
   public TOTALPRODUTOS: dinheiro; // inicia zerado
   public TOTAL: dinheiro; // inicia zerado
   public TOTALDESC: dinheiro; // inicia zerado
+  public TXCELD: dinheiro; // inicia zerado
+  public TXPROJ: dinheiro; // inicia zerado
   public DESCONTOITEM: dinheiro; // inicia zerado
   public PAGAR: dinheiro; // inicia zerado
   // produtos
@@ -80,7 +82,9 @@ export class Venda {
     total: any,
     fatura: any,
     liberafat: any,
-    liberanp: any
+    liberanp: any,
+    txceld:any,
+    txproj:any
   ) {
     this.LCTO = lcto;
     this.DATA = new Date(data);
@@ -118,6 +122,8 @@ export class Venda {
     this.TOTALDESC = new dinheiro(0); // inicia zerado
     this.DESCONTOITEM = new dinheiro(0); // inicia zerado
     this.PAGAR = new dinheiro(0); // inicia zerado
+    this.TXCELD = new dinheiro(txceld+txproj); // inicia zerado
+    this.TXPROJ = new dinheiro(txproj); // inicia zerado
     // produtos
     this.PRODUTOS = [];
     // pagamentos
@@ -177,7 +183,7 @@ export class Venda {
         return valorAnterior + valorAtual.TOTALSD;
       },
       0)
-    ).soma(this.FRETE);
+    ).soma(this.FRETE).soma(this.TXCELD);
     this.TOTALDESC = new dinheiro(
       this.PRODUTOS.reduce(function(
         valorAnterior,
@@ -188,7 +194,7 @@ export class Venda {
         return valorAnterior + valorAtual.TOTAL;
       },
       0)
-    ).soma(this.FRETE);
+    ).soma(this.FRETE).soma(this.TXCELD).soma(this.TXPROJ);
     this.PAGAR = new dinheiro(
       this.PRODUTOS.reduce(function(
         valorAnterior,
@@ -199,7 +205,7 @@ export class Venda {
         return valorAnterior + valorAtual.TOTAL;
       },
       0)
-    ).soma(this.FRETE);
+    ).soma(this.FRETE).soma(this.TXCELD).soma(this.TXPROJ);
     this.TOTALPRODUTOS = new dinheiro(
       this.PRODUTOS.reduce(function(
         valorAnterior,

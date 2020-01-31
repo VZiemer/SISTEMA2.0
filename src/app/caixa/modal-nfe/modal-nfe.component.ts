@@ -141,6 +141,8 @@ export class ModalNfeComponent implements OnInit {
     "",
     "",
     "",
+    "",
+    "",
     ""
   );
   novaNota: Number = null;
@@ -214,7 +216,9 @@ export class ModalNfeComponent implements OnInit {
           venda[0].TOTAL,
           venda[0].FATURAMENTO,
           venda[0].LIBERAFAT,
-          venda[0].LIBERANP
+          venda[0].LIBERANP,
+          venda[0].TXCELD,
+          venda[0].TXPROJ
         );
         for (const item of venda) {
           console.log(item.ID_TRANSITO);
