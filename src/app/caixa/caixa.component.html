@@ -261,7 +261,7 @@
     >
       NFE
     </button>
-    <button
+    <!-- <button
       *ngIf="venda.LCTO && empresa"
       [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
       mat-raised-button
@@ -270,7 +270,7 @@
       class=""
     >
       CUPOM
-    </button>
+    </button> -->
     <button
       *ngIf="venda.LCTO && empresa"
       [disabled]="venda.PAGAR.valor > 0 || !venda.PRODUTOS.length"
@@ -310,6 +310,15 @@
       DINHEIRO <span *ngIf="ctrlPress">(F3) </span>
     </button>
     <button
+    *ngIf="venda.LCTO && empresa"
+    [disabled]="!venda.PAGAR.valor"
+    mat-raised-button
+    (click)="inserePagtoDi('dinheiro')"
+    class=""
+  >
+    DEPÓSITO <span *ngIf="ctrlPress">(F3) </span>
+  </button>
+    <!-- <button
       *ngIf="venda.LCTO && empresa"
       [disabled]="!venda.PAGAR.valor && venda.LIBERAFAT"
       mat-raised-button
@@ -317,8 +326,8 @@
       class=""
     >
       BOLETO <span *ngIf="ctrlPress">(F4) </span>
-    </button>
-    <button
+    </button> -->
+    <!-- <button
       *ngIf="venda.LCTO && empresa && saldoVale"
       [disabled]="!venda.PAGAR.valor"
       mat-raised-button
@@ -326,8 +335,8 @@
       class=""
     >
       VALE <span *ngIf="ctrlPress">(F3) </span>
-    </button>
-    <button
+    </button> -->
+    <!-- <button
       *ngIf="venda.LCTO && empresa && venda.LIBERANP"
       [disabled]="!venda.PAGAR.valor"
       mat-raised-button
@@ -335,7 +344,7 @@
       class=""
     >
       NP <span *ngIf="ctrlPress">(F3) </span>
-    </button>
+    </button> -->
   </aside>
   <footer class="footer column">
     <div class="column" >
