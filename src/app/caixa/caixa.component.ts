@@ -46,36 +46,38 @@ export class CaixaComponent implements OnInit, AfterViewInit {
   listaEmpresas: Param[];
   contasEmpresas = {
     "1": {
-      CODPARC:71,
+      FANTASIA: 'FLORESTAL FERRAGENS',
+      CODPARC: 71,
       CARTAO: 272,
       BOLETO: 268,
-      CAIXAGERAL: 159,
+      CAIXAGERAL: 256,
       CLIENTES: 273,
       RECEITA: 274,
       CAIXAPROJECAO: 258,
       CAIXADEPOSITO: 290,
     },
     "2": {
+      FANTASIA: 'LOCALDECOR',
       CODPARC: 12872,
       CARTAO: 242,
       BOLETO: 173,
-      CAIXAGERAL: 255,
+      CAIXAGERAL: 257,
       CLIENTES: 126,
       RECEITA: 225,
       CAIXAPROJECAO: 259,
       CAIXADEPOSITO: 288,
     },
     "3": {
-      CARTAO: 282,
-      BOLETO: 173,
-      CAIXATERMINAL: 283,
-      CLIENTES: 285,
-      RECEITA: 225,
+      FANTASIA: 'CELD MARKETPLACE',
+      CARTAO: 282, //CONTAS A RECEBER CARTAO
+      CAIXATERMINAL: 283, // TERMINAL CAIXA
+      CLIENTES: 285, 
+      RECEITA: '',
       CAIXAGERAL: 284,
       COMPENSACAODINHEIRO: 287,
       COMPENSACAODEPOSITO: 291,
       COMPENSACAOCARTAO: 292,
-      CAIXADEPOSITO: ''
+      CAIXADEPOSITO: 294
     }
   };
 
@@ -199,7 +201,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       }
       if (event.key === "F4") {
         // if (this.empresa != 2)
-          // this.inserePagtoBoleto("boleto");
+        // this.inserePagtoBoleto("boleto");
       }
     } else {
       if (event.key === "F2") {
@@ -423,14 +425,14 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       // confirma a venda
       if (this.venda.LCTO !== null && res) {
         // altera as contas projeção para as contas fiscais em todos meios de pagamento (tipo 5)
-        for (const pagto of this.venda.PAGAMENTO) {
-          if (
-            pagto.CREDITO == this.contasEmpresas[this.empresa].CLIENTES &&
-            pagto.DOCUMENTO == res
-          ) {
-            pagto.CREDITO = this.contasEmpresas[this.empresa].RECEITA;
-          }
-        }
+        // for (const pagto of this.venda.PAGAMENTO) {
+        //   if (
+        //     pagto.CREDITO == this.contasEmpresas[this.empresa].CLIENTES &&
+        //     pagto.DOCUMENTO == res
+        //   ) {
+        //     pagto.CREDITO = this.contasEmpresas[this.empresa].RECEITA;
+        //   }
+        // }
         this.confirmaVenda();
       }
     });
@@ -722,6 +724,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           AUTORIZACAO: null
         });
         console.log("cartao", this.cartao);
+        
 
         this.venda.PAGAMENTO.push({
           CODIGO: null,
@@ -735,156 +738,156 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           DATAVCTO: this.venda.DATA,
           DATALIQUID: this.venda.DATA,
           DEBITO: this.contasEmpresas[this.empresa].CARTAO,
-          CREDITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
+          CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
           VALOR: new dinheiro(res.valor),
           PROJECAO: 0,
           OBS: "",
           PERMITEAPAGA: null,
-          TIPOOPERACAO: 5,
+          TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
           TRAVACREDITO: null
         });
 
 
-
-        if (res.fPagto.PARCELAS === 0) { 
-          //cartão de débito
-          const pgto = {
-            CODIGO: null,
-            CODDEC: null,
-            EMPRESA: this.empresa,
-            CODPARC: this.cliente.CODIGO,
-            LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: this.venda.LCTO.toString() + "-0/0",
-            DATAEMISSAO: this.venda.DATA,
-            DATAVCTO: new Date(
-              data.setDate(data.getDate() + res.fPagto.PERIODO)
-            ),
-            DATALIQUID: null,
-            DEBITO: res.fPagto.DOMICILIO_BANCARIO,
-            CREDITO: this.contasEmpresas[this.empresa].CARTAO,
-            VALOR: new dinheiro(
-              res.valor -
-              Number(((res.valor * res.fPagto.TARIFA) / 100).toFixed(2))
-            ),
-            PROJECAO: 0,
-            OBS: "",
-            PERMITEAPAGA: null,
-            TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
-            TRAVACREDITO: null
-          };
-          this.venda.PAGAMENTO.push(pgto);
-          if (res.fPagto.TARIFA) {
-            const valorTarifa: number = Number(
-              ((res.valor * res.fPagto.TARIFA) / 100).toFixed(2)
-            );
-            const tarifa: Deus = {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: this.empresa,
-              CODPARC: res.fPagto.ADQUIRENTE,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "V",
-              DOCUMENTO: this.venda.LCTO.toString() + "-0/0",
-              DATAEMISSAO: this.venda.DATA,
-              DATAVCTO: data,
-              DATALIQUID: null,
-              DEBITO: res.fPagto.CONTA_DESPESA,
-              CREDITO: this.contasEmpresas[this.empresa].CARTAO,
-              VALOR: new dinheiro(valorTarifa),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 7,
-              TRAVACREDITO: null
-            };
-            this.venda.PAGAMENTO.push(tarifa);
-          }
-        } else {
-          //cartão de crédito
-          const valor: number = Number(
-            (res.valor / res.fPagto.PARCELAS).toFixed(2)
-          );
-          const resto: number = Number(
-            (res.valor - valor * res.fPagto.PARCELAS).toFixed(2)
-          );
-          for (let index = 0; index < res.fPagto.PARCELAS; index++) {
-            const newDate = new Date(data);
-            const pgto = {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: this.empresa,
-              CODPARC: this.cliente.CODIGO,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "V",
-              DOCUMENTO:
-                this.venda.LCTO.toString() +
-                "-" +
-                (index + 1) +
-                "/" +
-                res.fPagto.PARCELAS,
-              DATAEMISSAO: this.venda.DATA,
-              DATAVCTO: new Date(
-                newDate.setDate(newDate.getDate() + res.fPagto.PERIODO)
-              ),
-              DATALIQUID: null,
-              DEBITO: res.fPagto.DOMICILIO_BANCARIO,
-              CREDITO: this.contasEmpresas[this.empresa].CARTAO,
-              VALOR:
-                index + 1 === res.fPagto.PARCELAS
-                  ? new dinheiro(
-                    valor +
-                    resto -
-                    Number(
-                      (((valor + resto) * res.fPagto.TARIFA) / 100).toFixed(
-                        2
-                      )
-                    )
-                  )
-                  : new dinheiro(
-                    valor -
-                    Number(((valor * res.fPagto.TARIFA) / 100).toFixed(2))
-                  ),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
-              TRAVACREDITO: null
-            };
-            this.venda.PAGAMENTO.push(pgto);
-            if (res.fPagto.TARIFA) {
-              const valorTarifa: number = Number(
-                ((valor * res.fPagto.TARIFA) / 100).toFixed(2)
-              );
-              const tarifa: Deus = {
-                CODIGO: null,
-                CODDEC: null,
-                EMPRESA: this.empresa,
-                CODPARC: res.fPagto.ADQUIRENTE,
-                LCTO: this.venda.LCTO,
-                TIPOLCTO: "V",
-                DOCUMENTO:
-                  this.venda.LCTO.toString() +
-                  "-" +
-                  (index + 1) +
-                  "/" +
-                  res.fPagto.PARCELAS,
-                DATAEMISSAO: this.venda.DATA,
-                DATAVCTO: new Date(newDate),
-                DATALIQUID: null,
-                DEBITO: res.fPagto.CONTA_DESPESA,
-                CREDITO: this.contasEmpresas[this.empresa].CARTAO,
-                VALOR: new dinheiro(valorTarifa),
-                PROJECAO: 0,
-                OBS: "",
-                PERMITEAPAGA: null,
-                TIPOOPERACAO: 7,
-                TRAVACREDITO: null
-              };
-              this.venda.PAGAMENTO.push(tarifa);
-            }
-          }
-        }
+//TODO: OPERAÇÕES DE ENTRADA DE PARCELAS, REVER DEPOIS
+        // if (res.fPagto.PARCELAS === 0) {
+        //   //cartão de débito
+        //   const pgto = {
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: this.venda.LCTO.toString() + "-0/0",
+        //     DATAEMISSAO: this.venda.DATA,
+        //     DATAVCTO: new Date(
+        //       data.setDate(data.getDate() + res.fPagto.PERIODO)
+        //     ),
+        //     DATALIQUID: null,
+        //     DEBITO: res.fPagto.DOMICILIO_BANCARIO,
+        //     CREDITO: this.contasEmpresas[this.empresa].CARTAO,
+        //     VALOR: new dinheiro(
+        //       res.valor -
+        //       Number(((res.valor * res.fPagto.TARIFA) / 100).toFixed(2))
+        //     ),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
+        //     TRAVACREDITO: null
+        //   };
+        //   this.venda.PAGAMENTO.push(pgto);
+        //   if (res.fPagto.TARIFA) {
+        //     const valorTarifa: number = Number(
+        //       ((res.valor * res.fPagto.TARIFA) / 100).toFixed(2)
+        //     );
+        //     const tarifa: Deus = {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: this.empresa,
+        //       CODPARC: res.fPagto.ADQUIRENTE,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "V",
+        //       DOCUMENTO: this.venda.LCTO.toString() + "-0/0",
+        //       DATAEMISSAO: this.venda.DATA,
+        //       DATAVCTO: data,
+        //       DATALIQUID: null,
+        //       DEBITO: res.fPagto.CONTA_DESPESA,
+        //       CREDITO: this.contasEmpresas[this.empresa].CARTAO,
+        //       VALOR: new dinheiro(valorTarifa),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 7,
+        //       TRAVACREDITO: null
+        //     };
+        //     this.venda.PAGAMENTO.push(tarifa);
+        //   }
+        // } else {
+        //   //cartão de crédito
+        //   const valor: number = Number(
+        //     (res.valor / res.fPagto.PARCELAS).toFixed(2)
+        //   );
+        //   const resto: number = Number(
+        //     (res.valor - valor * res.fPagto.PARCELAS).toFixed(2)
+        //   );
+        //   for (let index = 0; index < res.fPagto.PARCELAS; index++) {
+        //     const newDate = new Date(data);
+        //     const pgto = {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: this.empresa,
+        //       CODPARC: this.cliente.CODIGO,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "V",
+        //       DOCUMENTO:
+        //         this.venda.LCTO.toString() +
+        //         "-" +
+        //         (index + 1) +
+        //         "/" +
+        //         res.fPagto.PARCELAS,
+        //       DATAEMISSAO: this.venda.DATA,
+        //       DATAVCTO: new Date(
+        //         newDate.setDate(newDate.getDate() + res.fPagto.PERIODO)
+        //       ),
+        //       DATALIQUID: null,
+        //       DEBITO: res.fPagto.DOMICILIO_BANCARIO,
+        //       CREDITO: this.contasEmpresas[this.empresa].CARTAO,
+        //       VALOR:
+        //         index + 1 === res.fPagto.PARCELAS
+        //           ? new dinheiro(
+        //             valor +
+        //             resto -
+        //             Number(
+        //               (((valor + resto) * res.fPagto.TARIFA) / 100).toFixed(
+        //                 2
+        //               )
+        //             )
+        //           )
+        //           : new dinheiro(
+        //             valor -
+        //             Number(((valor * res.fPagto.TARIFA) / 100).toFixed(2))
+        //           ),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
+        //       TRAVACREDITO: null
+        //     };
+        //     this.venda.PAGAMENTO.push(pgto);
+        //     if (res.fPagto.TARIFA) {
+        //       const valorTarifa: number = Number(
+        //         ((valor * res.fPagto.TARIFA) / 100).toFixed(2)
+        //       );
+        //       const tarifa: Deus = {
+        //         CODIGO: null,
+        //         CODDEC: null,
+        //         EMPRESA: this.empresa,
+        //         CODPARC: res.fPagto.ADQUIRENTE,
+        //         LCTO: this.venda.LCTO,
+        //         TIPOLCTO: "V",
+        //         DOCUMENTO:
+        //           this.venda.LCTO.toString() +
+        //           "-" +
+        //           (index + 1) +
+        //           "/" +
+        //           res.fPagto.PARCELAS,
+        //         DATAEMISSAO: this.venda.DATA,
+        //         DATAVCTO: new Date(newDate),
+        //         DATALIQUID: null,
+        //         DEBITO: res.fPagto.CONTA_DESPESA,
+        //         CREDITO: this.contasEmpresas[this.empresa].CARTAO,
+        //         VALOR: new dinheiro(valorTarifa),
+        //         PROJECAO: 0,
+        //         OBS: "",
+        //         PERMITEAPAGA: null,
+        //         TIPOOPERACAO: 7,
+        //         TRAVACREDITO: null
+        //       };
+        //       this.venda.PAGAMENTO.push(tarifa);
+        //     }
+        //   }
+        // }
         for (const transito of this.venda.TRANSITO) {
           console.log(transito);
           // const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
@@ -894,16 +897,16 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             EMPRESA: this.empresa,
             CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
             LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: this.venda.LCTO,
+            TIPOLCTO: "D",
+            DOCUMENTO: transito.TRANSITO,
             DATAEMISSAO: this.venda.DATA,
             DATAVCTO: new Date(
               data.setDate(data.getDate() + res.fPagto.PERIODO)
             ),
             DATALIQUID: null,
-            DEBITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
-            CREDITO: res.fPagto.DOMICILIO_BANCARIO,
-            VALOR: new dinheiro(res.valor),
+            DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
+            CREDITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
+            VALOR: transito.VALOR,
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
@@ -926,7 +929,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             DATALIQUID: null,
             DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXADEPOSITO,
             CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-            VALOR: new dinheiro(res.valor),
+            VALOR: transito.VALOR,
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
@@ -970,27 +973,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           DATAVCTO: this.venda.DATA,
           DATALIQUID: this.venda.DATA,
           DEBITO: this.contasEmpresas[this.empresa].CAIXATERMINAL,
-          CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
-          VALOR: new dinheiro(res.valor),
-          PROJECAO: 0,
-          OBS: "",
-          PERMITEAPAGA: null,
-          TIPOOPERACAO: 5,
-          TRAVACREDITO: null
-        },
-        {
-          CODIGO: null,
-          CODDEC: null,
-          EMPRESA: this.empresa,
-          CODPARC: this.cliente.CODIGO,
-          LCTO: this.venda.LCTO,
-          TIPOLCTO: "V",
-          DOCUMENTO: this.venda.LCTO,
-          DATAEMISSAO: this.venda.DATA,
-          DATAVCTO: this.venda.DATA,
-          DATALIQUID: null,
-          DEBITO: this.contasEmpresas[this.empresa].CAIXAGERAL,
-          CREDITO: this.contasEmpresas[this.empresa].CAIXATERMINAL,
+          CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
           VALOR: new dinheiro(res.valor),
           PROJECAO: 0,
           OBS: "",
@@ -1007,18 +990,18 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             EMPRESA: this.empresa,
             CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
             LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: this.venda.LCTO,
+            TIPOLCTO: "D",
+            DOCUMENTO: transito.TRANSITO,
             DATAEMISSAO: this.venda.DATA,
             DATAVCTO: this.venda.DATA,
             DATALIQUID: null,
-            DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
-            CREDITO: this.contasEmpresas[this.empresa].CAIXAGERAL,
-            VALOR: new dinheiro(res.valor),
+            DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
+            CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
+            VALOR: transito.VALOR,
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
-            TIPOOPERACAO: 5,
+            TIPOOPERACAO: 22,
             TRAVACREDITO: null
           });
 
@@ -1035,7 +1018,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             DATALIQUID: null,
             DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXAGERAL,
             CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-            VALOR: new dinheiro(res.valor),
+            VALOR: transito.VALOR,
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
@@ -1068,7 +1051,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         console.log("pagar", this.venda.PAGAR);
         const data = new Date(this.venda.DATA);
 
-
+        //CRIA O PRIMEIRO REGISTO DE PAGAMENTO, TIPO V, VALOR TOTAL, LIQUIDADO
         this.venda.PAGAMENTO.push({
           CODIGO: null,
           CODDEC: null,
@@ -1080,8 +1063,8 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           DATAEMISSAO: this.venda.DATA,
           DATAVCTO: this.venda.DATA,
           DATALIQUID: this.venda.DATA,
-          DEBITO: this.contasEmpresas[this.empresa].BANCO,
-          CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
+          DEBITO: this.contasEmpresas[this.empresa].CAIXADEPOSITO,
+          CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
           VALOR: new dinheiro(res.valor),
           PROJECAO: 0,
           OBS: "",
@@ -1100,18 +1083,18 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             EMPRESA: this.empresa,
             CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
             LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: this.venda.LCTO,
+            TIPOLCTO: "D",
+            DOCUMENTO: transito.TRANSITO,
             DATAEMISSAO: this.venda.DATA,
             DATAVCTO: this.venda.DATA,
             DATALIQUID: null,
-            DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
-            CREDITO: this.contasEmpresas[this.empresa].BANCO,
-            VALOR: new dinheiro(res.valor),
+            DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
+            CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
+            VALOR: transito.VALOR,
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
-            TIPOOPERACAO: 5,
+            TIPOOPERACAO: 22,
             TRAVACREDITO: null
           });
 
@@ -1128,7 +1111,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             DATALIQUID: null,
             DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXADEPOSITO,
             CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-            VALOR: new dinheiro(res.valor),
+            VALOR: transito.VALOR,
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
@@ -1333,7 +1316,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       </head>
       <body>`;
     let conteudo = `<div>
-      <span>DOCUMENTO SEM VALOR FISCAL</span><hr><span class='pull-left'></span>
+      <span>DOCUMENTO SEM VALOR FISCAL</span><hr>
+      <span>${this.listaEmpresas[this.venda.TRANSITO[0].TRANSITO].FANTASIA}</span><hr>
+      <span class='pull-left'></span>
       <br>
       <span class='pull-left'>Pedido: ${
       venda.LCTO
@@ -1348,7 +1333,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       <span>Forma de Pagamento--------------------------------</span><br>
     <table>
     ${venda.PAGAMENTO.filter(
-        item => item.TIPOOPERACAO !== 5 && item.TIPOOPERACAO !== 7 && item.EMPRESA ==3
+        item => item.TIPOLCTO == 'V' && item.EMPRESA == 3
       )
         .map(
           (item, i) => `<tr>
