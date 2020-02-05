@@ -57,7 +57,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       CAIXADEPOSITO: 290,
     },
     "2": {
-      FANTASIA: 'LOCALDECOR',
+      FANTASIA: 'LOCALDECOR FERRAGENS',
       CODPARC: 12872,
       CARTAO: 242,
       BOLETO: 173,
@@ -1317,12 +1317,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       <body>`;
     let conteudo = `<div>
       <span>DOCUMENTO SEM VALOR FISCAL</span><hr>
-      <span>${this.listaEmpresas[this.venda.TRANSITO[0].TRANSITO].FANTASIA}</span><hr>
+      <span>${this.contasEmpresas[this.venda.TRANSITO[0].EMPRESA].FANTASIA}</span><hr>
       <span class='pull-left'></span>
       <br>
       <span class='pull-left'>Pedido: ${
       venda.LCTO
-      }  Emissão: ${new Date().toLocaleDateString()}</span>
+      }  -  Emissão: ${new Date().toLocaleDateString()}</span>
       <br>
       <span>Cliente: ${venda.NOMECLI}</span>
       <br>
