@@ -1,4 +1,4 @@
-<h1 mat-dialog-title class="titte">Pagamento com Dinheiro</h1>
+<h1 mat-dialog-title class="titte">Pagamento com {{titulo}}</h1>
 <hr />
 <div mat-dialog-content class="container">
   <div class="painel-valor">
@@ -8,7 +8,7 @@
       <span matPrefix>R$&nbsp;</span>
     </mat-form-field>
     <mat-form-field appearance="fill">
-      <mat-label>Dinheiro</mat-label>
+      <mat-label>{{titulo}}</mat-label>
       <input
         matInput type="text"
         [(ngModel)]="Pagar"
@@ -16,7 +16,7 @@
       />
       <span matPrefix>R$&nbsp;</span>
     </mat-form-field>
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" *ngIf="titulo == 'dinheiro'">
       <mat-label>troco</mat-label>
       <input
         matInput

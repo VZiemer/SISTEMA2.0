@@ -78,6 +78,13 @@ export class FinanceiroComponent implements OnInit {
   listaParceiro: any[] = [];
   filtroParceiro = new FormControl();
 
+
+  //selection
+  selection = new SelectionModel<any>(true, []);
+  grupoSelect: number;
+  saldoSelect: number;
+
+
   constructor(private financeiroService: FinanceiroService, public dialog: MatDialog, public electron: ElectronService) {
 
   }
@@ -96,6 +103,8 @@ export class FinanceiroComponent implements OnInit {
     console.log('param', param);
     console.log('dataFim', this.dataFim);
     console.log('dataInicio', this.dataInicio);
+    this.selection.clear();
+    this.saldoSelect = 0;
     if (param == 4) { param = 1 }
     if (param == 3) { param = 2 }
 
@@ -237,6 +246,7 @@ export class FinanceiroComponent implements OnInit {
       }, error => (console.log(error)));
   }
 
+
   ChamaModaInsereData(param: number) {
     if (param == 1 || param == 2 || param == 5) { this.limpaLista(); };
 
@@ -351,6 +361,51 @@ export class FinanceiroComponent implements OnInit {
 
 
     }, error => (console.log(error)));
+  }
+
+  LiquidaGrupoRegistros() {
+
+    console.log('abre modal liquida grupo');
+    console.log('selecionados', this.selection.selected);
+    let largura = '25vw';
+    let altura = '40vh';
+
+
+    const dialogRef = this.dialog.open(ModalInsereDataComponent, {
+      width: largura,
+      height: altura,
+      hasBackdrop: true,
+      disableClose: false,
+      data: {
+        'param': 1, 'empresa': this.empresa, 'codigoContaBase': null,
+        'descricaoContaBase': '', 'saldoFinal': null,
+        'dataInicio': null, 'dataFim': null, 'saldoTravaNegativo': null
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(resmodal => {
+      console.log(resmodal)
+
+
+      for (let i = 0; i < this.selection.selected.length; i++) {
+
+        this.selection.selected[i].DATALIQUID = resmodal.dataFim;
+        console.log('item ' + i, this.selection.selected[i])
+
+      }
+
+
+      this.financeiroService.postLctoDeus(this.selection.selected).subscribe(resposta => {
+        console.log(resposta);
+
+        this.RegistrosFinanceiros(1);
+
+      }, error => (console.log(error)));
+
+
+      this.RegistrosFinanceiros(this.param);
+
+    }, error => { console.log(error); });
   }
 
 
@@ -509,6 +564,7 @@ export class FinanceiroComponent implements OnInit {
     this.param = null;
     this.saldoDataInicio = null;
     this.saldoFinal = null;
+    this.saldoSelect = null;
     this.dataInicio = null;
     this.dataFim = null;
     this.listaSelectProjecao = [];
@@ -517,6 +573,7 @@ export class FinanceiroComponent implements OnInit {
     this.projecaoSelecionado = 'TODOS';
     this.fantasiaSelecionado = 'TODOS';
     this.contaSelecionado = 'TODOS';
+    this.selection.clear();
 
 
 
@@ -527,5 +584,26 @@ export class FinanceiroComponent implements OnInit {
 
   }
 
+  //selection
 
+  /** Whether the number of selected elements matches the total number of rows. */
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.listaAgrupada.data.length;
+    this.grupoSelect == numSelected;
+    return numSelected == numRows;
+  }
+
+  /** Selects all rows if they are not all selected; otherwise clear selection. */
+  masterToggle() {
+    this.isAllSelected() ?
+      this.selection.clear() :
+      this.listaAgrupada.data.filter((row: tabelaFinanceiro) => row.CCREDITO).forEach(row => this.selection.toggle(row));
+  }
+  recalculaSaldoSelecionado() {
+    this.saldoSelect = this.selection.selected.map(item => item.VALOR).reduce((saldo, item) => (saldo + item), 0);
+  }
 }
+
+
+

@@ -11,6 +11,10 @@
 }
 
 
+.mat-column-select {
+  overflow: initial;
+}
+
 /* Variables & Mixins */
 $bg: rgb(252, 252, 252); /* Changes Entire Color Scheme */
 // $text: lighten($bg,35%);

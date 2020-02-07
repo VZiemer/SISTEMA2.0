@@ -1,7 +1,7 @@
 <div class="container" (focus)="inputReturn()">
   <header class="header column" (focus)="inputReturn()">
     <div>
-      <span class="center-text">Venda:</span
+      <span>Venda:</span
       ><input
         type="text"
         id="inputVenda"
@@ -32,7 +32,7 @@
         [disabled]="venda.PAGAMENTO.length || !empresa"
       /><span>{{ cliente.RAZAO }}</span>
     </div>
-    <div>{{clock | date:"dd/MM/yyyy HH:mm:ss"}}</div>
+    <span>{{clock | date:"dd/MM/yyyy HH:mm:ss"}}</span>
   </header>
   <main class="content column" (focus)="inputReturn()">
     <div class="multQtd">
@@ -313,7 +313,7 @@
     *ngIf="venda.LCTO && empresa"
     [disabled]="!venda.PAGAR.valor"
     mat-raised-button
-    (click)="inserePagtoDi('dinheiro')"
+    (click)="inserePagtoDeposito('depósito')"
     class=""
   >
     DEPÓSITO <span *ngIf="ctrlPress">(F3) </span>

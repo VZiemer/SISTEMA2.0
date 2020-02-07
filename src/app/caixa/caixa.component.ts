@@ -710,7 +710,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         this.venda.PAGAR.subtrai(res.valor);
         console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
-        const data = new Date(this.venda.DATA);
+        const data = new Date();
         // entra os dados para a tabela cartão
         this.cartao.push({
           ID: null,
@@ -734,9 +734,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           LCTO: this.venda.LCTO,
           TIPOLCTO: "V",
           DOCUMENTO: this.venda.LCTO,
-          DATAEMISSAO: this.venda.DATA,
-          DATAVCTO: this.venda.DATA,
-          DATALIQUID: this.venda.DATA,
+          DATAEMISSAO: data,
+          DATAVCTO: data,
+          DATALIQUID: data,
           DEBITO: this.contasEmpresas[this.empresa].CARTAO,
           CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
           VALOR: new dinheiro(res.valor),
@@ -892,6 +892,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           data.setDate(data.getDate() + res.fPagto.PERIODO)
         )
         for (const transito of this.venda.TRANSITO) {
+          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
           console.log(transito);
           this.venda.PAGAMENTO.push(
             //débito na conta cliente e crédito na compensação, liquidado no ato
@@ -903,12 +904,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               LCTO: this.venda.LCTO,
               TIPOLCTO: "V",
               DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: this.venda.DATA,
-              DATAVCTO: this.venda.DATA,
-              DATALIQUID: this.venda.DATA,
+              DATAEMISSAO: data,
+              DATAVCTO: data,
+              DATALIQUID: data,
               DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
               CREDITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
-              VALOR: transito.VALOR,
+              VALOR: new dinheiro(res.valor*percent),
               PROJECAO: 0,
               OBS: "",
               PERMITEAPAGA: null,
@@ -929,7 +930,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               DATALIQUID: null,
               DEBITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
               CREDITO: null,
-              VALOR: transito.VALOR,
+              VALOR: new dinheiro(res.valor*percent),
               PROJECAO: 0,
               OBS: "",
               PERMITEAPAGA: null,
@@ -945,12 +946,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               LCTO: this.venda.LCTO,
               TIPOLCTO: "V",
               DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: this.venda.DATA,
-              DATAVCTO: datavencto,
-              DATALIQUID: null,
+              DATAEMISSAO: data,
+              DATAVCTO: data,
+              DATALIQUID: data,
               DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXACARTAO,
               CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-              VALOR: transito.VALOR,
+              VALOR: new dinheiro(res.valor*percent),
               PROJECAO: 0,
               OBS: "",
               PERMITEAPAGA: null,
@@ -983,7 +984,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         this.venda.PAGAR.subtrai(res.valor);
         console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
-        const data = new Date(this.venda.DATA);
+        const data = new Date();
         this.venda.PAGAMENTO.push({
           CODIGO: null,
           CODDEC: null,
@@ -992,9 +993,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           LCTO: this.venda.LCTO,
           TIPOLCTO: "V",
           DOCUMENTO: this.venda.LCTO,
-          DATAEMISSAO: this.venda.DATA,
-          DATAVCTO: this.venda.DATA,
-          DATALIQUID: this.venda.DATA,
+          DATAEMISSAO: data,
+          DATAVCTO: data,
+          DATALIQUID: data,
           DEBITO: this.contasEmpresas[this.empresa].CAIXATERMINAL,
           CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
           VALOR: new dinheiro(res.valor),
@@ -1006,6 +1007,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         });
         for (const transito of this.venda.TRANSITO) {
           console.log(transito);
+          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
           //operação de débito no adiantamento cliente e crdito na compensacao
           this.venda.PAGAMENTO.push({
             CODIGO: null,
@@ -1015,12 +1017,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             LCTO: this.venda.LCTO,
             TIPOLCTO: "V",
             DOCUMENTO: transito.TRANSITO,
-            DATAEMISSAO: this.venda.DATA,
-            DATAVCTO: this.venda.DATA,
-            DATALIQUID: this.venda.DATA,
+            DATAEMISSAO: data,
+            DATAVCTO: data,
+            DATALIQUID: data,
             DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
             CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
-            VALOR: transito.VALOR,
+            VALOR: new dinheiro(res.valor*percent),
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
@@ -1036,12 +1038,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               LCTO: this.venda.LCTO,
               TIPOLCTO: "D",
               DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: this.venda.DATA,
-              DATAVCTO: this.venda.DATA,
+              DATAEMISSAO: data,
+              DATAVCTO: data,
               DATALIQUID: null,
               DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
               CREDITO: this.contasEmpresas[this.empresa].CAIXAGERAL,
-              VALOR: transito.VALOR,
+              VALOR: new dinheiro(res.valor*percent),
               PROJECAO: 0,
               OBS: "",
               PERMITEAPAGA: null,
@@ -1057,12 +1059,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               LCTO: this.venda.LCTO,
               TIPOLCTO: "V",
               DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: this.venda.DATA,
-              DATAVCTO: this.venda.DATA,
-              DATALIQUID: null,
+              DATAEMISSAO: data,
+              DATAVCTO: data,
+              DATALIQUID: data,
               DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXAGERAL,
               CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-              VALOR: transito.VALOR,
+              VALOR: new dinheiro(res.valor*percent),
               PROJECAO: 0,
               OBS: "",
               PERMITEAPAGA: null,
@@ -1094,7 +1096,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         this.venda.PAGAR.subtrai(res.valor);
         console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
-        const data = new Date(this.venda.DATA);
+        const data = new Date();
 
         //CRIA O PRIMEIRO REGISTO DE PAGAMENTO, TIPO V, VALOR TOTAL, LIQUIDADO
         this.venda.PAGAMENTO.push({
@@ -1105,9 +1107,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           LCTO: this.venda.LCTO,
           TIPOLCTO: "V",
           DOCUMENTO: this.venda.LCTO.toString(),
-          DATAEMISSAO: this.venda.DATA,
-          DATAVCTO: this.venda.DATA,
-          DATALIQUID: this.venda.DATA,
+          DATAEMISSAO: data,
+          DATAVCTO: data,
+          DATALIQUID: data,
           DEBITO: this.contasEmpresas[this.empresa].CAIXADEPOSITO,
           CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
           VALOR: new dinheiro(res.valor),
@@ -1121,7 +1123,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
 
         for (const transito of this.venda.TRANSITO) {
           console.log(transito);
-          
+          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
           this.venda.PAGAMENTO.push({
             CODIGO: null,
             CODDEC: null,
@@ -1130,12 +1132,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             LCTO: this.venda.LCTO,
             TIPOLCTO: "V",
             DOCUMENTO: transito.TRANSITO,
-            DATAEMISSAO: this.venda.DATA,
-            DATAVCTO: this.venda.DATA,
-            DATALIQUID: this.venda.DATA,
+            DATAEMISSAO: data,
+            DATAVCTO: data,
+            DATALIQUID: data,
             DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
             CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
-            VALOR: transito.VALOR,
+            VALOR: new dinheiro(res.valor*percent),
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
@@ -1151,12 +1153,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             LCTO: this.venda.LCTO,
             TIPOLCTO: "D",
             DOCUMENTO: transito.TRANSITO,
-            DATAEMISSAO: this.venda.DATA,
-            DATAVCTO: this.venda.DATA,
+            DATAEMISSAO: data,
+            DATAVCTO: data,
             DATALIQUID: null,
             DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
             CREDITO: null,
-            VALOR: transito.VALOR,
+            VALOR: new dinheiro(res.valor*percent),
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
@@ -1172,12 +1174,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
             LCTO: this.venda.LCTO,
             TIPOLCTO: "V",
             DOCUMENTO: transito.TRANSITO,
-            DATAEMISSAO: this.venda.DATA,
-            DATAVCTO: this.venda.DATA,
-            DATALIQUID: null,
+            DATAEMISSAO: data,
+            DATAVCTO: data,
+            DATALIQUID: data,
             DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXADEPOSITO,
             CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-            VALOR: transito.VALOR,
+            VALOR: new dinheiro(res.valor*percent),
             PROJECAO: 0,
             OBS: "",
             PERMITEAPAGA: null,
@@ -1307,7 +1309,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         this.venda.PAGAMENTO,
         this.cartao,
         this.boleto,
-        this.empresa
+        this.venda.TRANSITO[0].EMPRESA //teste, confirma sempre na empresa
       )
       .subscribe(rest => {
         console.log(rest);

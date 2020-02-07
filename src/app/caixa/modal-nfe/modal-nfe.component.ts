@@ -501,7 +501,7 @@ export class ModalNfeComponent implements OnInit {
             //   .comVencimento(new Date());
             // this.danfe._pagamentos.push(pagamento);
             for (const item of venda.PAGAMENTO) {
-              if (item.TIPOOPERACAO !== 5 && item.TIPOOPERACAO !== 7) {
+              if (item.TIPOOPERACAO !== 5 && item.TIPOOPERACAO !== 7 && item.TIPOOPERACAO !== 23) {
                 const sigla = this.tipoOperacao.find(
                   x => x.CODIGO == item.TIPOOPERACAO
                 );

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from "electron";
+import { app, BrowserWindow, screen, dialog  } from "electron";
 import * as log from "electron-log";
 import { autoUpdater } from "electron-updater"
 import * as path from "path";
@@ -57,7 +57,7 @@ function createWindow() {
   if (serve) {
     win.webContents.openDevTools();
   }
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
   // Emitted when the window is closed.
   win.on("closed", () => {
     // Dereference the window object, usually you would store window
@@ -103,9 +103,22 @@ autoUpdater.on('update-downloaded', (ev, info) => {
   // Wait 5 seconds, then quit and install
   // In your application, you don't need to wait 5 seconds.
   // You could call autoUpdater.quitAndInstall(); immediately
-  setTimeout(function() {
-    autoUpdater.quitAndInstall();  
-  }, 5000)
+
+  const window = BrowserWindow.getFocusedWindow();
+
+  const options = {
+    type: 'question',
+    buttons: [ 'Sim', 'Com Certeza'],
+    defaultId: 2,
+    title: 'Atualização',
+    message: 'A atualização está pronta, deseja reiniciar',
+    detail: 'Você não tem escolha',
+  };
+  dialog.showMessageBox(window, options).then(response => { autoUpdater.quitAndInstall(); });
+
+  // setTimeout(function() {
+  //   autoUpdater.quitAndInstall();  
+  // }, 5000)
 })
 
 try {
@@ -113,6 +126,8 @@ try {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   app.on('ready', function()  {
+
+
     autoUpdater.checkForUpdates();
   });
   

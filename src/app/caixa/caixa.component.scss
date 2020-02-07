@@ -19,9 +19,6 @@ $text: darken($bg, 75%);
   border: 2px solid darken($bg, 60%);
 }
 
-.center-text{
-
-}
 body {
   background-color: LavenderBlush;
   color: Teal;
@@ -68,7 +65,11 @@ body {
   padding: 12px;
   div {
     display: flex;
-    align-content: flex-start;
+    flex-direction: row;
+    align-items: stretch;
+  }
+  span {
+    padding: 1vh;
   }
 
   input[type="text"] {
