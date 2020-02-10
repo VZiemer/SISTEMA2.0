@@ -318,6 +318,15 @@
   >
     DEPÓSITO <span *ngIf="ctrlPress">(F3) </span>
   </button>
+  <button
+  *ngIf="venda.LCTO && empresa"
+  [disabled]="!venda.PAGAR.valor" 
+  mat-raised-button
+  (click)="inserePagtoMercadoPago('depósito')"
+  class=""
+>
+  MERCADOPAGO <span *ngIf="ctrlPress">(F3) </span>
+</button>
     <!-- <button
       *ngIf="venda.LCTO && empresa"
       [disabled]="!venda.PAGAR.valor && venda.LIBERAFAT"

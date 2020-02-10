@@ -180,7 +180,7 @@ export class Venda {
         indice,
         array
       ) {
-        return valorAnterior + valorAtual.TOTALSD;
+        return valorAnterior + valorAtual.TOTAL;
       },
       0)
     ).soma(this.FRETE).soma(this.TXCELD);
@@ -389,7 +389,7 @@ class Produto {
     this.MULTQTD = multqtd;
     this.QTDRESERVA = qtdreserva || 0;
     this.TOTAL = new dinheiro(valor * qtd);
-    this.TOTALSD = new dinheiro(valorini * qtd);
+    this.TOTALSD = new dinheiro(valor * qtd);
     this.UNIDADE = unidade || null;
     this.SITTRIB = sittrib || null;
     this.NCM = ncm || null;
