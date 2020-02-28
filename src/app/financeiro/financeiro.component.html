@@ -3,36 +3,46 @@
     <div>
       <mat-form-field name="Empresa" appearance="outline">
         <mat-label>Empresa</mat-label>
-        <mat-select [(ngModel)]="empresa" (selectionChange)="limpaLista()" [ngModelOptions]="{standalone: true}">
+        <mat-select [(ngModel)]="empresa" (selectionChange)="limpaLista()"
+          [ngModelOptions]="{standalone: true}">
           <mat-option *ngFor="let item of listaEmpresas" [value]="item.CODIGO">{{item.NOMESYS}}</mat-option>
         </mat-select>
       </mat-form-field>
 
 
-      <mat-form-field name="Projecao" appearance="outline" *ngIf="param==1 || param==5">
+      <mat-form-field name="Projecao" appearance="outline" *ngIf="param==1 ||
+        param==5">
         <mat-label>Projeção</mat-label>
-        <mat-select [(ngModel)]="projecaoSelecionado" (selectionChange)="FiltraLista()"
+        <mat-select [(ngModel)]="projecaoSelecionado"
+          (selectionChange)="FiltraLista()"
           [ngModelOptions]="{standalone: true}">
           <mat-option value="TODOS">TODOS</mat-option>
-          <mat-option *ngFor="let item of listaSelectProjecao" [value]="item.PROJECAO">{{item.PROJECAO}}</mat-option>
+          <mat-option *ngFor="let item of listaSelectProjecao"
+            [value]="item.PROJECAO">{{item.PROJECAO}}</mat-option>
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field name="Fantasia" appearance="outline" *ngIf="param==1 || param==5">
+      <mat-form-field name="Fantasia" appearance="outline" *ngIf="param==1 ||
+        param==5">
         <mat-label>Fantasia</mat-label>
-        <mat-select [(ngModel)]="fantasiaSelecionado" (selectionChange)="FiltraLista()"
+        <mat-select [(ngModel)]="fantasiaSelecionado"
+          (selectionChange)="FiltraLista()"
           [ngModelOptions]="{standalone: true}">
           <mat-option value="TODOS">TODOS</mat-option>
-          <mat-option *ngFor="let item of listaSelectParceiro" [value]="item.FANTASIA">{{item.FANTASIA}}</mat-option>
+          <mat-option *ngFor="let item of listaSelectParceiro"
+            [value]="item.FANTASIA">{{item.FANTASIA}}</mat-option>
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field name="Conta" appearance="outline" *ngIf="param==1 || param==5">
+      <mat-form-field name="Conta" appearance="outline" *ngIf="param==1 ||
+        param==5">
         <mat-label>Conta</mat-label>
-        <mat-select [(ngModel)]="contaSelecionado" (selectionChange)="FiltraLista()"
+        <mat-select [(ngModel)]="contaSelecionado"
+          (selectionChange)="FiltraLista()"
           [ngModelOptions]="{standalone: true}">
           <mat-option value="TODOS">TODOS</mat-option>
-          <mat-option *ngFor="let item of listaSelectConta" [value]="item.CONTAMOSTRATELA">{{item.CONTAMOSTRATELA}}
+          <mat-option *ngFor="let item of listaSelectConta"
+            [value]="item.CONTAMOSTRATELA">{{item.CONTAMOSTRATELA}}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -42,8 +52,10 @@
 
     <h2 *ngIf="param==2 || param==3">{{tituloPagina}}</h2>
 
-    <h2 *ngIf="saldoDataInicio">Saldo em {{dataInicio | date: 'dd/MM/yy'}} {{converteMoeda(saldoDataInicio)}}</h2>
-    <h2 *ngIf="param==1 || param==4 || param==5">CONTAS EM ABERTO ATÉ {{dataFim | date: 'dd/MM/yy'}}</h2>
+    <h2 *ngIf="saldoDataInicio">Saldo em {{dataInicio | date: 'dd/MM/yy'}}
+      {{converteMoeda(saldoDataInicio)}}</h2>
+    <h2 *ngIf="param==1 || param==4 || param==5">CONTAS EM ABERTO ATÉ {{dataFim
+      | date: 'dd/MM/yy'}}</h2>
 
 
   </header>
@@ -51,15 +63,22 @@
 
   <aside class="sidebar column">
     <div>
-      <button [disabled]="!empresa" (click)="ChamaModaInsereData(1)">CONTAS PAGAR</button>
-      <button [disabled]="!empresa || param!=1 || !dataFim" (click)="ChamaModaInsereData(4)">LANÇAR DESPESA</button>
+      <button [disabled]="!empresa" (click)="ChamaModaInsereData(1)">CONTAS
+        PAGAR</button>
+      <button [disabled]="!empresa" (click)="ChamaCompensacaoaPagar()">COMPENSAÇÃO
+        A PAGAR</button>
+      <button [disabled]="!empresa || param!=1 || !dataFim"
+        (click)="ChamaModaInsereData(4)">LANÇAR DESPESA</button>
       <button [disabled]="!empresa" (click)="ChamaModaInsereData(2)">EXTRATO</button>
-      <button [disabled]="!empresa" (click)="ChamaModaInsereData(5)">CONTAS RECEBER</button>
-      <button [disabled]="!empresa || !codigoConta" (click)="ChamaModaInsereData(3)">TRANSFERIR</button>
-      <!-- <button [disabled]="!empresa || !saldoSelect" (click)="LiquidaGrupoRegistros()">LIQUIDAR</button> -->
+      <button [disabled]="!empresa" (click)="ChamaModaInsereData(5)">CONTAS
+        RECEBER</button>
+      <button [disabled]="!empresa || !codigoConta"
+        (click)="ChamaModaInsereData(3)">TRANSFERIR</button>
+      <button [disabled]="!empresa || !saldoSelect || !contaSelecionado && param != 6"(click)="LiquidaGrupoRegistros()">LIQUIDAR</button>
     </div>
     <div>
-      <button [disabled]="!param || param==3 || param==4" (click)="ImprimirlistaAgrupada()">IMPRIMIR</button>
+      <button [disabled]="!param || param==3 || param==4"
+        (click)="ImprimirlistaAgrupada()">IMPRIMIR</button>
     </div>
 
   </aside>
@@ -71,52 +90,65 @@
 
         <ng-container matColumnDef="select">
           <th mat-header-cell *matHeaderCellDef>
-            <mat-checkbox (change)="$event ? masterToggle() : null; recalculaSaldoSelecionado()"
-                          [checked]="selection.hasValue() && isAllSelected()"
-                          [indeterminate]="selection.hasValue() && !isAllSelected()">
+            <mat-checkbox (change)="$event ? masterToggle() : null;
+              recalculaSaldoSelecionado()"
+              [checked]="selection.hasValue() && isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()"
+              [disabled]="contaSelecionado == 'TODOS' && param != 6">
             </mat-checkbox>
           </th>
           <td mat-cell *matCellDef="let row">
             <mat-checkbox (click)="$event.stopPropagation()"
-                          (change)="$event ? selection.toggle(row) : null; recalculaSaldoSelecionado()"
-                          [checked]="selection.isSelected(row)"
-                          [disabled]="!row.CREDITO || row.DATALIQUID">
+              (change)="$event ? selection.toggle(row) : null;
+              recalculaSaldoSelecionado()"
+              [checked]="selection.isSelected(row)"
+              [disabled]="contaSelecionado == 'TODOS' && param != 6">
             </mat-checkbox>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="DOCUMENTO">
           <th mat-header-cell *matHeaderCellDef> DOCUMENTO </th>
-          <td mat-cell *matCellDef="let item"><a [class]="item.PROJECAO==1 ? 'hiperlinkred':'hiperlinkblue'"
+          <td mat-cell *matCellDef="let item"><a [class]="item.PROJECAO==1 ?
+              'hiperlinkred':'hiperlinkblue'"
               (click)="ChamaModalRegistroDeus(item)">{{item.DOCUMENTO}}</a></td>
         </ng-container>
 
         <ng-container matColumnDef="DATAVCTO">
           <th mat-header-cell *matHeaderCellDef> DATA VCTO </th>
-          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item">
+          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell
+            *matCellDef="let item">
             {{item.DATAVCTO | date: 'dd/MM/yy'}} </td>
         </ng-container>
 
         <ng-container matColumnDef="DATALIQUID">
           <th mat-header-cell *matHeaderCellDef> DATA LIQUID </th>
-          <td mat-cell *matCellDef="let item"> {{item.DATALIQUID | date: 'dd/MM/yy'}} </td>
+          <td mat-cell *matCellDef="let item"> {{item.DATALIQUID | date:
+            'dd/MM/yy'}} </td>
         </ng-container>
 
-
+        <ng-container matColumnDef="DATAEMISSAO">
+          <th mat-header-cell *matHeaderCellDef> DATA EMISSAO </th>
+          <td mat-cell *matCellDef="let item"> {{item.DATAEMISSAO | date:
+            'dd/MM/yy'}} </td>
+        </ng-container>
 
         <ng-container matColumnDef="CODPARC">
           <th mat-header-cell *matHeaderCellDef> CODPARC </th>
-          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item"> {{item.CODPARC}} </td>
+          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell
+            *matCellDef="let item"> {{item.CODPARC}} </td>
         </ng-container>
 
         <ng-container matColumnDef="FANTASIA">
           <th mat-header-cell *matHeaderCellDef> PARCEIRO </th>
-          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item"> {{item.FANTASIA}} </td>
+          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell
+            *matCellDef="let item"> {{item.FANTASIA}} </td>
         </ng-container>
 
         <ng-container matColumnDef="CONTAMOSTRATELA">
           <th mat-header-cell *matHeaderCellDef> CONTA </th>
-          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item"> {{item.CONTAMOSTRATELA}}
+          <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell
+            *matCellDef="let item"> {{item.CONTAMOSTRATELA}}
           </td>
         </ng-container>
 
@@ -127,14 +159,60 @@
 
         <ng-container matColumnDef="VALOR">
           <th mat-header-cell *matHeaderCellDef> VALOR </th>
-          <td [class]="item.VALOR<0 ||item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item">
+          <td [class]="item.CREDITO == codigoConta ||item.PROJECAO==1 ? 'vermelho':'blue'"
+            mat-cell *matCellDef="let item">
             {{converteMoeda(item.VALOR)}} </td>
         </ng-container>
 
         <ng-container matColumnDef="SALDO">
           <th mat-header-cell *matHeaderCellDef> SALDO </th>
-          <td [class]="item.SALDO<0 ||item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell *matCellDef="let item">
+          <td [class]="item.SALDO <0 ||item.PROJECAO==1 ? 'vermelho':'blue'"
+            mat-cell *matCellDef="let item">
             {{converteMoeda(item.SALDO)}} </td>
+        </ng-container>
+
+
+        //campos para compensacao
+        <ng-container matColumnDef="LCTOVENDA">
+          <th mat-header-cell *matHeaderCellDef> LCTO </th>
+          <td mat-cell *matCellDef="let item"><a [class]="item.PROJECAO==1 ?
+              'hiperlinkred':'hiperlinkblue'"
+              (click)="ChamaModalRegistroDeus(item)">{{item.LCTOVENDA}}</a></td>
+        </ng-container>
+
+        <ng-container matColumnDef="VLBRUTO">
+          <th mat-header-cell *matHeaderCellDef> VL BRUTO </th>
+          <td mat-cell *matCellDef="let item"><a [class]="item.VLBRUTO<0 || item.PROJECAO==1 ?
+              'hiperlinkred':'hiperlinkblue'"
+              (click)="ChamaModalRegistroDeus(item)">{{item.VLBRUTO}}</a></td>
+        </ng-container>
+
+        <ng-container matColumnDef="VLLIQUIDO">
+          <th mat-header-cell *matHeaderCellDef> VL LIQUID </th>
+          <td mat-cell *matCellDef="let item"><a [class]="item.VLLIQUIDO<0 || item.PROJECAO==1 ?
+              'hiperlinkred':'hiperlinkblue'"
+              (click)="ChamaModalRegistroDeus(item)">{{item.VLLIQUIDO}}</a></td>
+        </ng-container>
+
+        <ng-container matColumnDef="TARIFA">
+          <th mat-header-cell *matHeaderCellDef> TARIFA </th>
+          <td mat-cell *matCellDef="let item"><a [class]="item.VLLIQUIDO<0 || item.PROJECAO==1 ?
+              'hiperlinkred':'hiperlinkblue'"
+              (click)="ChamaModalRegistroDeus(item)">{{item.TARIFA}}</a></td>
+        </ng-container>
+
+        <ng-container matColumnDef="TAXACELD">
+          <th mat-header-cell *matHeaderCellDef> TAXA CELD </th>
+          <td mat-cell *matCellDef="let item"><a [class]="item.TAXACELD<0 || item.PROJECAO==1 ?
+              'hiperlinkred':'hiperlinkblue'"
+              (click)="ChamaModalRegistroDeus(item)">{{item.TAXACELD}}</a></td>
+        </ng-container>
+
+        <ng-container matColumnDef="RAZAO">
+          <th mat-header-cell *matHeaderCellDef> RAZAO </th>
+          <td mat-cell *matCellDef="let item"><a [class]=" item.PROJECAO==1 ?
+              'hiperlinkred':'hiperlinkblue'"
+              (click)="ChamaModalRegistroDeus(item)">{{item.RAZAO}}</a></td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="camposTabela; sticky: true"></tr>
@@ -146,7 +224,8 @@
 
   <footer class="footer column">
     <div>
-      <span *ngIf="saldoSelect">Selecionados {{converteMoeda(saldoSelect)}} </span>
+      <span *ngIf="saldoSelect">Selecionados {{converteMoeda(saldoSelect)}}
+      </span>
     </div>
     <span *ngIf="saldoFinal">Saldo {{converteMoeda(saldoFinal)}} </span>
   </footer>

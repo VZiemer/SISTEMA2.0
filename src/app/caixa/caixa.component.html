@@ -314,7 +314,7 @@
     [disabled]="!venda.PAGAR.valor"
     mat-raised-button
     (click)="inserePagtoDeposito('depósito')"
-    class=""
+    class=""  
   >
     DEPÓSITO <span *ngIf="ctrlPress">(F3) </span>
   </button>
@@ -326,6 +326,15 @@
   class=""
 >
   MERCADOPAGO <span *ngIf="ctrlPress">(F3) </span>
+</button>
+<button
+*ngIf="venda.LCTO && empresa"
+[disabled]="!venda.PAGAR.valor" 
+mat-raised-button
+(click)="inserePagtoNP('NP')"
+class=""
+>
+NP <span *ngIf="ctrlPress">(F3) </span>
 </button>
     <!-- <button
       *ngIf="venda.LCTO && empresa"

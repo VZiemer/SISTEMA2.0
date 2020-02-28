@@ -56,6 +56,8 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       CAIXACARTAO: 297,
       CAIXATERMINAL: 159,
       CAIXADEPOSITO: 290,
+      CAIXANP: 305,
+
     },
     "2": {
       FANTASIA: 'LOCALDECOR FERRAGENS',
@@ -68,6 +70,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       CAIXACARTAO: 296,
       CAIXATERMINAL: 255,
       CAIXADEPOSITO: 288,
+      CAIXANP: 304,
     },
     "3": {
       FANTASIA: 'CELD MARKETPLACE',
@@ -82,8 +85,9 @@ export class CaixaComponent implements OnInit, AfterViewInit {
       COMPENSACAOMERCADOPAGO: 299,
       CAIXADEPOSITO: 294,
       CAIXAMERCADOPAGO: 298,
-      CELD: 301
-
+      CELD: 301,
+      CAIXANP: 302,
+      COMPONSACAONP: 303,
     }
   };
 
@@ -735,6 +739,36 @@ export class CaixaComponent implements OnInit, AfterViewInit {
         const valorTarifa: number = this.venda.TXCELD > 0 ? 0 : Number(
           ((res.valor * res.fPagto.TARIFA) / 100).toFixed(2));
 
+        let cartao = [];
+        if (res.fPagto.PARCELAS == 0) {
+          cartao.push({
+            ID: null,
+            ESTABELECIMENTO: res.fPagto.ESTABELECIMENTO,
+            ADQUIRENTE: res.fPagto.ADQUIRENTE,
+            BANDEIRA: res.fPagto.BANDEIRA,
+            PARCELAS: 0,
+            TID: null,
+            TARIFA: res.fPagto.TARIFA,
+            VALOR: (res.valor).toFixed(2),
+            AUTORIZACAO: null
+          })
+        }
+        if (res.fPagto.PARCELAS > 0) {
+          for (let i = 0; i < res.fPagto.PARCELAS; i++) {
+            console.log('cartao', i)
+            cartao.push({
+              ID: null,
+              ESTABELECIMENTO: res.fPagto.ESTABELECIMENTO,
+              ADQUIRENTE: res.fPagto.ADQUIRENTE,
+              BANDEIRA: res.fPagto.BANDEIRA,
+              PARCELAS: i + 1,
+              TID: null,
+              TARIFA: res.fPagto.TARIFA,
+              VALOR: (res.valor / res.fPagto.PARCELAS).toFixed(2),
+              AUTORIZACAO: null
+            })
+          }
+        }
         this.venda.PAGAMENTO.push({
           CODIGO: null,
           CODDEC: null,
@@ -745,160 +779,155 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           DOCUMENTO: this.venda.LCTO,
           DATAEMISSAO: dataemissao,
           DATAVCTO: dataemissao,
-          DATALIQUID: dataemissao,
+          DATALIQUID: null,
           DEBITO: this.contasEmpresas[this.empresa].CARTAO,
           CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
-          VALOR: percentceld ? new dinheiro(res.valor - res.valor * percentceld) : new dinheiro(res.valor),
+          VALOR: percentceld ? new dinheiro(res.valor) : new dinheiro(res.valor),
           PROJECAO: 0,
           OBS: "",
           PERMITEAPAGA: null,
           TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
           TRAVACREDITO: null,
-          TARIFA: null,
+          TARIFA: new dinheiro(0),
+          CARTAO: cartao
           //informações do cartão
-          ID: null,
-          ESTABELECIMENTO: res.fPagto.ESTABELECIMENTO,
-          ADQUIRENTE: res.fPagto.ADQUIRENTE,
-          BANDEIRA: res.fPagto.BANDEIRA,
-          PARCELAS: res.fPagto.PARCELAS,
-          TID: null,
-          AUTORIZACAO: null
+
         });
 
-        if (percentceld) {
-          this.venda.PAGAMENTO.push({
-            CODIGO: null,
-            CODDEC: null,
-            EMPRESA: this.empresa,
-            CODPARC: this.cliente.CODIGO,
-            LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: this.venda.LCTO,
-            DATAEMISSAO: dataemissao,
-            DATAVCTO: dataemissao,
-            DATALIQUID: dataemissao,
-            DEBITO: this.contasEmpresas[this.empresa].CARTAO,
-            CREDITO: this.contasEmpresas[this.empresa].CELD,
-            VALOR: new dinheiro(res.valor * percentceld),
-            PROJECAO: 0,
-            OBS: "",
-            PERMITEAPAGA: null,
-            TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
-            TRAVACREDITO: null,
-            TARIFA: null,
-            //informações do cartão
-            ID: null,
-            ESTABELECIMENTO: null,
-            ADQUIRENTE: null,
-            BANDEIRA: null,
-            PARCELAS: null,
-            TID: null,
-            AUTORIZACAO: null
-          });
-        }
+        // if (percentceld) {
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: this.venda.LCTO,
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CARTAO,
+        //     CREDITO: this.contasEmpresas[this.empresa].CELD,
+        //     VALOR: new dinheiro(res.valor * percentceld),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: res.fPagto.TIPOOPERACAO,
+        //     TRAVACREDITO: null,
+        //     TARIFA: new dinheiro(0),
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   });
+        // }
 
         const datacartao = new Date()
         let datavencto = new Date(
           datacartao.setDate(datacartao.getDate() + res.fPagto.PERIODO)
         )
-        for (const transito of this.venda.TRANSITO) {
-          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
-          console.log(transito);
-          this.venda.PAGAMENTO.push(
-            //débito na conta cliente e crédito na compensação, liquidado no ato
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: this.empresa,
-              CODPARC: this.cliente.CODIGO,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "V",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: dataemissao,
-              DATAVCTO: dataemissao,
-              DATALIQUID: dataemissao,
-              DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
-              CREDITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
-              VALOR: new dinheiro(res.valor * percent),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 23,
-              TRAVACREDITO: null,
-              TARIFA: null,
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            },
-            //débito na compensação, crédito á definir
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: this.empresa,
-              CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "D",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: this.venda.DATA,
-              DATAVCTO: this.proxDiaUtil(datavencto),
-              DATALIQUID: null,
-              DEBITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
-              CREDITO: null,
-              VALOR: new dinheiro((res.valor * percent) - valorTarifa),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 23,
-              TRAVACREDITO: null,
-              TARIFA: new dinheiro(valorTarifa),
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            },
-            // operação na empresa que vai receber o valor
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: transito.EMPRESA,
-              CODPARC: this.cliente.CODIGO,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "V",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: dataemissao,
-              DATAVCTO: dataemissao,
-              DATALIQUID: dataemissao,
-              DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXACARTAO,
-              CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-              VALOR: new dinheiro((res.valor * percent) - valorTarifa),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 5,
-              TRAVACREDITO: null,
-              TARIFA: new dinheiro(valorTarifa),
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            });
+        // for (const transito of this.venda.TRANSITO) {
+        //   const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
+        //   console.log(transito);
+        //   this.venda.PAGAMENTO.push(
+        //     //débito na conta cliente e crédito na compensação, liquidado no ato
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: this.empresa,
+        //       CODPARC: this.cliente.CODIGO,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "V",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: dataemissao,
+        //       DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
+        //       CREDITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 23,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(0),
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     },
+        //     //débito na compensação, crédito á definir
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: this.empresa,
+        //       CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "D",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: this.venda.DATA,
+        //       DATAVCTO: this.proxDiaUtil(datavencto),
+        //       DATALIQUID: null,
+        //       DEBITO: this.contasEmpresas[this.empresa].COMPENSACAOCARTAO,
+        //       CREDITO: null,
+        //       VALOR: new dinheiro((res.valor * percent) - valorTarifa),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 23,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(valorTarifa),
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     },
+        //     // operação na empresa que vai receber o valor
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: transito.EMPRESA,
+        //       CODPARC: this.cliente.CODIGO,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "V",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: dataemissao,
+        //       DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXACARTAO,
+        //       CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
+        //       VALOR: new dinheiro((res.valor * percent) - valorTarifa),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 5,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(valorTarifa),
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     });
 
 
 
-        }
+        // }
         console.log(this.venda.PAGAMENTO);
       }
     });
@@ -935,16 +964,16 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           DOCUMENTO: this.venda.LCTO,
           DATAEMISSAO: dataemissao,
           DATAVCTO: dataemissao,
-          DATALIQUID: dataemissao,
+          DATALIQUID: null,
           DEBITO: this.contasEmpresas[this.empresa].CAIXATERMINAL,
           CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
-          VALOR: percentceld ? new dinheiro(res.valor - res.valor * percentceld) : new dinheiro(res.valor),
+          VALOR: percentceld ? new dinheiro(res.valor) : new dinheiro(res.valor),
           PROJECAO: 0,
           OBS: "",
           PERMITEAPAGA: null,
           TIPOOPERACAO: 6,
           TRAVACREDITO: null,
-          TARIFA: null,
+          TARIFA: new dinheiro(0),
           //informações do cartão
           ID: null,
           ESTABELECIMENTO: null,
@@ -955,143 +984,335 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           AUTORIZACAO: null
         });
 
-        if (percentceld) {
+        // if (percentceld) {
 
-          this.venda.PAGAMENTO.push({
-            CODIGO: null,
-            CODDEC: null,
-            EMPRESA: this.empresa,
-            CODPARC: this.cliente.CODIGO,
-            LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: this.venda.LCTO,
-            DATAEMISSAO: dataemissao,
-            DATAVCTO: dataemissao,
-            DATALIQUID: dataemissao,
-            DEBITO: this.contasEmpresas[this.empresa].CAIXATERMINAL,
-            CREDITO: this.contasEmpresas[this.empresa].CELD,
-            VALOR: new dinheiro(res.valor * percentceld),
-            PROJECAO: 0,
-            OBS: "",
-            PERMITEAPAGA: null,
-            TIPOOPERACAO: 6,
-            TRAVACREDITO: null,
-            TARIFA: null,
-            //informações do cartão
-            ID: null,
-            ESTABELECIMENTO: null,
-            ADQUIRENTE: null,
-            BANDEIRA: null,
-            PARCELAS: null,
-            TID: null,
-            AUTORIZACAO: null
-          });
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: this.venda.LCTO,
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CAIXATERMINAL,
+        //     CREDITO: this.contasEmpresas[this.empresa].CELD,
+        //     VALOR: new dinheiro(res.valor * percentceld),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: 6,
+        //     TRAVACREDITO: null,
+        //     TARIFA: new dinheiro(0),
 
-
-        }
-        for (const transito of this.venda.TRANSITO) {
-          console.log(transito);
-          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
-          console.log(percent)
-          //operação de débito no adiantamento cliente e crdito na compensacao
-          this.venda.PAGAMENTO.push({
-            CODIGO: null,
-            CODDEC: null,
-            EMPRESA: this.empresa,
-            CODPARC: this.cliente.CODIGO,
-            LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: transito.TRANSITO,
-            DATAEMISSAO: dataemissao,
-            DATAVCTO: dataemissao,
-            DATALIQUID: dataemissao,
-            DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
-            CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
-            VALOR: new dinheiro(res.valor * percent),
-            PROJECAO: 0,
-            OBS: "",
-            PERMITEAPAGA: null,
-            TIPOOPERACAO: 23,
-            TRAVACREDITO: null,
-            TARIFA: null,
-            //informações do cartão
-            ID: null,
-            ESTABELECIMENTO: null,
-            ADQUIRENTE: null,
-            BANDEIRA: null,
-            PARCELAS: null,
-            TID: null,
-            AUTORIZACAO: null
-          },
-            //operacç~eo de dédito na compensação e credito no caixa geral
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: this.empresa,
-              CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "D",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: dataemissao,
-              DATAVCTO: dataemissao,
-              DATALIQUID: null,
-              DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
-              CREDITO: this.contasEmpresas[this.empresa].CAIXAGERAL,
-              VALOR: new dinheiro(res.valor * percent),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 23,
-              TRAVACREDITO: null,
-              TARIFA: null,
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            },
-            //operação na empresa vendedora       
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: transito.EMPRESA,
-              CODPARC: this.cliente.CODIGO,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "V",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: dataemissao,
-              DATAVCTO: dataemissao,
-              DATALIQUID: dataemissao,
-              DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXATERMINAL,
-              CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-              VALOR: new dinheiro(res.valor * percent),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 5,
-              TRAVACREDITO: null,
-              TARIFA: null,
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            });
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   });
 
 
-        }
+        // }
+        // for (const transito of this.venda.TRANSITO) {
+        //   console.log(transito);
+        //   const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
+        //   console.log(percent)
+        //   //operação de débito no adiantamento cliente e crdito na compensacao
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: transito.TRANSITO,
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
+        //     CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
+        //     VALOR: new dinheiro(res.valor * percent),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: 23,
+        //     TRAVACREDITO: null,
+        //     TARIFA: new dinheiro(0),
+
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   },
+        //     //operacç~eo de dédito na compensação e credito no caixa geral
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: this.empresa,
+        //       CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "D",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: null,
+        //       DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
+        //       CREDITO: this.contasEmpresas[this.empresa].CAIXAGERAL,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 23,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(0),
+
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     },
+        //     //operação na empresa vendedora       
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: transito.EMPRESA,
+        //       CODPARC: this.cliente.CODIGO,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "V",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: dataemissao,
+        //       DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXATERMINAL,
+        //       CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 5,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(0),
+
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     });
+
+
+        // }
 
         console.log(this.venda.PAGAMENTO);
       }
     });
   }
+  inserePagtoNP(pagto) {
+    const dialogRef = this.dialog.open(ModalPagtoDiComponent, {
+      width: "40vw",
+      height: "70vh",
+      hasBackdrop: true,
+      disableClose: false,
+      data: { tipopag: pagto, valor: this.venda.PAGAR.valor }
+    });
+    dialogRef.afterClosed().subscribe(res => {
+      this.inputReturn();
+      if (res) {
 
+        console.log("entrou pagamento", res);
+        this.venda.PAGAR.subtrai(res.valor);
+        console.log(this.venda);
+        console.log("pagar", this.venda.PAGAR);
+        const dataemissao = new Date();
+
+        const percentceld = this.venda.TXCELD / this.venda.TOTAL.valor;
+
+        //CRIA O PRIMEIRO REGISTO DE PAGAMENTO, TIPO V, VALOR TOTAL, LIQUIDADO
+        this.venda.PAGAMENTO.push({
+          CODIGO: null,
+          CODDEC: null,
+          EMPRESA: this.empresa,
+          CODPARC: this.cliente.CODIGO,
+          LCTO: this.venda.LCTO,
+          TIPOLCTO: "V",
+          DOCUMENTO: this.venda.LCTO.toString(),
+          DATAEMISSAO: dataemissao,
+          DATAVCTO: dataemissao,
+          DATALIQUID: null,
+          DEBITO: this.contasEmpresas[this.empresa].CAIXANP,
+          CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
+          VALOR: percentceld ? new dinheiro(res.valor) : new dinheiro(res.valor),
+          PROJECAO: 0,
+          OBS: "",
+          PERMITEAPAGA: null,
+          TIPOOPERACAO: 6,
+          TRAVACREDITO: null,
+          TARIFA: new dinheiro(0),
+
+          //informações do cartão
+          ID: null,
+          ESTABELECIMENTO: null,
+          ADQUIRENTE: null,
+          BANDEIRA: null,
+          PARCELAS: null,
+          TID: null,
+          AUTORIZACAO: null
+        });
+
+        // if (percentceld) {
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: this.venda.LCTO.toString(),
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CAIXANP,
+        //     CREDITO: this.contasEmpresas[this.empresa].CELD,
+        //     VALOR: new dinheiro(res.valor * percentceld),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: 6,
+        //     TRAVACREDITO: null,
+        //     TARIFA: new dinheiro(0),
+
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   });
+        // }
+
+        // for (const transito of this.venda.TRANSITO) {
+        //   console.log(transito);
+        //   const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: transito.TRANSITO,
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
+        //     CREDITO: this.contasEmpresas[this.empresa].COMPENSACAONP,
+        //     VALOR: new dinheiro(res.valor * percent),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: 23,
+        //     TRAVACREDITO: null,
+        //     TARIFA: new dinheiro(0),
+
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   },
+
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: this.empresa,
+        //       CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "D",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: null,
+        //       DEBITO: this.contasEmpresas[this.empresa].COMPENSACAONP,
+        //       CREDITO: null,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 23,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(0),
+
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     }
+        //     ,
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: transito.EMPRESA,
+        //       CODPARC: this.cliente.CODIGO,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "V",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: dataemissao,
+        //       DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXANP,
+        //       CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 5,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(0),
+
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     });
+
+
+
+        // }
+
+        console.log(this.venda.PAGAMENTO);
+      }
+    });
+  }
   // Pagamento com Dinheiro
   inserePagtoDeposito(pagto) {
     const dialogRef = this.dialog.open(ModalPagtoDiComponent, {
@@ -1127,13 +1348,14 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           DATALIQUID: dataemissao,
           DEBITO: this.contasEmpresas[this.empresa].CAIXADEPOSITO,
           CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
-          VALOR: percentceld ? new dinheiro(res.valor - res.valor * percentceld) : new dinheiro(res.valor),
+          VALOR: percentceld ? new dinheiro(res.valor) : new dinheiro(res.valor),
           PROJECAO: 0,
           OBS: "",
           PERMITEAPAGA: null,
           TIPOOPERACAO: 6,
           TRAVACREDITO: null,
-          TARIFA: null,
+          TARIFA: new dinheiro(0),
+
           //informações do cartão
           ID: null,
           ESTABELECIMENTO: null,
@@ -1144,140 +1366,143 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           AUTORIZACAO: null
         });
 
-        if (percentceld) {
-          this.venda.PAGAMENTO.push({
-            CODIGO: null,
-            CODDEC: null,
-            EMPRESA: this.empresa,
-            CODPARC: this.cliente.CODIGO,
-            LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: this.venda.LCTO.toString(),
-            DATAEMISSAO: dataemissao,
-            DATAVCTO: dataemissao,
-            DATALIQUID: dataemissao,
-            DEBITO: this.contasEmpresas[this.empresa].CAIXADEPOSITO,
-            CREDITO: this.contasEmpresas[this.empresa].CELD,
-            VALOR: new dinheiro(res.valor * percentceld),
-            PROJECAO: 0,
-            OBS: "",
-            PERMITEAPAGA: null,
-            TIPOOPERACAO: 6,
-            TRAVACREDITO: null,
-            TARIFA: null,
-            //informações do cartão
-            ID: null,
-            ESTABELECIMENTO: null,
-            ADQUIRENTE: null,
-            BANDEIRA: null,
-            PARCELAS: null,
-            TID: null,
-            AUTORIZACAO: null
-          });
-        }
+        // if (percentceld) {
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: this.venda.LCTO.toString(),
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CAIXADEPOSITO,
+        //     CREDITO: this.contasEmpresas[this.empresa].CELD,
+        //     VALOR: new dinheiro(res.valor * percentceld),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: 6,
+        //     TRAVACREDITO: null,
+        //     TARIFA: new dinheiro(0),
 
-        for (const transito of this.venda.TRANSITO) {
-          console.log(transito);
-          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
-          this.venda.PAGAMENTO.push({
-            CODIGO: null,
-            CODDEC: null,
-            EMPRESA: this.empresa,
-            CODPARC: this.cliente.CODIGO,
-            LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: transito.TRANSITO,
-            DATAEMISSAO: dataemissao,
-            DATAVCTO: dataemissao,
-            DATALIQUID: dataemissao,
-            DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
-            CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
-            VALOR: new dinheiro(res.valor * percent),
-            PROJECAO: 0,
-            OBS: "",
-            PERMITEAPAGA: null,
-            TIPOOPERACAO: 23,
-            TRAVACREDITO: null,
-            TARIFA: null,
-            //informações do cartão
-            ID: null,
-            ESTABELECIMENTO: null,
-            ADQUIRENTE: null,
-            BANDEIRA: null,
-            PARCELAS: null,
-            TID: null,
-            AUTORIZACAO: null
-          },
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   });
+        // }
 
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: this.empresa,
-              CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "D",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: dataemissao,
-              DATAVCTO: dataemissao,
-              DATALIQUID: null,
-              DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
-              CREDITO: null,
-              VALOR: new dinheiro(res.valor * percent),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 23,
-              TRAVACREDITO: null,
-              TARIFA: null,
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            }
-            ,
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: transito.EMPRESA,
-              CODPARC: this.cliente.CODIGO,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "V",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: dataemissao,
-              DATAVCTO: dataemissao,
-              DATALIQUID: dataemissao,
-              DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXADEPOSITO,
-              CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-              VALOR: new dinheiro(res.valor * percent),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 5,
-              TRAVACREDITO: null,
-              TARIFA: null,
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            });
+        // for (const transito of this.venda.TRANSITO) {
+        //   console.log(transito);
+        //   const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: transito.TRANSITO,
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
+        //     CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
+        //     VALOR: new dinheiro(res.valor * percent),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: 23,
+        //     TRAVACREDITO: null,
+        //     TARIFA: new dinheiro(0),
+
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   },
+
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: this.empresa,
+        //       CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "D",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: null,
+        //       DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
+        //       CREDITO: null,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 23,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(0),
+
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     }
+        //     ,
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: transito.EMPRESA,
+        //       CODPARC: this.cliente.CODIGO,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "V",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: dataemissao,
+        //       DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXADEPOSITO,
+        //       CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 5,
+        //       TRAVACREDITO: null,
+        //       TARIFA: new dinheiro(0),
+
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     });
 
 
 
-        }
+        // }
 
         console.log(this.venda.PAGAMENTO);
       }
     });
   }
-
 
   inserePagtoMercadoPago(pagto) {
     const dialogRef = this.dialog.open(ModalPagtoDiComponent, {
@@ -1310,7 +1535,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           DATALIQUID: dataemissao,
           DEBITO: this.contasEmpresas[this.empresa].CAIXAMERCADOPAGO,
           CREDITO: this.contasEmpresas[this.empresa].CLIENTES,
-          VALOR: percentceld ? new dinheiro(res.valor - res.valor * percentceld) : new dinheiro(res.valor),
+          VALOR: percentceld ? new dinheiro(res.valor) : new dinheiro(res.valor),
           PROJECAO: 0,
           OBS: "",
           PERMITEAPAGA: null,
@@ -1326,127 +1551,127 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           AUTORIZACAO: null
         });
 
-        if (percentceld) {
-          this.venda.PAGAMENTO.push({
-            CODIGO: null,
-            CODDEC: null,
-            EMPRESA: this.empresa,
-            CODPARC: this.cliente.CODIGO,
-            LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: this.venda.LCTO.toString(),
-            DATAEMISSAO: dataemissao,
-            DATAVCTO: dataemissao,
-            DATALIQUID: dataemissao,
-            DEBITO: this.contasEmpresas[this.empresa].CAIXAMERCADOPAGO,
-            CREDITO: this.contasEmpresas[this.empresa].CELD,
-            VALOR: new dinheiro(res.valor * percentceld),
-            PROJECAO: 0,
-            OBS: "",
-            PERMITEAPAGA: null,
-            TIPOOPERACAO: 6,
-            TRAVACREDITO: null,
-            //informações do cartão
-            ID: null,
-            ESTABELECIMENTO: null,
-            ADQUIRENTE: null,
-            BANDEIRA: null,
-            PARCELAS: null,
-            TID: null,
-            AUTORIZACAO: null
-          });
-        }
-        for (const transito of this.venda.TRANSITO) {
-          console.log(transito);
-          const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
-          this.venda.PAGAMENTO.push({
-            CODIGO: null,
-            CODDEC: null,
-            EMPRESA: this.empresa,
-            CODPARC: this.cliente.CODIGO,
-            LCTO: this.venda.LCTO,
-            TIPOLCTO: "V",
-            DOCUMENTO: transito.TRANSITO,
-            DATAEMISSAO: dataemissao,
-            DATAVCTO: dataemissao,
-            DATALIQUID: dataemissao,
-            DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
-            CREDITO: this.contasEmpresas[this.empresa].COMPENSACAOMERCADOPAGO,
-            VALOR: new dinheiro(res.valor * percent),
-            PROJECAO: 0,
-            OBS: "",
-            PERMITEAPAGA: null,
-            TIPOOPERACAO: 23,
-            TRAVACREDITO: null,
-            //informações do cartão
-            ID: null,
-            ESTABELECIMENTO: null,
-            ADQUIRENTE: null,
-            BANDEIRA: null,
-            PARCELAS: null,
-            TID: null,
-            AUTORIZACAO: null
-          },
+        // if (percentceld) {
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: this.venda.LCTO.toString(),
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CAIXAMERCADOPAGO,
+        //     CREDITO: this.contasEmpresas[this.empresa].CELD,
+        //     VALOR: new dinheiro(res.valor * percentceld),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: 6,
+        //     TRAVACREDITO: null,
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   });
+        // }
+        // for (const transito of this.venda.TRANSITO) {
+        //   console.log(transito);
+        //   const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
+        //   this.venda.PAGAMENTO.push({
+        //     CODIGO: null,
+        //     CODDEC: null,
+        //     EMPRESA: this.empresa,
+        //     CODPARC: this.cliente.CODIGO,
+        //     LCTO: this.venda.LCTO,
+        //     TIPOLCTO: "V",
+        //     DOCUMENTO: transito.TRANSITO,
+        //     DATAEMISSAO: dataemissao,
+        //     DATAVCTO: dataemissao,
+        //     DATALIQUID: dataemissao,
+        //     DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
+        //     CREDITO: this.contasEmpresas[this.empresa].COMPENSACAOMERCADOPAGO,
+        //     VALOR: new dinheiro(res.valor * percent),
+        //     PROJECAO: 0,
+        //     OBS: "",
+        //     PERMITEAPAGA: null,
+        //     TIPOOPERACAO: 23,
+        //     TRAVACREDITO: null,
+        //     //informações do cartão
+        //     ID: null,
+        //     ESTABELECIMENTO: null,
+        //     ADQUIRENTE: null,
+        //     BANDEIRA: null,
+        //     PARCELAS: null,
+        //     TID: null,
+        //     AUTORIZACAO: null
+        //   },
 
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: this.empresa,
-              CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "D",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: dataemissao,
-              DATAVCTO: dataemissao,
-              DATALIQUID: null,
-              DEBITO: this.contasEmpresas[this.empresa].COMPENSACAOMERCADOPAGO,
-              CREDITO: null,
-              VALOR: new dinheiro(res.valor * percent),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 23,
-              TRAVACREDITO: null,
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            }
-            ,
-            {
-              CODIGO: null,
-              CODDEC: null,
-              EMPRESA: transito.EMPRESA,
-              CODPARC: this.cliente.CODIGO,
-              LCTO: this.venda.LCTO,
-              TIPOLCTO: "V",
-              DOCUMENTO: transito.TRANSITO,
-              DATAEMISSAO: dataemissao,
-              DATAVCTO: dataemissao,
-              DATALIQUID: dataemissao,
-              DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXADEPOSITO,
-              CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
-              VALOR: new dinheiro(res.valor * percent),
-              PROJECAO: 0,
-              OBS: "",
-              PERMITEAPAGA: null,
-              TIPOOPERACAO: 5,
-              TRAVACREDITO: null,
-              //informações do cartão
-              ID: null,
-              ESTABELECIMENTO: null,
-              ADQUIRENTE: null,
-              BANDEIRA: null,
-              PARCELAS: null,
-              TID: null,
-              AUTORIZACAO: null
-            });
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: this.empresa,
+        //       CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "D",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: null,
+        //       DEBITO: this.contasEmpresas[this.empresa].COMPENSACAOMERCADOPAGO,
+        //       CREDITO: null,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 23,
+        //       TRAVACREDITO: null,
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     }
+        //     ,
+        //     {
+        //       CODIGO: null,
+        //       CODDEC: null,
+        //       EMPRESA: transito.EMPRESA,
+        //       CODPARC: this.cliente.CODIGO,
+        //       LCTO: this.venda.LCTO,
+        //       TIPOLCTO: "V",
+        //       DOCUMENTO: transito.TRANSITO,
+        //       DATAEMISSAO: dataemissao,
+        //       DATAVCTO: dataemissao,
+        //       DATALIQUID: dataemissao,
+        //       DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXADEPOSITO,
+        //       CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
+        //       VALOR: new dinheiro(res.valor * percent),
+        //       PROJECAO: 0,
+        //       OBS: "",
+        //       PERMITEAPAGA: null,
+        //       TIPOOPERACAO: 5,
+        //       TRAVACREDITO: null,
+        //       //informações do cartão
+        //       ID: null,
+        //       ESTABELECIMENTO: null,
+        //       ADQUIRENTE: null,
+        //       BANDEIRA: null,
+        //       PARCELAS: null,
+        //       TID: null,
+        //       AUTORIZACAO: null
+        //     });
 
-        }
+        // }
 
         console.log(this.venda.PAGAMENTO);
       }

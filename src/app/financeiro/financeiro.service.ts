@@ -62,6 +62,12 @@ export class FinanceiroService {
       .pipe();
   }
 
+  postLiquidaEntradaCeld(dados: any[]): Observable<any> {
+    console.log('estou no serviço ATUALIZADEUS', dados);
+    return this.http.post<any>(this.apiURL + '/lancaEntradaCeld', { 'pagamentos': dados })
+      .pipe();
+  }
+
   getContas(paramBusca: number, Empresa: number, Projecao: number, codigoConta: number): Observable<Contas[]> {
     console.log('serviço getContas', 'paramBusca', paramBusca, 'Empresa', Empresa, 'Projecao', Projecao, 'codigoConta', codigoConta);
 
@@ -88,7 +94,14 @@ export class FinanceiroService {
       .pipe();
   }
 
-
+  gettaxasVendas(vendas: string[]):Observable<any[]> {
+    return this.http.get<any[]>(this.apiURL + '/taxasVendas?vendas='+vendas.join())
+    .pipe();
+  }
+  getcompensacao():Observable<any[]>  {
+    return this.http.get<any[]>(this.apiURL + '/compensacao')
+    .pipe();
+  }
 }
 
 

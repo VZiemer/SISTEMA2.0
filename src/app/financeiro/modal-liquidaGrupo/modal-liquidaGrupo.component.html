@@ -1,0 +1,180 @@
+<h1 mat-dialog-title>
+    {{conta}} <span class="FontePequena"> Total Operação ({{converteMoeda(total)}})</span></h1>
+
+ <div class="mat-elevation-z8 caixaTabela" *ngIf="param==5">
+
+    <table mat-table [dataSource]="RegistroDeus">
+
+        <ng-container matColumnDef="DOCUMENTO">
+            <th mat-header-cell *matHeaderCellDef> DOCUMENTO </th>
+            <td mat-cell *matCellDef="let item"><a [class]="item.PROJECAO==1 ?
+                    'hiperlinkred':'hiperlinkblue'"
+                    (click)="ChamaModalRegistroDeus(item)">{{item.DOCUMENTO}}</a></td>
+        </ng-container>
+
+        <ng-container matColumnDef="DATAVCTO">
+            <th mat-header-cell *matHeaderCellDef> DATA VCTO </th>
+            <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell
+                *matCellDef="let item">
+                {{item.DATAVCTO | date: 'dd/MM/yy'}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="DATALIQUID">
+            <th mat-header-cell *matHeaderCellDef> DATA LIQUID </th>
+            <td mat-cell *matCellDef="let item"> {{item.DATALIQUID | date:
+                'dd/MM/yy'}} </td>
+        </ng-container>
+
+
+
+        <ng-container matColumnDef="CODPARC">
+            <th mat-header-cell *matHeaderCellDef> CODPARC </th>
+            <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell
+                *matCellDef="let item"> {{item.CODPARC}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="FANTASIA">
+            <th mat-header-cell *matHeaderCellDef> PARCEIRO </th>
+            <td [class]="item.PROJECAO==1 ? 'vermelho':'blue'" mat-cell
+                *matCellDef="let item"> {{item.FANTASIA}} </td>
+        </ng-container>
+
+
+
+        <ng-container matColumnDef="CCREDITO">
+            <th mat-header-cell *matHeaderCellDef> CREDITO </th>
+            <td mat-cell *matCellDef="let item"> {{item.CCREDITO}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="VALOR">
+            <th mat-header-cell *matHeaderCellDef> VALOR </th>
+            <td [class]="item.VALOR<0 ||item.PROJECAO==1 ? 'vermelho':'blue'"
+                mat-cell *matCellDef="let item">
+                {{converteMoeda(item.VALOR)}} </td>
+        </ng-container>
+
+
+        <ng-container matColumnDef="TARIFA">
+            <th mat-header-cell *matHeaderCellDef> TARIFA </th>
+            <td [class]="item.TARIFA<0 ||item.PROJECAO==1 ? 'vermelho':'blue'"
+                mat-cell *matCellDef="let item">
+                {{converteMoeda(item.TARIFA)}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="TAXACELD">
+            <th mat-header-cell *matHeaderCellDef> TXCELD </th>
+            <td [class]="item.TAXACELD<0 ||item.PROJECAO==1 ? 'vermelho':'blue'"
+                mat-cell *matCellDef="let item">
+                {{converteMoeda(item.TAXACELD)}} </td>
+        </ng-container>
+
+
+        <ng-container matColumnDef="SALDO">
+            <th mat-header-cell *matHeaderCellDef> SALDO </th>
+            <td [class]="item.SALDO<0 ||item.PROJECAO==1 ? 'vermelho':'blue'"
+                mat-cell *matCellDef="let item">
+                {{converteMoeda(item.SALDO)}} </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="camposTabela; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: camposTabela;"></tr>
+    </table>
+</div> 
+
+
+ <div class="mat-elevation-z8 caixaTabela" *ngIf="param==6">
+
+    <table mat-table [dataSource]="Parceiros">
+
+        <ng-container matColumnDef="PARCEIRO">
+            <th mat-header-cell *matHeaderCellDef> PARCEIRO </th>
+            <td mat-cell *matCellDef="let item">{{item.CODPARC}}</td>
+        </ng-container>
+
+
+        <ng-container matColumnDef="BRUTO">
+            <th mat-header-cell *matHeaderCellDef> BRUTO </th>
+            <td mat-cell *matCellDef="let item">
+                {{converteMoeda(item.BRUTO)}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="TARIFA">
+            <th mat-header-cell *matHeaderCellDef> TARIFA </th>
+            <td mat-cell *matCellDef="let item">
+                {{converteMoeda(item.TARIFA)}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="LIQUIDO">
+            <th mat-header-cell *matHeaderCellDef> LIQUIDO </th>
+            <td mat-cell *matCellDef="let item">
+                {{converteMoeda(item.LIQUIDO)}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="TAXACELD">
+            <th mat-header-cell *matHeaderCellDef> TXCELD </th>
+            <td [class]="item.TAXACELD<0 ||item.PROJECAO==1 ? 'vermelho':'blue'"
+                mat-cell *matCellDef="let item">
+                {{converteMoeda(item.TAXACELD)}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="VER">
+            <th mat-header-cell *matHeaderCellDef>(*)</th>
+            <td mat-cell *matCellDef="let item">(*)</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="camposTabelaResumo; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: camposTabelaResumo;"></tr>
+    </table>
+</div> 
+
+<div>
+    <div class="Tabela" >
+        <p></p>
+        <label *ngIf="param==5">OBS</label>
+        <input *ngIf="param==5" class="inputObs" type="text" [(ngModel)]="RegistroDeus[0].OBS">
+        <p></p>
+        <button mat-raised-button color="primary"
+            (click)="FechaModal()">FECHAR</button>
+        <p></p>
+        <fieldset *ngIf="param == 5">
+            <legend>Inserir Despesa</legend>
+            <div>
+                <!-- <input placeholder="NOVO VCTO" class="inputData" type="date"
+                    [(ngModel)]="novoVcto"> -->
+                <select class="inputConta" [(ngModel)]="DESPESA">
+                    <option *ngFor="let item of listaContasDespesas"
+                        [value]="item.CODIGO">{{item.CODIGO}} -
+                        {{item.DESCRICAO}} </option>
+                </select>
+                <input placeholder="VALOR DESPESA" class="inputData"
+                    type="number" [(ngModel)]="valorDespesa">
+                <button [disabled]="!DESPESA" mat-raised-button color="primary"
+                    (click)="insertDespesaRegistroDeus()">INCLUIR</button>
+            </div>
+
+        </fieldset>
+        <p></p>
+
+        <fieldset>
+            <legend>Conta de liquidação</legend>
+            <h3>Saldo: {{converteMoeda(-saldoFinal)}} </h3>
+            <input class="inputData" type="date"
+                (change)="verificaliberaBtnLiquidar()" [(ngModel)]="dataLiquid">
+            <select  class="inputConta"
+                [(ngModel)]="CREDITO" (change)="calculaSaldo()">
+                <option *ngFor="let item of contas" [value]="item.CODIGO">{{item.CODIGO}}
+                    - {{item.DESCRICAO}} </option>
+            </select>
+            <button mat-raised-button color="primary"
+                [disabled]="!liberaBtnLiquidar"
+                (click)="updateRegistroDeus()">LIQUIDAR</button>
+
+        </fieldset>
+    </div>
+</div>
+
+
+
+
+<div mat-dialog-actions>
+
+</div>

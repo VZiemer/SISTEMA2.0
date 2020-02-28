@@ -1,0 +1,38 @@
+.caixaTabela{
+  width: 100%;
+  height: 25vh;
+  overflow: auto;
+  table{
+    width: 100%;
+  }
+
+}
+
+
+.FontePequena {
+  font-size: 14px;
+}
+
+.inputObs{
+  width: 100%;
+  height: 3vh;
+  border: 1px solid black;
+}
+
+.inputData{
+  width: 30%;
+  height: 4vh;
+  border: 1px solid black;
+}
+.inputConta{
+  width: 50%;
+  height: 4vh;
+  border: 1px solid black;
+}
+
+.vermelho{
+  color: red;
+}
+.blue{
+  color: blue;
+}

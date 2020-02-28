@@ -6,7 +6,7 @@ import { FinanceiroService } from './financeiro.service';
 import { Param } from '../shared/models/param';
 import { ModalRegistroDeusComponent } from './modal-registroDeus/modal-registroDeus.component';
 import { ModalInsereDataComponent } from './modal-insereData/modal-insereData.component';
-
+import { ModalLiquidaGrupoComponent } from './modal-liquidaGrupo/modal-liquidaGrupo.component';
 // imports necessário para o select
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material/table';
@@ -130,21 +130,37 @@ export class FinanceiroComponent implements OnInit {
 
         if (this.param === 1) {
           this.contamostratela = lista[i].CDEBITO;
-          this.camposTabela = ['DOCUMENTO', 'DATAVCTO', 'VALOR', 'CONTAMOSTRATELA', 'CODPARC', 'FANTASIA'];
+          this.camposTabela = ['select', 'DOCUMENTO', 'DATAVCTO', 'VALOR', 'CONTAMOSTRATELA', 'CODPARC', 'FANTASIA'];
         }
 
-        if (this.param === 2 || this.param === 3 || this.param === 5) {
+        if (this.param === 2 || this.param === 3) {
           this.camposTabela = ['DOCUMENTO', 'DATALIQUID', 'VALOR', 'CONTAMOSTRATELA', 'CODPARC', 'FANTASIA', 'SALDO'];
+
 
 
           this.contamostratela = lista[i].CDEBITO;
           // tslint:disable-next-line: triple-equals
           if (lista[i].DEBITO != this.codigoConta) {
-            lista[i].VALOR = -lista[i].VALOR;
+            // lista[i].VALOR = -lista[i].VALOR;
             this.contamostratela = lista[i].CDEBITO;
           }
           if (lista[i].DEBITO == this.codigoConta) {
             this.contamostratela = lista[i].CCREDITO;
+          }
+        }
+
+        if (this.param === 5) {
+          this.camposTabela = ['select', 'DOCUMENTO', 'DATAEMISSAO', 'VALOR', 'CONTAMOSTRATELA', 'CODPARC', 'FANTASIA', 'SALDO'];
+          this.contamostratela = lista[i].CDEBITO;
+          // tslint:disable-next-line: triple-equals
+          if (lista[i].DEBITO != this.codigoConta) {
+            // lista[i].VALOR = lista[i].VALOR*-1;
+            lista[i].NEGATIVO = true;
+            this.contamostratela = lista[i].CDEBITO;
+          }
+          if (lista[i].DEBITO == this.codigoConta) {
+            this.contamostratela = lista[i].CCREDITO;
+            lista[i].NEGATIVO = false;
           }
         }
 
@@ -176,7 +192,7 @@ export class FinanceiroComponent implements OnInit {
       } else {
 
         if (lista[i].DEBITO != this.codigoConta && this.param == 2) {
-          lista[i].VALOR = -lista[i].VALOR;
+          // lista[i].VALOR = -lista[i].VALOR;
         }
         listaAgrupada[linha].VALOR += lista[i].VALOR;
       }
@@ -191,8 +207,8 @@ export class FinanceiroComponent implements OnInit {
         this.saldoFinal = this.saldoDataInicio;
 
         for (let i = 0; i < listaAgrupada.length; i++) {
-          listaAgrupada[i].SALDO = this.saldoFinal + listaAgrupada[i].VALOR;
-          this.saldoFinal += listaAgrupada[i].VALOR;
+          listaAgrupada[i].SALDO = listaAgrupada[i].CREDITO == this.codigoConta ? this.saldoFinal - listaAgrupada[i].VALOR : this.saldoFinal + listaAgrupada[i].VALOR;
+          listaAgrupada[i].CREDITO == this.codigoConta ? this.saldoFinal -= listaAgrupada[i].VALOR : this.saldoFinal += listaAgrupada[i].VALOR;
         }
         console.log('this.saldoFinal', this.saldoFinal);
 
@@ -205,8 +221,11 @@ export class FinanceiroComponent implements OnInit {
 
       for (let i = 0; i < listaAgrupada.length; i++) {
 
-        listaAgrupada[i].SALDO = this.saldoFinal + listaAgrupada[i].VALOR;
-        this.saldoFinal += listaAgrupada[i].VALOR;
+        // listaAgrupada[i].SALDO = this.saldoFinal + listaAgrupada[i].VALOR;
+        // this.saldoFinal += listaAgrupada[i].VALOR;
+        listaAgrupada[i].SALDO = listaAgrupada[i].CREDITO == this.codigoConta ? this.saldoFinal - listaAgrupada[i].VALOR : this.saldoFinal + listaAgrupada[i].VALOR;
+        listaAgrupada[i].CREDITO == this.codigoConta ? this.saldoFinal -= listaAgrupada[i].VALOR : this.saldoFinal += listaAgrupada[i].VALOR;
+
 
         const linhaProjecao = this.listaSelectProjecao.findIndex(x => x.PROJECAO === listaAgrupada[i].PROJECAO);
         if (linhaProjecao === -1) {
@@ -246,6 +265,30 @@ export class FinanceiroComponent implements OnInit {
       }, error => (console.log(error)));
   }
 
+
+  ChamaCompensacaoaPagar() {
+
+    this.limpaLista();
+    this.param = 6;
+    this.financeiroService.getcompensacao().subscribe(response => {
+
+
+
+      for (let i = 0; i < response.length; i++) {
+
+        // response[i].VLLIQUIDO = this.saldoFinal + response[i].VLLIQUIDO;
+        this.saldoFinal += response[i].VLLIQUIDO;
+
+
+        const linhaParceiro = this.listaSelectParceiro.findIndex(x => x.FANTASIA === response[i].FANTASIA);
+        if (linhaParceiro === -1 && response[i].FANTASIA != null) {
+          this.listaSelectParceiro.push({ 'FANTASIA': response[i].FANTASIA });
+        }
+      }
+      this.listaAgrupada = new MatTableDataSource(response);
+      this.camposTabela = ['select', 'LCTOVENDA', 'VLBRUTO', 'VLLIQUIDO', 'TARIFA', 'TAXACELD', 'FANTASIA']
+    })
+  }
 
   ChamaModaInsereData(param: number) {
     if (param == 1 || param == 2 || param == 5) { this.limpaLista(); };
@@ -364,48 +407,50 @@ export class FinanceiroComponent implements OnInit {
   }
 
   LiquidaGrupoRegistros() {
-
+    this.parametroBuscaContas = 1;
     console.log('abre modal liquida grupo');
     console.log('selecionados', this.selection.selected);
-    let largura = '25vw';
-    let altura = '40vh';
+
+    let largura = '100vw';
+    let altura = '90vh';
+    this.financeiroService.getContas(this.parametroBuscaContas, this.empresa, 0, null)
+
+      .subscribe(res => {
+        this.listaContas = res;
+        console.log('listacontas', res)
+        const dialogRef = this.dialog.open(ModalLiquidaGrupoComponent, {
+          width: largura,
+          height: altura,
+          hasBackdrop: true,
+          disableClose: false,
+          data: { 'param': this.param, 'listaLctoDeus': this.selection.selected, 'listaContas': this.listaContas, conta: this.contaSelecionado },
+        });
+
+        dialogRef.afterClosed().subscribe((resmodal) => {
+          console.log(resmodal)
 
 
-    const dialogRef = this.dialog.open(ModalInsereDataComponent, {
-      width: largura,
-      height: altura,
-      hasBackdrop: true,
-      disableClose: false,
-      data: {
-        'param': 1, 'empresa': this.empresa, 'codigoContaBase': null,
-        'descricaoContaBase': '', 'saldoFinal': null,
-        'dataInicio': null, 'dataFim': null, 'saldoTravaNegativo': null
-      },
-    });
 
-    dialogRef.afterClosed().subscribe(resmodal => {
-      console.log(resmodal)
+          this.financeiroService.postLiquidaEntradaCeld(resmodal).subscribe(resposta => {
+            console.log(resposta);
+            if (this.param != 6) {
+              this.RegistrosFinanceiros(this.param);
+            }
 
+            else { this.ChamaCompensacaoaPagar() }
 
-      for (let i = 0; i < this.selection.selected.length; i++) {
+          }, error => (console.log(error)));
 
-        this.selection.selected[i].DATALIQUID = resmodal.dataFim;
-        console.log('item ' + i, this.selection.selected[i])
+          if (this.param != 6) {
+            this.RegistrosFinanceiros(this.param);
+          }
 
-      }
+          else { this.ChamaCompensacaoaPagar() }
+
+        }, error => { console.log(error); });
+      })
 
 
-      this.financeiroService.postLctoDeus(this.selection.selected).subscribe(resposta => {
-        console.log(resposta);
-
-        this.RegistrosFinanceiros(1);
-
-      }, error => (console.log(error)));
-
-
-      this.RegistrosFinanceiros(this.param);
-
-    }, error => { console.log(error); });
   }
 
 
@@ -598,10 +643,15 @@ export class FinanceiroComponent implements OnInit {
   masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
-      this.listaAgrupada.data.filter((row: tabelaFinanceiro) => row.CCREDITO).forEach(row => this.selection.toggle(row));
+      this.listaAgrupada.data.forEach(row => this.selection.select(row));
   }
   recalculaSaldoSelecionado() {
-    this.saldoSelect = this.selection.selected.map(item => item.VALOR).reduce((saldo, item) => (saldo + item), 0);
+    if (this.param == 5) {
+      this.saldoSelect = this.selection.selected.map(item => item.VALOR).reduce((saldo, item) => (saldo + item), 0);
+    }
+    if (this.param == 6) {
+      this.saldoSelect = this.selection.selected.map(item => item.VLLIQUIDO).reduce((saldo, item) => (saldo + item), 0);
+    }
   }
 }
 

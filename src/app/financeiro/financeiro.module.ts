@@ -7,6 +7,7 @@ import { FinanceiroComponent } from './financeiro.component';
 import { SharedModule } from '../shared/shared.module';
 import { AngularMaterialModule } from '../angular-material.module';
 import { ModalRegistroDeusComponent } from './modal-registroDeus/modal-registroDeus.component';
+import { ModalLiquidaGrupoComponent } from './modal-liquidaGrupo/modal-liquidaGrupo.component';
 import { ModalInsereDataComponent } from './modal-insereData/modal-insereData.component';
 import { MatSelectModule } from '@angular/material/select';
 import {
@@ -15,7 +16,7 @@ import {
 } from '@angular/material';
 
 @NgModule({
-  declarations: [FinanceiroComponent, ModalRegistroDeusComponent, ModalInsereDataComponent],
+  declarations: [FinanceiroComponent, ModalRegistroDeusComponent, ModalInsereDataComponent, ModalLiquidaGrupoComponent  ],
   imports: [
     CommonModule,
     SharedModule,
@@ -31,6 +32,6 @@ import {
     MatCheckboxModule,
     MatSelectModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  entryComponents: [ModalRegistroDeusComponent, ModalInsereDataComponent]
+  entryComponents: [ModalRegistroDeusComponent, ModalInsereDataComponent, ModalLiquidaGrupoComponent]
 })
 export class FinanceiroModule { }
