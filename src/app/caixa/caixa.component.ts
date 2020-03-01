@@ -907,7 +907,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               DATAEMISSAO: dataemissao,
               DATAVCTO: dataemissao,
               DATALIQUID: dataemissao,
-              DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXADEPOSITO,
+              DEBITO: this.contasEmpresas[transito.EMPRESA].CAIXACARTAO,
               CREDITO: this.contasEmpresas[transito.EMPRESA].CLIENTES,
               VALOR: new dinheiro(res.valor - res.valor*percentceld),
               PROJECAO: 0,
