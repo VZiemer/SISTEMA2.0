@@ -29,7 +29,7 @@
 <hr />
 <div mat-dialog-actions class="footer">
   <button mat-raised-button (click)="onNoClick()">cancela</button>
-  <button
+  <button [disabled]="!Pagar || Pagar > Total"
     mat-raised-button
     [mat-dialog-close]="{
       fPagto: 'DINHEIRO',

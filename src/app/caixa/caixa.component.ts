@@ -947,9 +947,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
     dialogRef.afterClosed().subscribe(res => {
       this.inputReturn();
       if (res) {
-
         const percentceld = this.venda.TXCELD / this.venda.TOTAL.valor;
-
         console.log("entrou pagamento", res);
         this.venda.PAGAR.subtrai(res.valor);
         console.log(this.venda);
@@ -985,109 +983,8 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           AUTORIZACAO: null
         });
 
-        // if (percentceld) {
-
-        //   this.venda.PAGAMENTO.push({
-        //     CODIGO: null,
-        //     CODDEC: null,
-        //     EMPRESA: this.empresa,
-        //     CODPARC: this.cliente.CODIGO,
-        //     LCTO: this.venda.LCTO,
-        //     TIPOLCTO: "V",
-        //     DOCUMENTO: this.venda.LCTO,
-        //     DATAEMISSAO: dataemissao,
-        //     DATAVCTO: dataemissao,
-        //     DATALIQUID: dataemissao,
-        //     DEBITO: this.contasEmpresas[this.empresa].CAIXATERMINAL,
-        //     CREDITO: this.contasEmpresas[this.empresa].CELD,
-        //     VALOR: new dinheiro(res.valor * percentceld),
-        //     PROJECAO: 0,
-        //     OBS: "",
-        //     PERMITEAPAGA: null,
-        //     TIPOOPERACAO: 6,
-        //     TRAVACREDITO: null,
-        //     TARIFA: new dinheiro(0),
-
-        //     //informações do cartão
-        //     ID: null,
-        //     ESTABELECIMENTO: null,
-        //     ADQUIRENTE: null,
-        //     BANDEIRA: null,
-        //     PARCELAS: null,
-        //     TID: null,
-        //     AUTORIZACAO: null
-        //   });
-
-
-        // }
         for (const transito of this.venda.TRANSITO) {
-        //   console.log(transito);
-        //   const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
-        //   console.log(percent)
-        //   //operação de débito no adiantamento cliente e crdito na compensacao
           this.venda.PAGAMENTO.push({
-        //     CODIGO: null,
-        //     CODDEC: null,
-        //     EMPRESA: this.empresa,
-        //     CODPARC: this.cliente.CODIGO,
-        //     LCTO: this.venda.LCTO,
-        //     TIPOLCTO: "V",
-        //     DOCUMENTO: transito.TRANSITO,
-        //     DATAEMISSAO: dataemissao,
-        //     DATAVCTO: dataemissao,
-        //     DATALIQUID: dataemissao,
-        //     DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
-        //     CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
-        //     VALOR: new dinheiro(res.valor * percent),
-        //     PROJECAO: 0,
-        //     OBS: "",
-        //     PERMITEAPAGA: null,
-        //     TIPOOPERACAO: 23,
-        //     TRAVACREDITO: null,
-        //     TARIFA: new dinheiro(0),
-
-        //     //informações do cartão
-        //     ID: null,
-        //     ESTABELECIMENTO: null,
-        //     ADQUIRENTE: null,
-        //     BANDEIRA: null,
-        //     PARCELAS: null,
-        //     TID: null,
-        //     AUTORIZACAO: null
-        //   },
-        //     //operacç~eo de dédito na compensação e credito no caixa geral
-        //     {
-        //       CODIGO: null,
-        //       CODDEC: null,
-        //       EMPRESA: this.empresa,
-        //       CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
-        //       LCTO: this.venda.LCTO,
-        //       TIPOLCTO: "D",
-        //       DOCUMENTO: transito.TRANSITO,
-        //       DATAEMISSAO: dataemissao,
-        //       DATAVCTO: dataemissao,
-        //       DATALIQUID: null,
-        //       DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODINHEIRO,
-        //       CREDITO: this.contasEmpresas[this.empresa].CAIXAGERAL,
-        //       VALOR: new dinheiro(res.valor * percent),
-        //       PROJECAO: 0,
-        //       OBS: "",
-        //       PERMITEAPAGA: null,
-        //       TIPOOPERACAO: 23,
-        //       TRAVACREDITO: null,
-        //       TARIFA: new dinheiro(0),
-
-        //       //informações do cartão
-        //       ID: null,
-        //       ESTABELECIMENTO: null,
-        //       ADQUIRENTE: null,
-        //       BANDEIRA: null,
-        //       PARCELAS: null,
-        //       TID: null,
-        //       AUTORIZACAO: null
-        //     },
-        //     //operação na empresa vendedora       
-            
               CODIGO: null,
               CODDEC: null,
               EMPRESA: transito.EMPRESA,
@@ -1107,7 +1004,6 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               TIPOOPERACAO: 5,
               TRAVACREDITO: null,
               TARIFA: new dinheiro(0),
-
               //informações do cartão
               ID: null,
               ESTABELECIMENTO: null,
@@ -1117,8 +1013,6 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               TID: null,
               AUTORIZACAO: null
             });
-
-
         }
 
         console.log(this.venda.PAGAMENTO);
@@ -1326,15 +1220,12 @@ export class CaixaComponent implements OnInit, AfterViewInit {
     dialogRef.afterClosed().subscribe(res => {
       this.inputReturn();
       if (res) {
-
         console.log("entrou pagamento", res);
         this.venda.PAGAR.subtrai(res.valor);
         console.log(this.venda);
         console.log("pagar", this.venda.PAGAR);
         const dataemissao = new Date();
-
         const percentceld = this.venda.TXCELD / this.venda.TOTAL.valor;
-
         //CRIA O PRIMEIRO REGISTO DE PAGAMENTO, TIPO V, VALOR TOTAL, LIQUIDADO
         this.venda.PAGAMENTO.push({
           CODIGO: null,
@@ -1356,7 +1247,6 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           TIPOOPERACAO: 6,
           TRAVACREDITO: null,
           TARIFA: new dinheiro(0),
-
           //informações do cartão
           ID: null,
           ESTABELECIMENTO: null,
@@ -1366,106 +1256,10 @@ export class CaixaComponent implements OnInit, AfterViewInit {
           TID: null,
           AUTORIZACAO: null
         });
-
-        // if (percentceld) {
-        //   this.venda.PAGAMENTO.push({
-        //     CODIGO: null,
-        //     CODDEC: null,
-        //     EMPRESA: this.empresa,
-        //     CODPARC: this.cliente.CODIGO,
-        //     LCTO: this.venda.LCTO,
-        //     TIPOLCTO: "V",
-        //     DOCUMENTO: this.venda.LCTO.toString(),
-        //     DATAEMISSAO: dataemissao,
-        //     DATAVCTO: dataemissao,
-        //     DATALIQUID: dataemissao,
-        //     DEBITO: this.contasEmpresas[this.empresa].CAIXADEPOSITO,
-        //     CREDITO: this.contasEmpresas[this.empresa].CELD,
-        //     VALOR: new dinheiro(res.valor * percentceld),
-        //     PROJECAO: 0,
-        //     OBS: "",
-        //     PERMITEAPAGA: null,
-        //     TIPOOPERACAO: 6,
-        //     TRAVACREDITO: null,
-        //     TARIFA: new dinheiro(0),
-
-        //     //informações do cartão
-        //     ID: null,
-        //     ESTABELECIMENTO: null,
-        //     ADQUIRENTE: null,
-        //     BANDEIRA: null,
-        //     PARCELAS: null,
-        //     TID: null,
-        //     AUTORIZACAO: null
-        //   });
-        // }
-
         for (const transito of this.venda.TRANSITO) {
         //   console.log(transito);
         //   const percent = transito.VALOR.valor / this.venda.TOTAL.valor;
           this.venda.PAGAMENTO.push({
-        //     CODIGO: null,
-        //     CODDEC: null,
-        //     EMPRESA: this.empresa,
-        //     CODPARC: this.cliente.CODIGO,
-        //     LCTO: this.venda.LCTO,
-        //     TIPOLCTO: "V",
-        //     DOCUMENTO: transito.TRANSITO,
-        //     DATAEMISSAO: dataemissao,
-        //     DATAVCTO: dataemissao,
-        //     DATALIQUID: dataemissao,
-        //     DEBITO: this.contasEmpresas[this.empresa].CLIENTES,
-        //     CREDITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
-        //     VALOR: new dinheiro(res.valor * percent),
-        //     PROJECAO: 0,
-        //     OBS: "",
-        //     PERMITEAPAGA: null,
-        //     TIPOOPERACAO: 23,
-        //     TRAVACREDITO: null,
-        //     TARIFA: new dinheiro(0),
-
-        //     //informações do cartão
-        //     ID: null,
-        //     ESTABELECIMENTO: null,
-        //     ADQUIRENTE: null,
-        //     BANDEIRA: null,
-        //     PARCELAS: null,
-        //     TID: null,
-        //     AUTORIZACAO: null
-        //   },
-
-        //     {
-        //       CODIGO: null,
-        //       CODDEC: null,
-        //       EMPRESA: this.empresa,
-        //       CODPARC: this.contasEmpresas[transito.EMPRESA].CODPARC,
-        //       LCTO: this.venda.LCTO,
-        //       TIPOLCTO: "D",
-        //       DOCUMENTO: transito.TRANSITO,
-        //       DATAEMISSAO: dataemissao,
-        //       DATAVCTO: dataemissao,
-        //       DATALIQUID: null,
-        //       DEBITO: this.contasEmpresas[this.empresa].COMPENSACAODEPOSITO,
-        //       CREDITO: null,
-        //       VALOR: new dinheiro(res.valor * percent),
-        //       PROJECAO: 0,
-        //       OBS: "",
-        //       PERMITEAPAGA: null,
-        //       TIPOOPERACAO: 23,
-        //       TRAVACREDITO: null,
-        //       TARIFA: new dinheiro(0),
-
-        //       //informações do cartão
-        //       ID: null,
-        //       ESTABELECIMENTO: null,
-        //       ADQUIRENTE: null,
-        //       BANDEIRA: null,
-        //       PARCELAS: null,
-        //       TID: null,
-        //       AUTORIZACAO: null
-        //     }
-        //     ,
-        //     {
               CODIGO: null,
               CODDEC: null,
               EMPRESA: transito.EMPRESA,
@@ -1485,7 +1279,6 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               TIPOOPERACAO: 5,
               TRAVACREDITO: null,
               TARIFA: new dinheiro(0),
-
               //informações do cartão
               ID: null,
               ESTABELECIMENTO: null,
@@ -1495,11 +1288,7 @@ export class CaixaComponent implements OnInit, AfterViewInit {
               TID: null,
               AUTORIZACAO: null
             });
-
-
-
         }
-
         console.log(this.venda.PAGAMENTO);
       }
     });
