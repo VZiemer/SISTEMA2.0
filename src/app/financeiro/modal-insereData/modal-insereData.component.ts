@@ -273,7 +273,8 @@ export class ModalInsereDataComponent implements OnInit {
         'dataInicio': this.dataInicio,
         'codigoConta': codigoContaEnviada,
         'descricaoConta': descricaoContaEnviada,
-        'saldoTravaNegativo': this.saldoTravaNegativo
+        'saldoTravaNegativo': this.saldoTravaNegativo,
+        'parceiro': this.parceiro
 
       });
     }

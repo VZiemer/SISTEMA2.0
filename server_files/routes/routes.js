@@ -163,16 +163,16 @@ routes.route("/confirmavenda").post((req, res) => {
           },${item.TRAVACREDITO},${item.TARIFA.valor});`;
 
 
-          if (item.hasOwnProperty('CARTAO')) {
-            string += item.CARTAO.map(itemcartao => {
-              return `INSERT INTO CARTAO
+        if (item.hasOwnProperty('CARTAO')) {
+          string += item.CARTAO.map(itemcartao => {
+            return `INSERT INTO CARTAO
               (ID, LCTO, ESTABELECIMENTO, ADQUIRENTE, BANDEIRA, PARCELAS, TID, AUTORIZACAO,VENDA,TARIFA,VALOR)
               VALUES
               (${itemcartao.ID},(select gen_id(gen_codigo_deus,0) from rdb$database),${itemcartao.ESTABELECIMENTO},${itemcartao.ADQUIRENTE},'${itemcartao.BANDEIRA}',${itemcartao.PARCELAS},${itemcartao.TID},${itemcartao.AUTORIZACAO},${item.LCTO},${itemcartao.TARIFA},${itemcartao.VALOR});`
-            }).join("")
-          }
+          }).join("")
+        }
 
-  
+
 
         item.DOCUMENTO === ultimoDoc ? acumulador++ : (acumulador = 0);
         ultimoDoc = item.DOCUMENTO;
@@ -202,36 +202,36 @@ routes.route("/confirmavenda").post((req, res) => {
 routes.route("/lancaEntradaCeld").post((req, res) => {
   let pagamentos = req.body.pagamentos;
   let acumulador = -1;
-  let ultimoDoc = ""; 
+  let ultimoDoc = "";
   const sql = `execute block as begin
 
       ${pagamentos
       .map((item, i) => {
         let string;
         // if (item.CODIGO != 'REGCOMP') {
-          string = `UPDATE OR INSERT INTO DEUS
+        string = `UPDATE OR INSERT INTO DEUS
           (CODIGO, CODDEC, EMPRESA, CODPARC, LCTO, TIPOLCTO, DOCUMENTO, DATAEMISSAO, DATAVCTO, DATALIQUID, DEBITO, CREDITO, VALOR, PROJECAO, OBS,PERMITEAPAGA)
           VALUES
           (${item.CODIGO},
             ${item.CODDEC},
             ${item.EMPRESA},${item.CODPARC},${item.LCTO},'${item.TIPOLCTO}','${
-            item.DOCUMENTO
-            }',${dataFirebird(item.DATAEMISSAO)},${dataFirebird(
-              item.DATAVCTO
-            )},${dataFirebird(item.DATALIQUID)},${item.DEBITO},${item.CREDITO},${
-            item.VALOR
-            },${item.PROJECAO},'${item.OBS}',${item.PERMITEAPAGA}); 
+          item.DOCUMENTO
+          }',${dataFirebird(item.DATAEMISSAO)},${dataFirebird(
+            item.DATAVCTO
+          )},${dataFirebird(item.DATALIQUID)},${item.DEBITO},${item.CREDITO},${
+          item.VALOR
+          },${item.PROJECAO},'${item.OBS}',${item.PERMITEAPAGA}); 
             ${item.CODIGO ?
-              
-              `INSERT INTO COMPENSACAO
+
+            `INSERT INTO COMPENSACAO
               (LCTOVENDA, CODDEUS,CODLIQUIDACAO, VLBRUTO, VLLIQUIDO, TARIFA, TAXACELD)
               VALUES
-              (${item.LCTO},${item.CODIGO},(select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador},'${item.VALOR}','${item.VALOR-item.TARIFA-item.TAXACELD}',${item.TARIFA},'${item.TAXACELD}');`
-              : ``
-            }
+              (${item.LCTO},${item.CODIGO},(select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador},'${item.VALOR}','${item.VALOR - item.TARIFA - item.TAXACELD}',${item.TARIFA},'${item.TAXACELD}');`
+            : ``
+          }
           `;
-          item.DOCUMENTO === ultimoDoc ? acumulador++ : '';
-          ultimoDoc = item.DOCUMENTO;
+        item.DOCUMENTO === ultimoDoc ? acumulador++ : '';
+        ultimoDoc = item.DOCUMENTO;
 
         // }
         // else {
@@ -1062,27 +1062,52 @@ routes
     console.log("estou no /SaldoContaDataIni");
     var conta = req.query.conta;
     var dataInicio = req.query.dataInicio;
+    var parceiro = req.query.parceiro;
+    var parceirofiltradeus = ``;
+    
+    if (parceiro>1) { 
+      parceirofiltradeus = ` deus.codparc=${parceiro} and `;
+      parceirofiltracontas_saldo = `contas_saldo.codparc=${parceiro} and `
+      }
 
-    // BUSCA CONTAS PARA PAGMENTO DE TÍTULOS E DESPESAS SEPARADAS POR EMPRESA E TIPO PROJEÇÃO
 
-    var sql = `
-      select  sum(uniao.valordebito) - sum(uniao.valorcredito) as saldo from (
-      select  contas.saldo as valorcredito, 0 as valordebito from contas
-      where contas.codigo=${conta}
+        // BUSCA CONTAS PARA PAGMENTO DE TÍTULOS E DESPESAS SEPARADAS POR EMPRESA E TIPO PROJEÇÃO
 
-      union all
+    var sql= `
+    
+    select (sum(uniao.saldobase) + sum(uniao.valor)) as saldo from
+    (
+    select 0 as saldobase, sum (case when deus.credito=${conta} then -deus.valor else deus.valor end)  as valor  from deus
 
-      select sum(deus.valor) as valorcredito, 0 as valordebito from deus
-      where credito=${conta} and deus.dataliquid<${dataFirebird(
-      dataInicio
-    )} and deus.dataliquid>=(select contas.datasaldo from contas where contas.codigo=${conta})
-      union all
-      select 0 as valorcredito, sum(deus.valor) as valordebito from deus
-      where debito=${conta}  and deus.dataliquid<${dataFirebird(
-      dataInicio
-    )} and deus.dataliquid>=(select contas.datasaldo from contas where contas.codigo=${conta})
-      ) as uniao
-     `;
+    where
+     (${parceirofiltradeus}
+      deus.debito=${conta} and
+      deus.dataliquid is not null and
+      deus.dataliquid<${dataFirebird(dataInicio)} and
+      deus.dataliquid>= (select contas_saldo.datasaldo from contas_saldo where ${parceirofiltracontas_saldo} contas_saldo.conta=${conta})
+     )
+
+    or
+
+     (${parceirofiltradeus}
+      deus.credito=${conta} and
+      deus.dataliquid is not null and
+      deus.dataliquid<${dataFirebird(dataInicio)} and
+      deus.dataliquid>= (select contas_saldo.datasaldo from contas_saldo where ${parceirofiltracontas_saldo} contas_saldo.conta=${conta})
+     )
+
+    union
+
+    select contas_saldo.saldo as saldobase, 0 as valor from contas_saldo
+    where
+    ${parceirofiltracontas_saldo} 
+     contas_saldo.conta=${conta}           
+    ) as uniao  
+    
+    
+    `
+     
+
     console.log("sqlsaldo", sql);
     estoque.get(function (err, db) {
       if (err) throw err;
@@ -1103,6 +1128,8 @@ routes
     console.log("estou no /SaldoConta");
     var conta = req.query.conta;
 
+
+    
     // BUSCA CONTAS PARA PAGMENTO DE TÍTULOS E DESPESAS SEPARADAS POR EMPRESA E TIPO PROJEÇÃO
 
     var sql = `
@@ -1253,11 +1280,13 @@ routes
     var dataFim = req.query.dataFim;
     var empresa = req.query.empresa;
     var conta = req.query.conta;
+    var parceiro = req.query.parceiro;
     var whereDeus = ``;
+    var parceirofiltra = ``;
 
+    if (parceiro>1) { parceirofiltra = ` and uniao.codparc= ${parceiro} ` }
     if (paremetro == 1) { whereDeus = ` where uniao.tipolcto in ('E','D','F') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
-
-    if (paremetro == 2) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) ` }
+    if (paremetro == 2) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)} ${parceirofiltra}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)} ${parceirofiltra}) ` }
     if (paremetro == 3) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) ` }
     if (paremetro == 5) { whereDeus = ` where uniao.tipolcto in ('V') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
 
@@ -1277,7 +1306,9 @@ routes
   order by uniao.dataliquid, uniao.datavcto, uniao.codigo
 
   `
+    console.log('parceiro', parceiro)
     console.log('sql', sql)
+
 
     estoque.get(function (err, db) {
       if (err)
@@ -1441,7 +1472,7 @@ routes
   });
 
 
-  routes
+routes
   .route("/taxasVendas")
 
   .get((req, res) => {

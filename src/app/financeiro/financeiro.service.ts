@@ -19,16 +19,16 @@ const httpOptions = {
 })
 
 export class FinanceiroService {
-  apiURL = 'http://sistema.florestalferragens.com.br/rotas';
-  // apiURL = 'http://localhost:4200/api/rotas';
+  // apiURL = 'http://sistema.florestalferragens.com.br/rotas';
+  apiURL = 'http://localhost:4200/api/rotas';
   constructor(private http: HttpClient) { }
 
-  getRegistrosFinanceiros(NroBotao: number, Empresa: number, dataFim: Date, dataInicio: Date, conta: number): Observable<any[]> {
+  getRegistrosFinanceiros(NroBotao: number, Empresa: number, dataFim: Date, dataInicio: Date, conta: number,parceiro:any ): Observable<any[]> {
     console.log('estou no serviço getRegistrosFinanceiros', 'NroBotao', NroBotao, 'Empresa', Empresa,
-      'dataFim', dataFim, 'dataInicio', dataInicio, 'conta', conta);
+      'dataFim', dataFim, 'dataInicio', dataInicio, 'conta', conta, 'parceiro', parceiro);
 
     return this.http.get<any[]>(this.apiURL + '/deus?param=' + NroBotao +
-      '&empresa=' + Empresa + '&dataFim=' + dataFim + '&dataInicio=' + dataInicio + '&conta=' + conta)
+      '&empresa=' + Empresa + '&dataFim=' + dataFim + '&dataInicio=' + dataInicio + '&conta=' + conta + '&parceiro=' + parceiro)
       .pipe();
   }
 
@@ -81,10 +81,10 @@ export class FinanceiroService {
       .pipe();
   }
 
-  getSaldoContaDataIni(conta: number, dataInicio: Date): Observable<number> {
-    console.log('serviço getSaldoContaDataIni', 'conta', conta, 'dataInicio', dataInicio);
+  getSaldoContaDataIni(conta: number, dataInicio: Date, parceiro:any): Observable<number> {
+    console.log('serviço getSaldoContaDataIni', 'conta', conta, 'dataInicio', dataInicio, 'parceiro', parceiro);
 
-    return this.http.get<number>(this.apiURL + '/SaldoContaDataIni?conta=' + conta + '&dataInicio=' + dataInicio)
+    return this.http.get<number>(this.apiURL + '/SaldoContaDataIni?conta=' + conta + '&dataInicio=' + dataInicio + '&parceiro=' + parceiro)
       .pipe();
   }
   getSaldoConta(conta: number): Observable<number> {
