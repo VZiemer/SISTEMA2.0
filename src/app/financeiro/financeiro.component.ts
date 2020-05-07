@@ -67,6 +67,7 @@ export class FinanceiroComponent implements OnInit {
   listaEmpresas: Param[];
   param: number;
   parametroBuscaContas: number;
+  parceiro: any;
   saldoDataInicio: number;
   saldoFinal: number;
   saldoTravaNegativo: number;
@@ -97,12 +98,12 @@ export class FinanceiroComponent implements OnInit {
     return valor.toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+\,)/g, '$1.');
   }
 
-
   RegistrosFinanceiros(param: number) {
     console.log('empresa selecionada', this.empresa);
     console.log('param', param);
     console.log('dataFim', this.dataFim);
     console.log('dataInicio', this.dataInicio);
+    console.log('parceiro', this.parceiro);
     this.selection.clear();
     this.saldoSelect = 0;
     if (param == 4) { param = 1 }
@@ -112,7 +113,7 @@ export class FinanceiroComponent implements OnInit {
     this.param = param;
 
 
-    this.financeiroService.getRegistrosFinanceiros(param, this.empresa, this.dataFim, this.dataInicio, this.codigoConta)
+    this.financeiroService.getRegistrosFinanceiros(param, this.empresa, this.dataFim, this.dataInicio, this.codigoConta, this.parceiro.CODIGO)
       .subscribe(res => {
         console.log('res', res);
         this.lista = res;
@@ -200,7 +201,7 @@ export class FinanceiroComponent implements OnInit {
 
     if (this.param == 2) {
 
-      this.financeiroService.getSaldoContaDataIni(this.codigoConta, this.dataInicio).subscribe(resSaldo => {
+      this.financeiroService.getSaldoContaDataIni(this.codigoConta, this.dataInicio, this.parceiro.CODIGO).subscribe(resSaldo => {
         this.saldoDataInicio = resSaldo[0].SALDO;
         console.log('saldoDataInicio', this.saldoDataInicio);
 
@@ -302,6 +303,8 @@ export class FinanceiroComponent implements OnInit {
     console.log('codigoConta', this.codigoConta);
     console.log('descricaoConta', this.descricaoConta);
     console.log('saldoFinal', this.saldoFinal);
+    console.log('parceiro', this.parceiro);
+
     let largura = '';
     let altura = '';
 
@@ -332,6 +335,7 @@ export class FinanceiroComponent implements OnInit {
       this.codigoConta = resmodal.codigoConta;
       this.saldoTravaNegativo = resmodal.saldoTravaNegativo;
       this.tituloPagina = this.descricaoConta;
+      this.parceiro = resmodal.parceiro;
 
 
       this.RegistrosFinanceiros(this.param);
@@ -456,7 +460,7 @@ export class FinanceiroComponent implements OnInit {
 
   carregaExtrato(param: number) {
     this.param = param;
-    this.financeiroService.getRegistrosFinanceiros(param, this.empresa, null, this.dataInicio, this.codigoConta)
+    this.financeiroService.getRegistrosFinanceiros(param, this.empresa, null, this.dataInicio, this.codigoConta, this.parceiro.CODIGO)
       .subscribe(res => {
         console.log('res', res);
         this.lista = res;
@@ -607,6 +611,7 @@ export class FinanceiroComponent implements OnInit {
     this.descricaoConta = '';
     this.tituloPagina = '';
     this.param = null;
+    this.parceiro = null;
     this.saldoDataInicio = null;
     this.saldoFinal = null;
     this.saldoSelect = null;
