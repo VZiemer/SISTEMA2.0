@@ -19,28 +19,63 @@ interface FoodNode {
 
 const TREE_DATA: FoodNode[] = [
   {
-    name: 'Fruit',
-    children: [
-      {name: 'Apple'},
-      {name: 'Banana'},
-      {name: 'Fruit loops'},
-    ]
-  }, {
-    name: 'Vegetables',
+    name: 'CORREDIÇAS',
     children: [
       {
-        name: 'Green',
+        name: 'telescópica',
         children: [
-          {name: 'Broccoli'},
-          {name: 'Brussels sprouts'},
-        ]
-      }, {
-        name: 'Orange',
-        children: [
-          {name: 'Pumpkins'},
-          {name: 'Carrots'},
+          {
+            name: 'tn H45',
+            children: [
+              {name: '250MM'},
+              {name: '300MM'},
+              {name: '350MM'},
+              {name: '400MM'},
+              {name: '450MM'},
+              {name: '500MM'},
+              {name: '550MM'},
+            ]
+          }, {
+            name: 'TN h35',
+            children: [
+              {name: '250MM'},
+              {name: '300MM'},
+              {name: '350MM'},
+              {name: '400MM'},
+              {name: '450MM'},
+              {name: '500MM'},
+              {name: '550MM'},
+            ]
+          },
         ]
       },
+      {
+        name: 'Invisivel',
+        children: [
+          {
+            name: 'Tandem',
+            children: [
+              {name: '350MM'},
+              {name: '400MM'},
+              {name: '450MM'},
+              {name: '500MM'},
+              {name: '550MM'},
+            ]
+          }, 
+        ]
+      },
+    ]
+  }, {
+    name: 'DOBRADIÇAS',
+    children: [
+      {
+        name: 'fgv 110º',
+        children: [
+          {name: 'RETA'},
+          {name: 'CURVA'},
+          {name: 'SUPER ALTA'},
+        ]
+      }, 
     ]
   },
 ];
