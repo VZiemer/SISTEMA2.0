@@ -16,7 +16,7 @@ const httpOptions = {
 
 export class ProdutoService {
   apiURL = 'http://sistema.florestalferragens.com.br/rotas';
-  // apiURL = 'http://localhost:4200/api/rotas';
+  // apiURL = 'http://localhost:8080/api/rotas';
   constructor(private http: HttpClient) { }
 
 

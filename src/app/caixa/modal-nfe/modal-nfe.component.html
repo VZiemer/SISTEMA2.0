@@ -17,7 +17,7 @@
         [disabled]="!novaNota"
         [ngModelOptions]="{ standalone: true }"
       >
-        <mat-option value=1>Venda de Mercadoria</mat-option>
+        <mat-option value=1 selected>Venda de Mercadoria</mat-option>
         <mat-option value=2>Venda de Ativo</mat-option>
         <mat-option value=3>Devolução de Mercadoria</mat-option>
         <mat-option value=4>Remessa Para Conserto</mat-option>
@@ -28,8 +28,14 @@
     <button mat-button (click)="geraNota()" [disabled]="!novaNota || !operacao">
       Gerar Nota
     </button>
-    <button mat-button (click)="enviaNota()" [disabled]="!novaNota || !operacao">
-      Envia Nota
+    <button mat-button (click)="enviaNFe()" [disabled]="!novaNota || !operacao || !permiteNfe">
+      Envia NFE
+    </button>
+    <button mat-button (click)="enviaCFe()" [disabled]="!novaNota || !operacao">
+      Envia CFe
+    </button>
+    <button mat-button (click)="imprimeCFe()">
+      Imprime CFe
     </button>
   </div>
   <mat-tab-group [selectedIndex]="tabSelect">

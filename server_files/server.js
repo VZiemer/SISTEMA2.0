@@ -134,13 +134,16 @@ app.get('/app/pedidolocal', function (req, res) {
 // 	res.sendFile(__dirname + '/dist/templates/Carinho.html');
 // });
 app.get('/app/cliente', function (req, res) {
-	res.sendFile(__dirname + '/dist/templates/parceiro/Parceiro.html');
+	res.sendFile(__dirname + '/dist/templates/CadastroCliente.html');
 });
 app.get('/app/dash', function (req, res) {
 	res.sendFile(__dirname + '/dist/templates/Dashboard.html');
 });
 app.get('/app/entrada', function (req, res) {
 	res.sendFile(__dirname + '/dist/templates/entrada/Entrada.html');
+});
+app.get('/app/saida', function (req, res) {
+	res.sendFile(__dirname + '/dist/templates/saida/saida.html');
 });
 app.get('/app/entradanota', function (req, res) {
 	res.sendFile(__dirname + '/dist/templates/entranota/entranota.html');
@@ -484,7 +487,7 @@ apiRoutes.post('/authenticate', function (req, res) {
 					throw err;
 				if (user && user.SENHA == req.body.password) {
 
-					// se o usuário existe e a senha estiver correta,
+					// se o usuário existe e a senha estiver correta, 
 					// cria o token
 					var token = jwt.sign("vanius", app.get('superSecret'), {
 						expiresInMinutes: 1440 // expires in 24 hours
@@ -546,7 +549,7 @@ apiRoutes.post('/authenticate', function (req, res) {
 				}
 				else if (user && !user.SENHA) {
 
-					// se o usuário existe e a senha estiver correta,
+					// se o usuário existe e a senha estiver correta, 
 					// cria o token
 					var token = jwt.sign("vanius", app.get('superSecret'), {
 						expiresInMinutes: 1440 // expires in 24 hours
@@ -656,11 +659,7 @@ apiRoutes.use(function (req, res, next) {
 	}
 });
 
-
-
-//novo
 const routes = require('./routes/routes');
-
 
 app.use('/rotas', routes)
 
@@ -1143,9 +1142,9 @@ apiRoutes.post('/pesquisaempresa', function (req, res) {
 	var busca = req.body.busca;
 	if (busca.CODIGO) {
 		var termos = busca.CODIGO;
-		sql = "select codigo,razao,nomesys from param where codigo=?";
+		sql = "select codigo,razao,nomesys,codparc from param where codigo=?";
 	} else {
-		sql = "select codigo,razao,nomesys from param where  ";
+		sql = "select codigo,razao,nomesys,codparc from param where  ";
 		var termos = busca.RAZAO.toUpperCase().split("?");
 		if (busca.RAZAO.charAt(0) == "?") {
 			sql += "razao containing ?";
@@ -1171,6 +1170,7 @@ apiRoutes.post('/pesquisaempresa', function (req, res) {
 		});
 	});
 });
+
 
 
 
@@ -1306,13 +1306,59 @@ apiRoutes.post('/carregaProdutosNota', function (req, res) {
 
 })
 
+
+apiRoutes.post('/CarregaPedidoTrans', function (req, res) {
+
+	var EmpresaSaida = req.body.EmpresaSaida;
+	var EmpresaEntrada = req.body.EmpresaEntrada;
+
+	sql = `
+	
+    select transito.id_transito as transito, venda.lcto, venda.data, venda.codcli, venda.nomecli from transito
+    join venda on (venda.lcto=transito.documento and  transito.tipo=5) or (venda.lcto=transito.documento and  transito.tipo=3)
+    join cliente on cliente.codigo=venda.codcli
+    where transito.transferencia is null and transito.tipo in (3,5) and transito.status in (0,4) and transito.id_empresa=${EmpresaSaida} and transito.codparc=${EmpresaEntrada}
+    
+	`
+	estoque.get(function (err, db) {
+		if (err)
+			throw err;
+		db.query(sql, function (err, result) {
+			db.detach(function () { res.send(result) });
+		});
+	});
+
+})
+
+apiRoutes.post('/CarregaItensPedidoTrans', function (req, res) {
+
+	var lcto = req.body.lcto;
+
+	sql = `
+	
+	select prodvenda.codpro,  produto.codinterno,produto.descricao,prodvenda.qtd,produto.unidade,prodvenda.valor,(prodvenda.qtd*prodvenda.valor) as total from prodvenda
+	join produto on produto.codigo=prodvenda.codpro
+	join transito on transito.id_transito=prodvenda.id_transito and transito.tipo in (3,5)
+	where prodvenda.codvenda=${lcto} 	
+	`
+	estoque.get(function (err, db) {
+		if (err)
+			throw err;
+		db.query(sql, function (err, result) {
+			db.detach(function () { res.send(result) });
+		});
+	});
+
+})
+
 apiRoutes.post('/CarregaPedidoEntrada', function (req, res) {
 
 	var tipoDevolucao = req.body.tipoDevolucao
+	var lcto = req.body.lcto
 
 	if (req.body.parametro == 1) {
 		sql = `
-
+	
         select uniao.codpro, produto.codinterno, produto.descricao, sum(uniao.qtd) as qtd, produto.unidade,  produto.prcompra as valor,  uniao.tipo, null as codprodvenda, null as codvend, null as defeito from (
 		select prodcompra.codpro, sum( prodcompra.tipo) as tipo, sum(qtd)as qtd from prodcompra
 		where prodcompra.empresa=${req.body.empresa} and prodcompra.codparc=${req.body.codparc} and prodcompra.tipo=0
@@ -1328,7 +1374,7 @@ apiRoutes.post('/CarregaPedidoEntrada', function (req, res) {
 
 	if (req.body.parametro == 2) {
 		sql = `
-
+	
 		select uniao.codpro, produto.codinterno, produto.descricao, sum(uniao.qtd) as qtd, produto.unidade,  produto.prcompra as valor, 0 as tipo, null as codprodvenda, null as codvend, null as defeito from (select prodcompra.codpro,  sum(prodcompra.qtd) as qtd from prodcompra
 		where prodcompra.empresa= ${req.body.empresa} and  prodcompra.tipo=0  and prodcompra.codpro in (${req.body.ProdSelecionado})
 		group by prodcompra.codpro
@@ -1337,7 +1383,7 @@ apiRoutes.post('/CarregaPedidoEntrada', function (req, res) {
 		where produto.ativo='S' and produto.tipo=1 and produto.codigo in (${req.body.ProdSelecionado}) ) as uniao
 		join produto on produto.codigo=uniao.codpro
 		group by uniao.codpro, produto.codinterno, produto.descricao,  produto.unidade,  produto.prcompra,  produto.tipo
-
+		
 
 		`
 	}
@@ -1355,7 +1401,17 @@ apiRoutes.post('/CarregaPedidoEntrada', function (req, res) {
 
 
 
+	if (req.body.parametro == 4) {
 
+		sql = `
+
+		select prodvenda.codigo,  prodvenda.codpro, prodvenda.qtd, produto.codinterno, produto.descricao, produto.unidade,  prodvenda.valor , 1 as tipo, null as codprodvenda, null codvend, null as defeito from prodvenda
+		join produto on produto.codigo= prodvenda.codpro
+		join transito on transito.id_transito=prodvenda.id_transito
+		where prodvenda.codvenda=${lcto} 
+
+		`
+	}
 
 
 
@@ -1369,6 +1425,276 @@ apiRoutes.post('/CarregaPedidoEntrada', function (req, res) {
 	});
 
 })
+
+
+apiRoutes.post('/RetornaDisponivel', function (req, res) {
+
+	var LocalidadeSaida = req.body.LocalidadeSaida;
+	var StringSequenciaCodpro = req.body.StringSequenciaCodpro;
+
+
+	sql = `
+	select uniao.codpro,sum(uniao.qtd) as qtd from
+	(
+	select pacote.id_produto as codpro,sum(pacote.qtd) as qtd from pacote
+	where pacote.ativo=1 and pacote.estoque=${LocalidadeSaida} and pacote.id_produto in (${StringSequenciaCodpro})
+	group by pacote.id_produto
+	
+	union all
+	
+	select prodvenda.codpro, -sum(prodvenda.qtd) as qtd from prodvenda
+	join transito on transito.id_transito=prodvenda.id_transito
+	where transito.ativo=1 and transito.origem=${LocalidadeSaida} and prodvenda.codpro in (${StringSequenciaCodpro})
+	group by prodvenda.codpro
+	) as uniao
+	group by uniao.codpro
+
+
+		`
+
+	estoque.get(function (err, db) {
+		if (err) throw err;
+		db.query(sql, function (err, result) {
+			db.detach(function () { res.send(result) });
+		});
+	});
+
+})
+
+
+
+apiRoutes.post('/CarregaVendasFechadas', function (req, res) {
+
+	var CODVEND = req.body.CODVEND;
+	var ADMIN = req.body.ADMIN;
+	var STRINGCODVEND = '';
+	if (!ADMIN) { STRINGCODVEND = ` and venda.codvend=${CODVEND}` }
+
+
+	sql = `
+	select venda.lcto,  venda.data, venda.codcli, venda.nomecli, venda.total, param.nomesys, venda.codvend from venda
+	join param on param.codigo=venda.empresa
+	where venda.status='F' and venda.data>=current_date - 30 ${STRINGCODVEND}
+	order by venda.lcto desc
+	
+	`
+	estoque.get(function (err, db) {
+		if (err)
+			throw err;
+		db.query(sql, function (err, result) {
+			db.detach(function () { res.send(result) });
+		});
+	});
+
+})
+
+
+
+apiRoutes.post('/FinalizaSaidaTrans', function (req, res) {
+	var ListaItensTransFerir = req.body.ListaItensTransFerir;
+	var empresa = req.body.empresa;
+	var codvend = req.body.codvend;
+	var LocalidadeSaida = req.body.LocalidadeSaida;
+	var LocalidadeEntrada = req.body.LocalidadeEntrada;
+
+
+	var sql = `
+	execute block  RETURNS (LCTO INTEGER)  as begin
+	insert into venda (DATA,CODCLI,CODVEND,STATUS,NOMECLI,EMPRESA) values
+	 (current_date,${empresa.CODPARC},${codvend},'F','${empresa.RAZAO}',${empresa.CODIGO}); 
+	 `
+
+
+	for (i = 0; i < ListaItensTransFerir.length; i++) {
+
+		sql += `
+		insert into prodvenda (codvenda,codpro,qtd,valor,id_transito) values
+		((select gen_id(gen_codigo_venda,0) from rdb$database),${ListaItensTransFerir[i].CODPRO},${ListaItensTransFerir[i].QTD},0,
+		(select id_transito from transito where documento= (select gen_id(gen_codigo_venda,0) from rdb$database) and transito.tipo=5 )); 
+		`
+	};
+
+	sql += `
+			update transito set transito.tipo=8, transito.status=0, origem=${LocalidadeSaida}, destino=${LocalidadeEntrada}, data=current_date where id_transito= (select id_transito from transito where documento= (select gen_id(gen_codigo_venda,0) from rdb$database) and transito.tipo=5 ); 
+			`
+	sql += `
+			delete from transito where transito.tipo=3 and transito.id_transito= (select id_transito from transito where documento= (select gen_id(gen_codigo_venda,0) from rdb$database) and transito.tipo=3 ); 
+			`
+
+	sql += `
+			insert into entrada (empresa,nota,vnf,vproj,data,cancela,dt_emissao,especie,codparc,lancafinanceiro,tipo,vprod,dt_fiscal,fretenota,fretefob,tomadorfrete) values
+			(${empresa.CODIGO},(select gen_id(gen_codigo_venda,0) from rdb$database),0,0,current_date,'N',current_date,'2',${empresa.CODPARC},0,6,0,current_date,0,0,0);
+			`
+
+
+	for (i = 0; i < ListaItensTransFerir.length; i++) {
+
+		sql += `
+			insert into prodent (empresa,lctoentrada,produto,qtd,valor,fretenota,vprod,vproj,valorcustosn,valorcustolp) values
+			(${empresa.CODIGO}, (select gen_id(GEN_LCTO_ENTRADA,0) from rdb$database),${ListaItensTransFerir[i].CODPRO},${ListaItensTransFerir[i].QTD},0,0,0,0,0,0) ; 
+			`
+	};
+
+	sql += `
+			update transito set transito.status=0, 
+								transito.origem = ${LocalidadeSaida}, 
+								transito.destino=${LocalidadeEntrada},
+								transito.transferencia=(select transito.id_transito from transito where documento=(select gen_id(gen_codigo_venda,0) from rdb$database) and transito.tipo=8) 
+			where transito.documento=(select gen_id(GEN_LCTO_ENTRADA,0) from rdb$database) and transito.tipo=6 ;
+			`
+
+
+
+	sql += `
+			select gen_id(gen_codigo_venda,0) from rdb$database into:lcto ;
+			suspend;
+	`
+	sql += ` end`;
+
+
+	estoque.get(function (err, db) {
+		if (err) res.send(sql);
+		db.execute(sql, function (err, result) {
+			if (err) res.send(sql);
+			db.detach(function () {
+				res.send(result);
+			});
+
+		});
+	});
+})
+
+apiRoutes.post('/GrupoPord', function (req, res) {
+
+	sql = `
+		select grupoprod.* from grupoprod
+		order by grupoprod.codfaixa
+		`
+
+	estoque.get(function (err, db) {
+		if (err) throw err;
+		db.query(sql, function (err, result) {
+			db.detach(function () { res.send(result) });
+		});
+	});
+
+})
+
+apiRoutes.post('/CarregaProdutosPorGrupo', function (req, res) {
+	var IncluirEncomenda = ` `;
+	var IncluirForadeLinha = ``;
+	var GruposProd = req.body.GruposProd;
+	var LocalidadeSaida = req.body.LocalidadeSaida;
+	var LocalidadeEntrada = req.body.LocalidadeEntrada;
+
+
+	if (!req.body.IncluirEncomenda) {
+		IncluirEncomenda = ` and produto.encomenda='N' `;
+	}
+	if (!req.body.IncluirForadeLinha) {
+		IncluirForadeLinha = ` and produto.foradelinha='N' `;
+	}
+
+	sql = `
+
+	select   uniao.codpro,produto.codinterno, produto.descricao,produto.periodogiro, produto.est_minimo as pontorep, sum(uniao.qtdvindo) as qtdvindo, (case when sum(uniao.qtdentrada)<0 then 0 else sum(uniao.qtdentrada) end) as qtdentrada, (case when sum(uniao.qtdsaida)<0 then 0 else sum(uniao.qtdsaida) end) as qtdsaida from
+    (
+    select produto.codigo as codpro,0 as qtdvindo, 0 as qtdentrada, 0 as qtdsaida from produto
+    where produto.ativo='S' and produto.tipo=1
+
+    union all
+
+    select pacote.id_produto as codpro,0 as qtdvindo, sum(pacote.qtd) as qtdentrada, 0 as qtdsaida from pacote
+    where pacote.ativo=1 and pacote.estoque=${LocalidadeEntrada}
+    group by pacote.id_produto
+    
+    union all
+    
+    select prodvenda.codpro,0 as qtdvindo, -sum(prodvenda.qtd) as qtdentrada , 0 as qtdsaida from prodvenda
+    join transito on transito.id_transito=prodvenda.id_transito
+    where transito.ativo=1 and transito.origem=${LocalidadeEntrada}
+    group by prodvenda.codpro
+        
+    union all
+    
+    select prodvenda.codpro, sum(prodvenda.qtd) as qtdvindo, 0 as qtdentrada , 0 as qtdsaida from prodvenda
+    join transito on transito.id_transito=prodvenda.id_transito
+    where transito.ativo=1 and transito.destino=${LocalidadeEntrada}
+    group by prodvenda.codpro
+
+    union all
+
+    select pacote.id_produto as codpro ,0 as qtdvindo, 0 as qtdentrada ,sum(pacote.qtd) as qtdsaida from pacote
+    where pacote.ativo=1 and pacote.estoque=${LocalidadeSaida}
+    group by pacote.id_produto
+    
+    union all
+    
+    select prodvenda.codpro ,0 as qtdvindo, 0 as qtdentrada , -sum(prodvenda.qtd) as qtdsaida  from prodvenda
+    join transito on transito.id_transito=prodvenda.id_transito
+    where transito.ativo=1 and transito.origem=${LocalidadeSaida}
+    group by prodvenda.codpro
+
+    ) as uniao
+    join produto on produto.codigo=uniao.codpro
+
+    where produto.grupo in (${GruposProd}) ${IncluirEncomenda} ${IncluirForadeLinha}
+    group by uniao.codpro, produto.codinterno, produto.descricao,produto.periodogiro, produto.est_minimo
+    order by produto.descricao
+
+		`
+
+	estoque.get(function (err, db) {
+		if (err) throw err;
+		db.query(sql, function (err, result) {
+			db.detach(function () { res.send(result) });
+		});
+	});
+
+})
+
+
+
+
+apiRoutes.post('/CalculaDemanda', function (req, res) {
+	var codpro = req.body.codpro;
+	var LocalidadeEntrada = req.body.LocalidadeEntrada;
+
+	sql = `
+	SELECT * FROM CALCULO_DEMANDA(${LocalidadeEntrada},${codpro})
+`
+	estoque.get(function (err, db) {
+		if (err) throw err;
+		db.query(sql, function (err, result) {
+			db.detach(function () { res.send(result) });
+		});
+	});
+
+})
+
+apiRoutes.post('/AlteraPontoRep', function (req, res) {
+	var codpro = req.body.codpro;
+	var NOVOPOTOREP = req.body.NOVOPOTOREP;
+	var Encomenda = req.body.Encomenda;
+	var ForaDeLinha = req.body.ForaDeLinha;
+
+
+	sql = `
+	update produto set est_minimo=${NOVOPOTOREP}, encomenda='${Encomenda}', foradelinha='${ForaDeLinha}' where codigo=${codpro}
+`
+	estoque.get(function (err, db) {
+		if (err) throw err;
+		db.query(sql, function (err, result) {
+			db.detach(function () { res.send(result) });
+		});
+	});
+
+})
+
+
+
+
+
 
 // Carrega Lista de Vendas
 apiRoutes.post('/CarregaListaVendasIni', function (req, res) {
@@ -1563,7 +1889,7 @@ app.post('/app/leituraxml', function (req, res) {
 			if (parametro == 1) {
 
 				sql = `
-
+				
 				select comprado.codpro,comprado.tipo, comprado.codinterno,comprado.descricao,sum(comprado.qtdabertototal) as qtd, comprado.unidade, sum(comprado.conversornota) as conversornota from
 
 				(select produto.codigo as codpro,produto.tipo, produto.codinterno, produto.descricao, 0 as qtdabertototal, produto.unidade, produto.conversornota from produto
@@ -1575,7 +1901,7 @@ app.post('/app/leituraxml', function (req, res) {
 				where codparc=(select codgrupo from cliente where cgc= '${cnpjforn}') and lista_prodcompra.empresa=(select codigo from param where cnpj= '${cnpjempresa}') ) as comprado
 
 				group by comprado.codpro,comprado.tipo, comprado.codinterno,comprado.descricao ,comprado.unidade
-
+				
 				`
 			}
 			if (parametro == 2 || parametro == 3) {
@@ -1707,6 +2033,8 @@ app.post('/app/leituraxml', function (req, res) {
 			prodNota = matriz;
 		}
 		prodNota.forEach(function (item) {
+
+			//LEITURA IMPOSTO IPI
 			if (item.imposto.IPI) {
 
 				if (item.imposto.IPI.IPITrib) {
@@ -1727,7 +2055,63 @@ app.post('/app/leituraxml', function (req, res) {
 				var VBCIPI = 0;
 				var PIPI = 0;
 				var VIPI = 0;
-			};
+				};
+
+
+			//LEITURA IMPOSTO PIS
+			var TagPIS = Object.keys(item.imposto.PIS)[0];
+
+			if (item.imposto.PIS) {
+
+				if (item.imposto.PIS[TagPIS]) {
+					if (!item.imposto.PIS[TagPIS].vBC) { item.imposto.PIS[TagPIS].vBC = 0 };
+					if (!item.imposto.PIS[TagPIS].pPIS) { item.imposto.PIS[TagPIS].pPIS = 0 };
+					if (!item.imposto.PIS[TagPIS].vPIS) { item.imposto.PIS[TagPIS].vPIS = 0 };
+					var VBCPIS = parseFloat(item.imposto.PIS[TagPIS].vBC);
+					var PPIS = parseFloat(item.imposto.PIS[TagPIS].pPIS);
+					var VPIS = parseFloat(item.imposto.PIS[TagPIS].vPIS);
+				}
+				else {
+					var VBCPIS = 0;
+					var PPIS = 0;
+					var VPIS = 0;
+				}
+			}
+			else {
+				var VBCPIS = 0;
+				var PPIS = 0;
+				var VPIS = 0;
+				};
+
+
+			//LEITURA IMPOSTO COFINS
+			var TagCOFINS = Object.keys(item.imposto.COFINS)[0];
+
+			if (item.imposto.COFINS) {
+
+				if (item.imposto.COFINS[TagCOFINS]) {
+					if (!item.imposto.COFINS[TagCOFINS].vBC) { item.imposto.COFINS[TagCOFINS].vBC = 0 };
+					if (!item.imposto.COFINS[TagCOFINS].pCOFINS) { item.imposto.COFINS[TagCOFINS].pCOFINS = 0 };
+					if (!item.imposto.COFINS[TagCOFINS].vCOFINS) { item.imposto.COFINS[TagCOFINS].vCOFINS = 0 };
+					var VBCCOFINS = parseFloat(item.imposto.COFINS[TagCOFINS].vBC);
+					var PCOFINS = parseFloat(item.imposto.COFINS[TagCOFINS].pCOFINS);
+					var VCOFINS = parseFloat(item.imposto.COFINS[TagCOFINS].vCOFINS);
+				}
+				else {
+					var VBCCOFINS = 0;
+					var PCOFINS = 0;
+					var VCOFINS = 0;
+				}
+			}
+			else {
+				var VBCCOFINS = 0;
+				var PCOFINS = 0;
+				var VCOFINS = 0;
+				};
+
+			//LEITURA IMPOSTO ICMS
+
+
 			var TagICMS = Object.keys(item.imposto.ICMS)[0];
 			var origem = 0;
 			if (parseFloat(item.imposto.ICMS[TagICMS].orig) == 1) {
@@ -1776,6 +2160,15 @@ app.post('/app/leituraxml', function (req, res) {
 				'VBCIPI': VBCIPI,
 				'PIPI': PIPI,
 				'VIPI': VIPI,
+
+				'VBCPIS': VBCPIS,
+				'PPIS': PPIS,
+				'VPIS': VPIS,
+
+				'VBCCOFINS': VBCCOFINS,
+				'PCOFINS': PCOFINS,
+				'VCOFINS': VCOFINS,
+
 
 				'CODVEND': 0,
 				'CODPRODVENDA': 0,
@@ -2099,6 +2492,7 @@ apiRoutes.post('/LancaCte', function (req, res) {
 		var Tomador = req.body.Tomador;
 		var ChavesCte = req.body.ChavesCte
 		var codban = 0;
+		var empresa = 0;
 
 		var sql = 'execute block as begin ';
 		sql += " insert into cte (ESPECIE,EMITENTE,REMETENTE,DESTINATARIO,TOMADOR,EMISSAO,DATA,CFOP,NROCTE,MODELO,SERIE,VALORRECEBER,VALORTOTAL,VALORCARGA,VBCICMS,VICMS,PICMS,SITTRIB,PESO,VOLUME,CHAVE) values (1," + Emitente + "," + Remetente + "," + Destinatario + "," + Tomador + ",'" + InfoCte.EMISSAO + "',current_date," + InfoCte.CFOP + "," + InfoCte.NROCTE + "," + InfoCte.MODELO + "," + InfoCte.SERIE + "," + ValorCte.VALORRECEBER + "," + ValorCte.VALORTOTAL + "," + ValorCarga.VALORCARGA + "," + ValorCte.VBCICMS + "," + ValorCte.VICMS + "," + ValorCte.PICMS + ",'" + ValorCte.SITTRIB + "'," + Peso + "," + Volume + ",'" + InfoCte.CHAVE + "');";
@@ -2106,10 +2500,13 @@ apiRoutes.post('/LancaCte', function (req, res) {
 		for (i = 0; i < ChavesCte.length; i++) {
 			sql += " insert into chavecte (lctocte,chave) values ((select gen_id(gen_cte_id,0) from rdb$database),'" + ChavesCte[i].CHAVENOTA + "');";
 		};
-		if (Tomador == 71) { codban = 101 }
-		if (Tomador == 12872) { codban = 201 }
-		if (codban > 0) {
-			sql += " insert into movban (LCTOCTE,CODBAN,DESPESA,CODCLI,DOCUMENTO,VLBRUTO,ENT_SAI,PROJECAO,VCTO,DATA,HORA) values ((select gen_id(gen_cte_id,0) from rdb$database)," + codban + "," + 202 + "," + Emitente + ",'" + InfoCte.NROCTE + "'," + ValorCte.VALORRECEBER + ",'S','N','" + InfoCte.EMISSAO + "',current_date,current_time);";
+		if (Tomador == 71) { empresa = 1 }
+		if (Tomador == 12872) { empresa = 2 }
+		if (empresa > 0) {
+			// sql += " insert into movban (LCTOCTE,CODBAN,DESPESA,CODCLI,DOCUMENTO,VLBRUTO,ENT_SAI,PROJECAO,VCTO,DATA,HORA) values ((select gen_id(gen_cte_id,0) from rdb$database)," + codban + "," + 202 + "," + Emitente + ",'" + InfoCte.NROCTE + "'," + ValorCte.VALORRECEBER + ",'S','N','" + InfoCte.EMISSAO + "',current_date,current_time);";
+
+			sql += " insert into deus (lcto,empresa,codparc,dataemissao,datavcto,documento,tipolcto,debito,valor,projecao,tipooperacao) values ((select gen_id(gen_cte_id,0) from rdb$database)," + empresa + "," + Emitente + ",'" + InfoCte.EMISSAO + "', current_date ,'" + InfoCte.NROCTE + "','F',5,"+ ValorCte.VALORRECEBER + ",0,2);";
+
 		}
 
 		sql += " end ";
@@ -2143,7 +2540,6 @@ apiRoutes.post('/LancaCte', function (req, res) {
 					res.send([result1[0].LCTO, sql]);
 				});
 			})
-
 		});
 	});
 
@@ -2154,8 +2550,13 @@ apiRoutes.post('/LancaCte', function (req, res) {
 
 // XXXXXXXXXX INICIO: PROGRAMAÇÃO DESPESAS XXXXXXXXXXXXXXXXXX
 apiRoutes.post('/carregaDespesasEntrada', function (req, res) {
+	var empresa = req.body.empresa;
+	var despesaTipo = req.body.despesaTipo; 
 	estoque.get(function (err, db) {
-		db.query('select codigo,descricao from contas where contas.entradaxml=1', function (err, result) {
+
+		var sql=`select codigo,descricao from contas where contas.empresa=${empresa} and contas.tiposelect like '%,${despesaTipo},%' `
+
+		db.query(sql, function (err, result) {
 			if (err) throw err;
 			db.detach(function () {
 				res.send(result);
@@ -2172,6 +2573,54 @@ apiRoutes.post('/carregaDespesasEntrada', function (req, res) {
 apiRoutes.post('/cfopConversao', function (req, res) {
 	estoque.get(function (err, db) {
 		db.query('select * from cfopconversao', function (err, result) {
+			if (err) throw err;
+			db.detach(function () {
+				res.send(result);
+			});
+		})
+	});
+
+})
+
+
+// XXXXXXXXXX INICIO: PROGRAMAÇÃO LOCALIDADES XXXXXXXXXXXXXXXXXX
+apiRoutes.post('/CarregaLocalidades', function (req, res) {
+	var StringEmpresaCodparc = ''
+	var EmpresaCodparc = req.body.EmpresaCodparc
+
+	if (EmpresaCodparc) { StringEmpresaCodparc = ` where localidade.codparc=${EmpresaCodparc}` }
+
+	var sql = `
+		select cliente.razao,  localidade.*, param.codigo as empresa from localidade
+		join cliente on cliente.codigo=localidade.codparc
+		join param on param.codparc=cliente.codigo
+		${StringEmpresaCodparc}
+	
+	`
+
+	estoque.get(function (err, db) {
+		db.query(sql, function (err, result) {
+			if (err) throw err;
+			db.detach(function () {
+				res.send(result);
+			});
+		})
+	});
+
+})
+
+
+apiRoutes.post('/CarregaIDtransito', function (req, res) {
+
+	LctoEntrada = req.body.LctoEntrada;
+
+	sql = `
+	select id_transito from transito
+	where transito.tipo in (1,2,4,6)  and documento=${LctoEntrada}
+	
+	`
+	estoque.get(function (err, db) {
+		db.query(sql, function (err, result) {
 			if (err) throw err;
 			db.detach(function () {
 				res.send(result);
@@ -2211,13 +2660,13 @@ apiRoutes.post('/lancanota', function (req, res) {
 	var TipoPagNota = req.body.TipoPagNota;
 	var TipoEntrada = req.body.TipoEntrada;
 
-	var sql = 'execute block as begin ';
-	sql += " insert into entrada (ESPECIE,CHAVE,EMPRESA,CODPARC,VNF,VPROD,DT_EMISSAO,DATA,DT_FISCAL,NOTA,FRETENOTA,FRETEFOB,VIPI,BCICMS,VICMS,DESPACES,VICMSST,BCICMSST,DESCONTO,CANCELA,VPROJ,UF,TOMADORFRETE,INDPAG,MODELO,SERIE,LANCAFINANCEIRO,TIPO) values ('" + nota.ESPECIE + "','" + nota.CHAVE + "'" + ',' + nota.EMPRESA + ',' + nota.CODPARCRAZAO + ',' + nota.VNF + ',' + nota.VPROD + ",'" + dataFirebird(nota.EMISSAO) + "'," + "current_date" + "," + "current_date" + ",'" + nota.NRONF + "'," + nota.VFRETE + ',' + nota.VFRETEFOB + ',' + nota.VIPI + ',' + nota.VBC + ',' + nota.VICMS + ',' + nota.VOUTRO + ', ' + nota.VST + ',' + nota.VBCST + ',' + nota.VDESC + ',' + "'S'" + ',' + nota.VPROJ + ",'" + nota.UF + "'," + nota.TOMADORFRETE + "," + nota.INDPAG + "," + nota.MODELO + ',' + nota.SERIE + ',' + nota.LANCAFINANCEIRO + "," + TipoEntrada + ");";
 
+	var sql = 'execute block as begin ';
+	sql += " insert into entrada (ESPECIE,CHAVE,EMPRESA,CODPARC,VNF,VPROD,DT_EMISSAO,DATA,DT_FISCAL,NOTA,FRETENOTA,FRETEFOB,VIPI,BCICMS,VICMS,DESPACES,VICMSST,BCICMSST,DESCONTO,CANCELA,VPROJ,UF,TOMADORFRETE,INDPAG,MODELO,SERIE,LANCAFINANCEIRO,TIPO,VPIS,VCOFINS) values ('" + nota.ESPECIE + "','" + nota.CHAVE + "'" + ',' + nota.EMPRESA + ',' + nota.CODPARCRAZAO + ',' + nota.VNF + ',' + nota.VPROD + ",'" + dataFirebird(nota.EMISSAO) + "'," + "current_date" + "," + "current_date" + ",'" + nota.NRONF + "'," + nota.VFRETE + ',' + nota.VFRETEFOB + ',' + nota.VIPI + ',' + nota.VBC + ',' + nota.VICMS + ',' + nota.VOUTRO + ', ' + nota.VST + ',' + nota.VBCST + ',' + nota.VDESC + ',' + "'S'" + ',' + nota.VPROJ + ",'" + nota.UF + "'," + nota.TOMADORFRETE + "," + nota.INDPAG + "," + nota.MODELO + ',' + nota.SERIE + ',' + nota.LANCAFINANCEIRO + "," + TipoEntrada + ',' + nota.VPIS + ',' + nota.VCOFINS+ ");";
 
 
 	for (i = 0; i < prodent.length; i++) {
-		sql += ' insert into prodent (EMPRESA,lctoentrada,produto,qtd,valor,pipi,sittrib,picms,vcredsn,vbcicms,vicms,vbcipi,vipi,iva,picmsst,vbcicmsst, vicmsst,fretenota,cfop,ncm,codvend,codprodvenda,orig,cest,defeito) values (' + nota.EMPRESA + ',(select gen_id(gen_lcto_entrada,0) from rdb$database),' + prodent[i].CODPRO + ',' + (prodent[i].CONVERSORNOTA * prodent[i].QTD) + ',' + (prodent[i].VUNIT / prodent[i].CONVERSORNOTA) + ',' + prodent[i].PIPI + ',' + prodent[i].SITTRIB + ',' + prodent[i].PICMS + ',' + prodent[i].VCREDSN + ',' + prodent[i].VBCICMS + ',' + prodent[i].VICMS + ',' + prodent[i].VBCIPI + ',' + prodent[i].VIPI + ',' + prodent[i].IVA + ' ,' + prodent[i].PICMSST + ',' + prodent[i].VBCICMSST + ',' + prodent[i].VICMSST + ',' + prodent[i].FRETENOTA + ',' + prodent[i].CFOPENTRADA + ',' + prodent[i].NCM + ',' + prodent[i].CODVEND + ',' + prodent[i].CODPRODVENDA + ',' + prodent[i].ORIG + ",'" + prodent[i].CEST + "','" + prodent[i].DEFEITO + "');";
+		sql += ' insert into prodent (EMPRESA,lctoentrada,produto,qtd,valor,pipi,sittrib,picms,vcredsn,vbcicms,vicms,vbcipi,vipi,iva,picmsst,vbcicmsst, vicmsst,fretenota,cfop,ncm,codvend,codprodvenda,orig,cest,defeito,vbcpis,ppis,vpis,vbccofins,pcofins,vcofins) values (' + nota.EMPRESA + ',(select gen_id(gen_lcto_entrada,0) from rdb$database),' + prodent[i].CODPRO + ',' + (prodent[i].CONVERSORNOTA * prodent[i].QTD) + ',' + (prodent[i].VUNIT / prodent[i].CONVERSORNOTA) + ',' + prodent[i].PIPI + ',' + prodent[i].SITTRIB + ',' + prodent[i].PICMS + ',' + prodent[i].VCREDSN + ',' + prodent[i].VBCICMS + ',' + prodent[i].VICMS + ',' + prodent[i].VBCIPI + ',' + prodent[i].VIPI + ',' + prodent[i].IVA + ' ,' + prodent[i].PICMSST + ',' + prodent[i].VBCICMSST + ',' + prodent[i].VICMSST + ',' + prodent[i].FRETENOTA + ',' + prodent[i].CFOPENTRADA + ',' + prodent[i].NCM + ',' + prodent[i].CODVEND + ',' + prodent[i].CODPRODVENDA + ',' + prodent[i].ORIG + ",'" + prodent[i].CEST + "','" + prodent[i].DEFEITO +"',"+prodent[i].VBCPIS +","+prodent[i].PPIS+","+prodent[i].VPIS+","+prodent[i].VBCCOFINS+ ","+prodent[i].PCOFINS+","+ prodent[i].VCOFINS +");";
 	};
 
 	if (parametro != 2) {
@@ -2228,6 +2677,8 @@ apiRoutes.post('/lancanota', function (req, res) {
 	};
 
 	sql += ' end';
+
+	//  res.send(sql);
 
 	estoque.get(function (err, db) {
 		if (err) res.send(sql);
@@ -2258,26 +2709,38 @@ apiRoutes.post('/Finalizalancanota', function (req, res) {
 	var acumulador = -1;
 	var TipoEntrada = req.body.TipoEntrada;
 	var TipoEntradaProdcompra = null;
+	var LctoPedidoTrans = req.body.LctoPedidoTrans;
+	var TransitoPedidoTrans = req.body.TransitoPedidoTrans;
+	var TransitoEntrada = req.body.TransitoEntrada;
+	var conta=null;
+	if(nota.EMPRESA==1) {conta=241};
+	if(nota.EMPRESA==2) {conta=277};
+	if(nota.EMPRESA==4) {conta=313};
+
+	var ContaDespesa=req.body.ContaDespesa
+
+
+
 
 	if (TipoEntrada == 1) { TipoEntradaProdcompra = 0 };
 	if (TipoEntrada == 2) { TipoEntradaProdcompra = 2 };
 	if (TipoEntrada == 4) { TipoEntradaProdcompra = 1 };
+	if (TipoEntrada == 3) { TipoEntradaProdcompra = 1 }; //pedido de transferência
 
 
 	if (nota.ESPECIE == 1) { projecao = 0 };
 	if (nota.ESPECIE == 2) { projecao = 1 };
 
 
-	let sqlNovo = `execute block as begin
+	var sqlNovo = `execute block as begin 
 		update entrada set cancela = 'N', vproj= ${nota.VPROJ} where lcto = ${lcto} and empresa = ${nota.EMPRESA} ;
 		`
 	if (nota.LANCAFINANCEIRO != 1) {
 
 		sqlNovo += `insert into deus
-		(empresa,codparc,dataemissao,datavcto,dataliquid,lcto,tipolcto,documento,debito,credito,valor,projecao)
-		values (${nota.EMPRESA},${nota.CODPARCRAZAO},current_date,current_date,current_date,${lcto},'E',${nota.NRONF},3,241,${nota.VNF},${projecao});
+		(empresa,codparc,dataemissao,datavcto,dataliquid,lcto,tipolcto,documento,debito,credito,valor,projecao)  
+		values (${nota.EMPRESA},${nota.CODPARCRAZAO},current_date,current_date,current_date,${lcto},'E',${nota.NRONF},${ContaDespesa},${conta},${nota.VNF},${projecao});
 		`;
-		acumulador = acumulador + 1;
 
 		for (i = 0; i < faturas.length; i++) {
 			if (faturas[i].PROJECAO == 0 || nota.ESPECIE == 2) {
@@ -2285,23 +2748,21 @@ apiRoutes.post('/Finalizalancanota', function (req, res) {
 
 				sqlNovo += `
 				insert into deus
-				(lcto,tipolcto,coddec,empresa,dataemissao,datavcto,codparc,documento,debito,valor,projecao)
-				values (${lcto},'E', (select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador}, ${nota.EMPRESA}, current_date,'${dataFirebird(faturas[i].DATA)}',${nota.CODPARCRAZAO},'${nota.NRONF}-${(i + 1)}',241,${faturas[i].VALOR}, ${faturas[i].PROJECAO});
+				(lcto,tipolcto,empresa,dataemissao,datavcto,codparc,documento,debito,valor,projecao) 
+				values (${lcto},'E', ${nota.EMPRESA}, current_date,'${dataFirebird(faturas[i].DATA)}',${nota.CODPARCRAZAO},'${nota.NRONF}-${(i + 1)}',${conta},${faturas[i].VALOR}, ${faturas[i].PROJECAO});			
 			`
-				acumulador = acumulador + 1;
 			}
 		};
-		acumulador = -1;
+
 		if (nota.VPROJ) {
 			sqlNovo +=
 				`
 			insert into deus
-			(empresa,codparc,dataemissao,datavcto,dataliquid,lcto,tipolcto,documento,debito,credito,valor,projecao)
-
-			values (${nota.EMPRESA},${nota.CODPARCRAZAO},current_date,current_date,current_date,${lcto},'E',${nota.NRONF},3,241,${nota.VPROJ},1);
-
+			(empresa,codparc,dataemissao,datavcto,dataliquid,lcto,tipolcto,documento,debito,credito,valor,projecao)  
+	
+			values (${nota.EMPRESA},${nota.CODPARCRAZAO},current_date,current_date,current_date,${lcto},'E',${nota.NRONF},${ContaDespesa},${conta},${nota.VPROJ},1);
+	
 			`
-			acumulador = acumulador + 1;
 		}
 
 
@@ -2309,10 +2770,10 @@ apiRoutes.post('/Finalizalancanota', function (req, res) {
 			if (faturas[i].PROJECAO == '1' && nota.ESPECIE == 1) {
 				sqlNovo += `
 				insert into deus
-				(lcto,tipolcto,coddec,empresa,dataemissao,datavcto,codparc,documento,debito,valor,projecao)
-				values (${lcto},'E',(select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador}, ${nota.EMPRESA}, current_date,'${dataFirebird(faturas[i].DATA)}',${nota.CODPARCRAZAO},'${nota.NRONF}-${(i + 1)}',241,${faturas[i].VALOR}, ${faturas[i].PROJECAO});
+				(lcto,tipolcto,empresa,dataemissao,datavcto,codparc,documento,debito,valor,projecao) 
+				values (${lcto},'E',${nota.EMPRESA}, current_date,'${dataFirebird(faturas[i].DATA)}',${nota.CODPARCRAZAO},'${nota.NRONF}-${(i + 1)}',${conta},${faturas[i].VALOR}, ${faturas[i].PROJECAO});			
 			`;
-				acumulador = acumulador + 1;
+
 			}
 
 		};
@@ -2324,7 +2785,7 @@ apiRoutes.post('/Finalizalancanota', function (req, res) {
 
 	var sql2 = 'execute block as begin ';
 
-	if (TipoEntrada == 1) {
+	if (TipoEntrada == 1 && !LctoPedidoTrans) {
 		for (i = 0; i < prodent.length; i++) {
 			sql2 += ' insert into prodcompra (data,lctoentrada,empresa,codparc,codpro,qtd,valor,tipo) values (current_date,' + lcto + ',' + nota.EMPRESA + ',' + nota.CODPARC + ',' + prodent[i].CODPRO + ',' + (prodent[i].QTDENTRA * -1) + ',' + (prodent[i].VUNIT / prodent[i].CONVERSORNOTA) + "," + TipoEntradaProdcompra + ");";
 		};
@@ -2336,9 +2797,9 @@ apiRoutes.post('/Finalizalancanota', function (req, res) {
 		};
 	}
 
-	if (TipoEntrada != 1) {
+	if (TipoEntrada == 2 || TipoEntrada == 4) {
 		for (i = 0; i < prodent.length; i++) {
-			if(prodent[i].QTDENTRA>0){
+			if (prodent[i].QTDENTRA > 0) {
 				sql2 += ' update prodcompra set prodcompra.lctoentrada=0 where prodcompra.codigo=' + prodent[i].CODIGO + ';';
 
 				sql2 += ' delete from prodcompra where prodcompra.codigo=' + prodent[i].CODIGO + ';';
@@ -2346,6 +2807,17 @@ apiRoutes.post('/Finalizalancanota', function (req, res) {
 			}
 		};
 	}
+
+
+	if (TipoEntrada == 3) {
+
+		sql2 += ' update transito set transito.transferencia=' + TransitoEntrada + ' where transito.id_transito=' + TransitoPedidoTrans + '; '
+
+
+	}
+
+
+
 
 
 	if (nota.ATUALIZA == '1') {
@@ -2362,7 +2834,10 @@ apiRoutes.post('/Finalizalancanota', function (req, res) {
 		}
 	};
 
+
 	sql2 += ' end';
+
+		//   res.send(sqlNovo);
 
 	estoque.get(function (err, db) {
 		if (err) res.send('banco nao abriu', err);
@@ -2386,26 +2861,6 @@ apiRoutes.post('/Finalizalancanota', function (req, res) {
 
 //XXXXXXXX FIM:  FINALIZA LANCANOTA XXXXXXXXXXX
 
-
-
-apiRoutes.post('/CarregaPrejuizo', function (req, res) {
-
-
-	estoque.get(function (err, db) {
-		if (err) throw err;
-
-		db.query("select totais.id_produto,totais.qtd,totais.descricao,calculo_quantprod.qtdreserva, (totais.qtd-calculo_quantprod.qtdreserva) as qtddisp, produto.prcusto, ((totais.qtd-calculo_quantprod.qtdreserva)*produto.prcusto) as total    from (select pacote.id_produto,sum(pacote.qtd) as qtd,produto.descricao from pacote join produto on pacote.id_produto = produto.codigo where origem in ( select distinct id_pacote from transitodet where data>'01.01.2018' and situacao_atual=8 ) and situacao in (8,1,12,7,13,2,3,6) and produto.encomenda = 'S' group by pacote.id_produto,produto.descricao ) as totais cross join calculo_quantprod(totais.id_produto,4,null,null) join produto on produto.codigo = totais.id_produto where (totais.qtd-calculo_quantprod.qtdreserva)>0 order by produto.descricao", function (err, result1) {
-			db.query("select usuario.nome, venda.data, venda.nomecli,  prejuizo.* from prejuizo join venda on venda.lcto=prejuizo.lctovenda join usuario on usuario.codfunc=venda.codvend order by data desc ", function (err, result2) {
-
-				if (err) throw err;
-				db.detach(function () {
-					res.send([result1, result2]);
-				});
-
-			});
-		});
-	});
-})
 
 
 
@@ -2450,11 +2905,11 @@ apiRoutes.post('/AlteraProduto', function (req, res) {
 // Carrega quantidades do produto
 apiRoutes.post('/QuantidadesProd', function (req, res) {
 
-	var sql = 'select * from calculo_quantprod (' + req.body.busca + ',0,null,null)';
+	var sql = 'select * from calculo_quantprod_novo (?)';
 
 	estoque.get(function (err, db) {
 		if (err) throw err;
-		db.query(sql, function (err, result) {
+		db.query(sql, req.body.busca, function (err, result) {
 			if (err) throw err;
 			db.detach(function () {
 				res.json(result[0]);
@@ -2583,10 +3038,10 @@ apiRoutes.post('/UltimaNota', function (req, res) {
 		// else if (req.body.busca && req.body.direcao == 2) {
 		// 	sqlnotaanterior = 'and lcto =' + req.body.busca + 'order by entrada.lcto';
 		// }
-		var sql1 = "select first 1 entrada.*, cliente.razao from entrada join cliente on cliente.codigo = entrada.codparc where empresa=? and entrada.cancela = 'N' and lcto =" + req.body.busca + "order by entrada.lcto ";
+		var sql1 = "select first 1 entrada.*, cliente.razao from entrada join cliente on cliente.codigo = entrada.codparc where entrada.empresa=? and entrada.cancela = 'N' and lcto =" + req.body.busca + "order by entrada.lcto ";
 		var sql2 = "select produto.descricao, produto.codinterno, produto.unidade, prodent.* from prodent join produto on produto.codigo = prodent.produto where prodent.lctoentrada=? and prodent.empresa=?";
 		if (req.body.tipo === 'S') {
-			sql1 = "select first 1 saida.*, cliente.razao from saida join cliente on cliente.codigo = saida.codparc where empresa=? and lcto =" + req.body.busca + "order by saida.lcto ";
+			sql1 = "select first 1 saida.*, cliente.razao from saida join cliente on cliente.codigo = saida.codparc where saida.empresa=? and lcto =" + req.body.busca + "order by saida.lcto ";
 			sql2 = "select produto.descricao, produto.codinterno, produto.unidade, prodsaida.* from prodsaida join produto on produto.codigo = prodsaida.produto where prodsaida.lctosaida=? and prodsaida.empresa=?";
 		}
 		if (err)
@@ -3873,7 +4328,7 @@ apiRoutes.post('/listavendas', function (req, res) {
 			db.query("update venda set status = 'C' where lcto = ?", req.body.vendaaberta, function (err, result) {
 				consulta();
 			})
-			// IMPORTANT: close the connection
+			// IMPORTANT: close the connection			
 		}
 		else consulta();
 		// db = DATABASE
@@ -4072,7 +4527,7 @@ apiRoutes.post('/atualizasite', function (req, res) {
 					// .ele('Field', {'Name': 'AdicionalD2','Value': row.MODELO2}).up()
 					// .ele('Field', {'Name': 'AdicionalD3','Value': row.CODIGO}).up()
 					// .ele('Field', {'Name': 'CodVideo','Value': row.CODVIDEO}).up()
-					// .ele('Field', {'Name': 'DescrURL','Value': row.URLAPOIO}).up()
+					// .ele('Field', {'Name': 'DescrURL','Value': row.URLAPOIO}).up()                
 					// .ele('Field', {'Name': 'Estoque','Value': 999});
 				} else if (row.IDSITE && row.ATIVO == 'N') {
 					root.ele('Record')
@@ -4114,8 +4569,8 @@ apiRoutes.post('/atualizasite', function (req, res) {
 						}).up();
 					// .ele('Field', {'Name': 'OrdemProd','Value': (row.ORDENA - row.ORDEM)}).up()
 					// .ele('Field', {'Name': 'CodVideo','Value': row.CODVIDEO}).up()
-					// .ele('Field', {'Name': 'DescrURL','Value': row.URLAPOIO}).up()
-					// .ele('Field', {'Name': 'Peso','Value': '30'}).up()
+					// .ele('Field', {'Name': 'DescrURL','Value': row.URLAPOIO}).up() 
+					// .ele('Field', {'Name': 'Peso','Value': '30'}).up() 
 					// .ele('Field', {'Name': 'IsProdutoGrande','Value': 'true'}).up() ;
 
 					// .ele('Field', {'Name': 'ImagemProd','Value': row.CODIGO+'p1.jpg'}).up()
@@ -4323,7 +4778,7 @@ apiRoutes.post('/entregas', function (req, res) {
 		if (err)
 			throw err;
 		// db = DATABASE
-		db.query("select * from TRANSITO_BUSCA_STATUS where tipo ='ENTREGA' order by cidade,nomecli", function (err, result) {
+		db.query("select * from TRANSITO_BUSCA_STATUS where tipo ='ENTREGA' and status <> 'ABERTO' order by cidade,nomecli", function (err, result) {
 			for (i = 0; i < result.length; i++) {
 				result[i].DATAENTREGA = new Date(result[i].DATAENTREGA);
 
@@ -4364,10 +4819,10 @@ apiRoutes.post('/buscaprodreserva', (req, res) => {
 	let lcto = param.venda ? " and t.DOCUMENTO=" + param.venda : "";
 	let codcli = (param.codcli && param.status != '1') ? " and v.CODCLI=" + param.codcli : "";
 	let codvend = param.codvend ? " and v.CODVEND=" + param.codvend : "";
-	let datafiltro = (param.venda) ? '' : (param.data && param.status != '1') ? ` and EXTRACT (month from v.data) = ${mes}
+	let datafiltro = (param.venda) ? '' : (param.data && param.status != '1') ? ` and EXTRACT (month from v.data) = ${mes} 
 	and EXTRACT (year from v.data) = ${ano}` : (!param.data && param.status != '1') ? " and v.data > CURRENT_DATE -1" : "";
 
-	let query = `select
+	let query = `select 
 	pv.codigo,
 	t.documento,
 	t.id_transito,
@@ -4378,15 +4833,15 @@ apiRoutes.post('/buscaprodreserva', (req, res) => {
 	pa.nomesys,
 	f.usuario as VENDEDOR,
 		case (t.status)
-		when 0 then cast('ESPERA' as varchar(6)character set iso8859_1)
-		when 1 then cast('SERVICO' as varchar(7)character set iso8859_1)
-		when 2 then cast('SEPARADO' as varchar(8)character set iso8859_1)
-		when 3 then cast('TRANSITO' as varchar(8)character set iso8859_1)
-		when 5 then cast('EMBALAGEM' as varchar(9)character set iso8859_1)
-		when 6 then cast('FATURAMENTO' as varchar(11)character set iso8859_1)
-		when 7 then cast('PREPARACAO' as varchar(10)character set iso8859_1)
-		when 8 then cast('EXPEDICAO' as varchar(9)character set iso8859_1)
-		when 4 then cast('ENTREGUE' as varchar(8)character set iso8859_1)
+		when 0 then cast('ESPERA' as varchar(6)character set iso8859_1) 
+		when 1 then cast('SERVICO' as varchar(7)character set iso8859_1) 
+		when 2 then cast('SEPARADO' as varchar(8)character set iso8859_1) 
+		when 3 then cast('TRANSITO' as varchar(8)character set iso8859_1) 
+		when 5 then cast('EMBALAGEM' as varchar(9)character set iso8859_1) 
+		when 6 then cast('FATURAMENTO' as varchar(11)character set iso8859_1) 
+		when 7 then cast('PREPARACAO' as varchar(10)character set iso8859_1) 
+		when 8 then cast('EXPEDICAO' as varchar(9)character set iso8859_1) 
+		when 4 then cast('ENTREGUE' as varchar(8)character set iso8859_1) 
 		end as STATUS_RESERVA,
 	v.nomecli,
 	v.codcli,
@@ -4480,7 +4935,7 @@ apiRoutes.post('/reserva', function (req, res) {
 		let lcto = param.venda ? " and t.DOCUMENTO=" + param.venda : "";
 		let codcli = (param.codcli && param.status != '1') ? " and v.CODCLI=" + param.codcli : "";
 		let codvend = param.codvend ? " and v.CODVEND=" + param.codvend : "";
-		let datafiltro = (param.venda) ? '' : (param.data && param.status != '1') ? ` and EXTRACT (month from v.data) = ${mes}
+		let datafiltro = (param.venda) ? '' : (param.data && param.status != '1') ? ` and EXTRACT (month from v.data) = ${mes} 
 		and EXTRACT (year from v.data) = ${ano}` : (!param.data && param.status != '1') ? " and v.data > CURRENT_DATE - 30" : "";
 		let query = ` SELECT
 			V.LCTO,
@@ -4490,16 +4945,17 @@ apiRoutes.post('/reserva', function (req, res) {
 			CASE
 			WHEN V.STATUS='F' THEN cast('PAGO'as varchar(4)character set iso8859_1)
 			WHEN V.STATUS='R' and V.cdcondpagto is not null THEN cast('A FATURAR'as varchar(9)character set iso8859_1)
+			WHEN V.STATUS='E' THEN cast('RECEBER' as varchar(7)character set iso8859_1)
 			WHEN V.STATUS='C' THEN cast('CAIXA'as varchar(6)character set iso8859_1)
 			WHEN V.STATUS='R' THEN cast('ABERTO'as varchar(6)character set iso8859_1) ELSE '' END AS STATUS,
-			CASE
+			CASE 
 			WHEN (T.STATUS=4) then cast('ENTREGUE' as varchar(8)character set iso8859_1)
-			when (T.DATA_LIBERADO IS NOT NULL AND T.STATUS=0)then cast('LIBERADO' as varchar(8)character set iso8859_1)
-			WHEN T.STATUS=1 THEN cast('SERVICO' as varchar(7)character set iso8859_1)
+			when (T.DATA_LIBERADO IS NOT NULL AND T.STATUS=0)then cast('LIBERADO' as varchar(8)character set iso8859_1) 
+			WHEN T.STATUS=1 THEN cast('SERVICO' as varchar(7)character set iso8859_1) 
 			WHEN T.STATUS=2 THEN cast('SEPARADO' as varchar(8)character set iso8859_1)
-			WHEN T.STATUS=3 THEN cast('TRANSITO' as varchar(8)character set iso8859_1)
+			WHEN T.STATUS=3 THEN cast('TRANSITO' as varchar(8)character set iso8859_1) 
 			WHEN T.STATUS=5 THEN cast('EMBALAGEM' as varchar(9)character set iso8859_1)
-			WHEN T.STATUS=6 THEN cast('FATURAMENTO' as varchar(11)character set iso8859_1)
+			WHEN T.STATUS=6 THEN cast('FATURAMENTO' as varchar(11)character set iso8859_1) 
 			WHEN T.STATUS=7 THEN cast('PREPARACAO' as varchar(10)character set iso8859_1)
 			WHEN T.STATUS=8 THEN cast('EXPEDICAO' as varchar(9)character set iso8859_1)
 			ELSE cast('ESPERA' as varchar(6)character set iso8859_1) END AS STATUS_RESERVA,
@@ -4549,26 +5005,27 @@ apiRoutes.post('/reserva_det', function (req, res) {
     V.cidade,
     v.ESTADO,
     V.DATA,
-    case
-        WHEN V.STATUS='F' THEN cast('PAGO'as varchar(4)character set iso8859_1)
-        WHEN V.STATUS='R' and V.cdcondpagto is not null THEN cast('A FATURAR'as varchar(9)character set iso8859_1)
-        WHEN V.STATUS='C' THEN cast('CAIXA'as varchar(6)character set iso8859_1)
-        WHEN V.STATUS='R' THEN cast('ABERTO'as varchar(6)character set iso8859_1) ELSE ''
+    case  
+        WHEN V.STATUS='F' THEN cast('PAGO'as varchar(4)character set iso8859_1) 
+		WHEN V.STATUS='R' and V.cdcondpagto is not null THEN cast('A FATURAR'as varchar(9)character set iso8859_1) 
+		WHEN V.STATUS='E' THEN cast('RECEBER' as varchar(7)character set iso8859_1)
+        WHEN V.STATUS='C' THEN cast('CAIXA'as varchar(6)character set iso8859_1)   
+        WHEN V.STATUS='R' THEN cast('ABERTO'as varchar(6)character set iso8859_1) ELSE '' 
     END AS STATUS,
-	CASE
+	CASE 
 	WHEN (T.STATUS=4) then cast('ENTREGUE' as varchar(8)character set iso8859_1)
-	when (T.DATA_LIBERADO IS NOT NULL AND T.STATUS=0)then cast('LIBERADO' as varchar(8)character set iso8859_1)
-	WHEN T.STATUS=1 THEN cast('SERVICO' as varchar(7)character set iso8859_1)
+	when (T.DATA_LIBERADO IS NOT NULL AND T.STATUS=0)then cast('LIBERADO' as varchar(8)character set iso8859_1) 
+	WHEN T.STATUS=1 THEN cast('SERVICO' as varchar(7)character set iso8859_1) 
 	WHEN T.STATUS=2 THEN cast('SEPARADO' as varchar(8)character set iso8859_1)
-	WHEN T.STATUS=3 THEN cast('TRANSITO' as varchar(8)character set iso8859_1)
+	WHEN T.STATUS=3 THEN cast('TRANSITO' as varchar(8)character set iso8859_1) 
 	WHEN T.STATUS=5 THEN cast('EMBALAGEM' as varchar(9)character set iso8859_1)
-	WHEN T.STATUS=6 THEN cast('FATURAMENTO' as varchar(11)character set iso8859_1)
+	WHEN T.STATUS=6 THEN cast('FATURAMENTO' as varchar(11)character set iso8859_1) 
 	WHEN T.STATUS=7 THEN cast('PREPARACAO' as varchar(10)character set iso8859_1)
 	WHEN T.STATUS=8 THEN cast('EXPEDICAO' as varchar(9)character set iso8859_1)
 	ELSE cast('ESPERA' as varchar(6)character set iso8859_1) END AS STATUS_RESERVA,
-    CASE
-        WHEN CODCLI=15850 THEN cast('REPOSICAO' as varchar(9)character set iso8859_1)
-        WHEN V.CEP <>  '' THEN cast('ENTREGA' as varchar(7)character set iso8859_1)
+    CASE 
+        WHEN CODCLI=15850 THEN cast('REPOSICAO' as varchar(9)character set iso8859_1)  
+        WHEN V.CEP <>  '' THEN cast('ENTREGA' as varchar(7)character set iso8859_1) 
         WHEN DATA_AVISO IS NOT NULL THEN cast('RETIRA' as varchar(6)character set iso8859_1)
         when CLIENTEDE='12872' THEN cast('INTERNET' as varchar(8)character set iso8859_1)
         when T.TIPO=7 THEN cast('DEVOLUÇÃO' as varchar(9)character set iso8859_1)
@@ -4591,7 +5048,7 @@ apiRoutes.post('/reserva_det', function (req, res) {
     POSICAO AS PS,
     T.TIPOFRETE,
     T.CODTRANSP ,
-    CASE (ESTOQUE)
+    CASE (ESTOQUE) 
         WHEN 1  THEN cast('C.D.' as varchar(4)character set iso8859_1)
         ELSE cast('LOJA' as varchar(4)character set iso8859_1)
     END AS ESTOQUE,
@@ -4611,17 +5068,17 @@ apiRoutes.post('/reserva_det', function (req, res) {
 		PRODVENDA.CODIGO as CODPRODVENDA,
  		cast(
 		case (transito.status)
-			when 0 then
-				CASE (prodvenda.liberado)
+			when 0 then 
+				CASE (prodvenda.liberado) 
 				when 0 then cast('ESPERA' as varchar(6)character set iso8859_1)
-				when 1 then cast('LIBERADO' as varchar(8)character set iso8859_1)
+				when 1 then cast('LIBERADO' as varchar(8)character set iso8859_1) 
 			end
-			when 1 then cast('SERVICO' as varchar(7)character set iso8859_1)
+			when 1 then cast('SERVICO' as varchar(7)character set iso8859_1) 
 			when 2 then cast('SEPARADO' as varchar(8)character set iso8859_1)
-			when 3 then cast('TRANSITO' as varchar(8)character set iso8859_1)
+			when 3 then cast('TRANSITO' as varchar(8)character set iso8859_1) 
 			when 4 then cast('ENTREGUE' as varchar(8)character set iso8859_1)
 			when 5 then cast('EMBALAGEM' as varchar(9)character set iso8859_1)
-			when 6 then cast('FATURAMENTO' as varchar(11)character set iso8859_1)
+			when 6 then cast('FATURAMENTO' as varchar(11)character set iso8859_1) 
 			when 7 then cast('PREPARACAO' as varchar(10)character set iso8859_1)
 			when 8 then cast('EXPEDICAO' as varchar(9)character set iso8859_1)
 		end as varchar(15) character set win1252)  as situacao,
@@ -4804,6 +5261,41 @@ apiRoutes.post('/cancelareserva', function (req, res) {
 		// db = DATABASE
 		db.query("UPDATE VENDA SET STATUS='X' WHERE LCTO = ? returning LCTO,STATUS", req.body.TRANSITO, function (err, result) {
 			db.detach(function () { res.send(result); });
+		});
+	});
+});
+apiRoutes.post('/pagarreserva', function (req, res) {
+	console.log('cancela reserva' + req.body.TRANSITO);
+	estoque.get(function (err, db) {
+		if (err)
+			throw err;
+		// db = DATABASE
+		db.query("UPDATE VENDA SET STATUS='F' WHERE LCTO = ? returning LCTO,STATUS", req.body.TRANSITO, function (err, result) {
+			db.detach(function () { res.send(result); });
+		});
+	});
+});
+
+apiRoutes.post('/recebernaentrega', function (req, res) {
+	console.log('cancela reserva' + req.body.TRANSITO);
+	estoque.get(function (err, db) {
+		if (err)
+			throw err;
+		// db = DATABASE
+		db.query("UPDATE VENDA SET STATUS='E' WHERE LCTO = ? returning LCTO,STATUS", req.body.TRANSITO, function (err, result) {
+			db.detach(function () { res.send(result); });
+		});
+	});
+});
+
+apiRoutes.post('/retornapedido', function (req, res) {
+	console.log('cancela reserva' + req.body.TRANSITO);
+	estoque.get(function (err, db) {
+		if (err)
+			throw err;
+		// db = DATABASE
+		db.query("UPDATE PACOTE SET SITUACAO = 2, OS=1 WHERE ID_TRANSITO_S = ? ", req.body.TRANSITO, function (err, result) {
+			db.detach(function () { res.send({'STATUS' : 'OK'}); });
 		});
 	});
 });
@@ -5114,27 +5606,18 @@ apiRoutes.post('/buscacliente', function (req, res) {
 
 apiRoutes.post('/abrecliente', function (req, res) {
 	if (req.body.tipo == 'CODCLI') {
-		sql = `select c.codigo,fantasia,ramoativ,razao,
-		replace (replace(replace(cgc,'/',''),'.',''),'-','') as cgc,c.insc,c.tipo,
-		c.fone,c.celular,c.contato,c.email,c.codfunc,c.liberafat,c.obs
-		from cliente c where c.codigo = ?`;
+		sql = "select c.codigo,fantasia,ramoativ,razao,replace (replace(replace(cgc,'/',''),'.',''),'-','') as cgc,c.insc,c.tipo,c.endereco,c.bairro,c.numero,c.cidade,c.estado,c.cep,c.complemento,c.fone,c.celular,c.contato,c.email,c.codfunc,c.liberafat,c.obs,logradouro_corresp,numero_corresp,bairro_corresp,cidade_corresp,estado_corresp,cep_corresp,contato_corresp,fone_corresp,complemento_corresp,email_corresp,logradouro_entrega as erua,bairro_entrega as ebairro,numero_entrega as enumero,cidade_entrega as ecidade,estado_entrega as eestado,cep_entrega as ecep,complemento_entrega as ecomplemento,fone_entrega as efone,contato_entrega as econtato from cliente c where c.codigo = ?";
 	} else if (req.body.tipo = 'CGC') {
-		sql = `select c.codigo,fantasia,
-		ramoativ,razao,replace (replace(replace(cgc,'/',''),'.',''),'-','') as cgc,
-		c.insc,c.tipo,
-		c.fone,c.celular,c.contato,c.email,c.codfunc,c.liberafat,c.obs
-		from cliente c where replace (replace(replace(cgc,'/',''),'.',''),'-','') = ?`
+		sql = "select c.codigo,fantasia,ramoativ,razao,replace (replace(replace(cgc,'/',''),'.',''),'-','') as cgc,c.insc,c.tipo,c.endereco,c.bairro,c.numero,c.cidade,c.estado,c.cep,c.complemento,c.fone,c.celular,c.contato,c.email,c.codfunc,c.liberafat,c.obs,logradouro_corresp,numero_corresp,bairro_corresp,cidade_corresp,estado_corresp,cep_corresp,contato_corresp,fone_corresp,complemento_corresp,email_corresp,logradouro_entrega as erua,bairro_entrega as ebairro,numero_entrega as enumero,cidade_entrega as ecidade,estado_entrega as eestado,cep_entrega as ecep,complemento_entrega as ecomplemento,fone_entrega as efone,contato_entrega as econtato from cliente c where replace (replace(replace(cgc,'/',''),'.',''),'-','') = ?"
 	}
 	estoque.get(function (err, db) {
 		if (err)
 			throw err;
 		// db = DATABASE
 		db.query(sql, [req.body.cliente], function (err, result) {
-			let queryEndereco = `select LOCALIDADE.*,cidade.NOM_CIDADE,cidade.ESTADO from localidade left join cidade on cidade.cod_cidade=localidade.codcidade where codparc =${result[0].CODIGO} and ativo=1`
-			db.query(queryEndereco, function (err, result1) {
-				db.detach(function () {
-					res.json([result, result1]);
-				});
+			// IMPORTANT: close the connection
+			db.detach(function () {
+				res.json(result);
 			});
 		});
 	});
@@ -5143,7 +5626,7 @@ apiRoutes.post('/abrecliente', function (req, res) {
 
 app.put('/api/endereco', function (req, res) {
 	let endereco = req.body.endereco;
-	let query = `update LOCALIDADE set
+	let query = `update LOCALIDADE set 
 		${endereco.TIPO ? ` TIPO='${endereco.TIPO}'` : ` `}
 		${endereco.APELIDO ? ',' : ''}
 		${endereco.APELIDO ? ` APELIDO='${endereco.APELIDO}'` : ` `}
@@ -5258,8 +5741,8 @@ apiRoutes.post('/entrada_det', function (req, res) {
 		if (err)
 			throw err;
 		// db = DATABASE
-		if (req.body.TIPO != 6) {
-			db.query(`select
+		if (req.body.TIPO == 4) {
+			db.query(`select 
             grupo.produto,
             sum(grupo.qtd_entrada) as qtd_entrada,
             sum(grupo.qtd_pct) as qtd_pct,
@@ -5269,15 +5752,15 @@ apiRoutes.post('/entrada_det', function (req, res) {
             from (
                 select prodent.produto as produto,cast(sign(prodent.qtd)*prodent.qtd as integer) as qtd_entrada,
                 0 as qtd_pct,p.descricao,p.ctrl_pacote ,prodent.defeito
-                from transito t
-                join prodent on t.documento=prodent.lctoentrada
-                and t.id_empresa=prodent.empresa join produto p on prodent.produto=p.codigo
+                from transito t 
+                join prodent on t.documento=prodent.lctoentrada 
+                and t.id_empresa=prodent.empresa join produto p on prodent.produto=p.codigo 
                 where t.id_transito =?
-                union all
+                union all 
                 select pacote.id_produto as codpro,
-                0 as qtd_entrada, sum (pacote.qtd) as qtd_pct,
+                0 as qtd_entrada, sum (pacote.qtd) as qtd_pct, 
                 produto.descricao, produto.ctrl_pacote,'' from pacote
-                join transito on transito.id_transito=pacote.id_transito_e
+                join transito on transito.id_transito=pacote.id_transito_e 
                 join produto on id_produto = produto.codigo where transito.id_transito=?
                 and pacote.situacao=5 group by codpro,produto.descricao,ctrl_pacote) as grupo
                 group by produto,descricao,ctrl_pacote,defeito`, [req.body.LCTO, req.body.LCTO], function (err, result) {
@@ -5286,14 +5769,43 @@ apiRoutes.post('/entrada_det', function (req, res) {
 					res.json(result);
 				});
 			});
-		} else {
-			db.query("select produto,sum(qtd_entrada) as qtd_entrada,sum(qtd_pct) as qtd_pct, descricao ,ctrl_pacote  from (select pv.codpro as produto,cast(sign(pv.qtd)*pv.qtd as integer) as qtd_entrada,0 as qtd_pct,p.descricao,p.ctrl_pacote from transito t join  prodvenda pv on t.documento=pv.codvenda join produto p on pv.codpro=p.codigo where t.id_transito = ?  union all select id_produto as codpro,0 as qtd_entrada, sum (pacote.qtd) as qtd_pct,produto.descricao as qtd,produto.ctrl_pacote from pacote join transito on id_transito=id_transito_e join produto on id_produto = produto.codigo where id_transito=? and pacote.situacao=5 group by codpro,produto.descricao,ctrl_pacote) group by produto,descricao,ctrl_pacote", [req.body.LCTO, req.body.LCTO], function (err, result) {
+		} else /* if (req.body.TIPO == 1 || req.body.TIPO == 2 || req.body.TIPO == 6) */ {
+			db.query(`select 
+            grupo.produto,
+            sum(grupo.qtd_entrada) as qtd_entrada,
+            sum(grupo.qtd_pct) as qtd_pct,
+            grupo.descricao,
+            grupo.ctrl_pacote
+            from (
+                select prodent.produto as produto,cast(sign(prodent.qtd)*prodent.qtd as integer) as qtd_entrada,
+                0 as qtd_pct,p.descricao,p.ctrl_pacote
+                from transito t 
+                join prodent on t.documento=prodent.lctoentrada 
+                and t.id_empresa=prodent.empresa join produto p on prodent.produto=p.codigo 
+                where t.id_transito =?
+                union all 
+                select pacote.id_produto as codpro,
+                0 as qtd_entrada, sum (pacote.qtd) as qtd_pct, 
+                produto.descricao, produto.ctrl_pacote from pacote
+                join transito on transito.id_transito=pacote.id_transito_e 
+                join produto on id_produto = produto.codigo where transito.id_transito=?
+                and pacote.situacao=5 group by codpro,produto.descricao,ctrl_pacote) as grupo
+                group by produto,descricao,ctrl_pacote`, [req.body.LCTO, req.body.LCTO], function (err, result) {
 				// IMPORTANT: close the connection
 				db.detach(function () {
 					res.json(result);
 				});
 			});
-		};
+
+		}
+		// else {
+		// 	db.query("select produto,sum(qtd_entrada) as qtd_entrada,sum(qtd_pct) as qtd_pct, descricao ,ctrl_pacote  from (select pv.codpro as produto,cast(sign(pv.qtd)*pv.qtd as integer) as qtd_entrada,0 as qtd_pct,p.descricao,p.ctrl_pacote from transito t join  prodvenda pv on t.documento=pv.codvenda join produto p on pv.codpro=p.codigo where t.id_transito = ?  union all select id_produto as codpro,0 as qtd_entrada, sum (pacote.qtd) as qtd_pct,produto.descricao as qtd,produto.ctrl_pacote from pacote join transito on id_transito=id_transito_e join produto on id_produto = produto.codigo where id_transito=? and pacote.situacao=5 group by codpro,produto.descricao,ctrl_pacote) group by produto,descricao,ctrl_pacote", [req.body.LCTO, req.body.LCTO], function (err, result) {
+		// 		// IMPORTANT: close the connection
+		// 		db.detach(function () {
+		// 			res.json(result);
+		// 		});
+		// 	});
+		// };
 	});
 });
 
@@ -5364,6 +5876,23 @@ apiRoutes.post('/checaentrada', function (req, res) {
 	});
 });
 
+apiRoutes.post('/marcaPrioridade', function (req,res) {
+
+	let queryString = `update transito set urgencia = current_timestamp where id_transito=${req.body.transito}`;
+					//    res.send(queryString);
+	estoque.get(function (err, db) {
+		if (err)
+			throw (queryString);
+		// db = DATABASE
+		db.query(queryString, function (err, result) {
+			if (err)
+				throw (queryString);
+			db.detach(function () {
+				res.send('foi');
+			});
+		});
+	});	
+})
 
 // tela de configuração de acesso
 apiRoutes.post('/buscacomputadores', function (req, res) {
@@ -5399,4 +5928,4 @@ app.use('/api', apiRoutes);
 // start the server ======
 // =======================
 app.listen(port);
-console.log('server iniciado na porta ' + port);
+console.log('iniciado na porta ' + port);

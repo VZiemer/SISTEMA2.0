@@ -21,16 +21,18 @@ export class ModalSelectTransitoComponent implements OnInit {
     private caixaService: CaixaService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    if (data.tipo == "CPF") {
-      this.mostraCPF = true;
-    }
+    // if (data.tipo == "CPF") {
+    //   this.mostraCPF = true;
+    // }
     console.log(
       data.transitos.filter(item => {
-        if (item.STATUS == 8 || item.STATUS == 4 && !item.NFE && !item.CUPOM) { return item; }
+        // if (item.STATUS == 8 || item.STATUS == 4 || item.STATUS == 3 && !item.NFE && !item.CUPOM) { return item; }
+        return item; 
       })
     );
     this.transitos = data.transitos.filter(item => {
-      if (item.STATUS == 8 || item.STATUS == 4 && !item.NFE && !item.CUPOM) { return item; }
+      // if (item.STATUS == 8 || item.STATUS == 4 || item.STATUS == 3 && !item.NFE && !item.CUPOM) { return item; }
+      if (!item.NFE && !item.CUPOM) { return item; }
     });
   }
 

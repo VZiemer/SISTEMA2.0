@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from "@angular/core";
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material";
 import { SelectionModel } from "@angular/cdk/collections";
-import { Observable } from "rxjs";
+import { config, Observable } from "rxjs";
 import { Venda } from "../../shared/models/venda";
 import { CaixaService } from "../../caixa/caixa.service";
 import { Deus } from "../../shared/models/deus";
@@ -12,8 +12,12 @@ import * as ini from "ini";
 // import * as fs from "fs";
 import * as net from "net";
 
+var configSat = require('../../../configs/sat.json');
+
 import { ModalSelectTransitoComponent } from "../modal-select-transito/modal-select-transito.component";
 import { ModalErrorComponent } from "../modal-error/modal-error.component";
+import { rejects } from "assert";
+import { resourcesPath } from "process";
 
 function zeroEsq(valor, comprimento, digito) {
   const length = comprimento - valor.toString().length + 1;
@@ -66,6 +70,8 @@ const NFe = nfe.NFe,
   Icms = nfe.Icms,
   GravaBanco = nfe.Gravabanco,
   Pagamento = nfe.Pagamento;
+  
+  
 
 @Component({
   selector: "app-my-modal",
@@ -155,6 +161,8 @@ export class ModalNfeComponent implements OnInit {
   };
   titulo: string;
   tipoOperacao: any[];
+  permiteNfe: boolean = true;
+  cfpSAT: boolean = true;
 
   constructor(
     public dialogRef: MatDialogRef<ModalNfeComponent>,
@@ -290,7 +298,7 @@ export class ModalNfeComponent implements OnInit {
     );
   }
 
-  geraNota() {
+  geraNota() { //bre o modal que indica o transito 
     const dialogRef = this.dialog.open(ModalSelectTransitoComponent, {
       width: "40vw",
       height: "70vh",
@@ -321,7 +329,7 @@ export class ModalNfeComponent implements OnInit {
     });
   }
 
-  geraNfe(empresa, venda, trSelecionado): Observable<any> {
+  geraNfe(empresa, venda, trSelecionado): Observable<any> { // cria o modelo da danfe
     console.log("dados remetente");
     console.log(trSelecionado);
     const transito = venda.TRANSITO.find(
@@ -351,31 +359,68 @@ export class ModalNfeComponent implements OnInit {
                 .comCodMunicipio(dadosEmpresa.CODIBGE)
                 .comUf(dadosEmpresa.ESTADO)
             );
+          if(venda.CODCLI != 1) {
 
-          try {
-            this.destinatario
-              .comNome(venda.RAZAO)
-              .comCodigo(venda.CODCLI)
-              .comRegistroNacional(venda.CGC)
-              .comInscricaoEstadual(venda.INSC)
-              .comTelefone(venda.FONE)
-              .comEmail(venda.EMAIL)
-              .comEndereco(
-                new Endereco()
-                  .comLogradouro(transito.ENDERECO)
-                  .comNumero(transito.NUMERO)
-                  .comComplemento(transito.COMPLEMENTO)
-                  .comCep(transito.CEP)
-                  .comBairro(transito.BAIRRO)
-                  .comMunicipio(transito.CIDADE)
-                  .comCidade(transito.CIDADE)
-                  .comUf(transito.ESTADO)
-                  .comCodMunicipio(transito.CODIBGE)
-              );
+            try {
+              this.destinatario
+                .comNome(venda.RAZAO)
+                .comCodigo(venda.CODCLI)
+                .comRegistroNacional(venda.CGC)
+                .comInscricaoEstadual(venda.INSC)
+                .comTelefone(venda.FONE)
+                .comEmail(venda.EMAIL)
+                .comEndereco(
+                  new Endereco()
+                    .comLogradouro(transito.ENDERECO)
+                    .comNumero(transito.NUMERO)
+                    .comComplemento(transito.COMPLEMENTO)
+                    .comCep(transito.CEP)
+                    .comBairro(transito.BAIRRO)
+                    .comMunicipio(transito.CIDADE)
+                    .comCidade(transito.CIDADE)
+                    .comUf(transito.ESTADO)
+                    .comCodMunicipio(transito.CODIBGE)
+                );
+            }
+            catch (error) {
+              observable.error(error);
+            }
+
           }
-          catch (error) {
-            observable.error(error);
+          else {
+            
+
+
+            this.permiteNfe = false;
+
+            try {
+              this.destinatario
+                .comNome(venda.RAZAO)
+                .comCodigo(venda.CODCLI)
+                //.comRegistroNacional(venda.CGC)
+                //.comInscricaoEstadual(venda.INSC)
+                //.comTelefone(venda.FONE)
+                //.comEmail(venda.EMAIL)
+                .comEndereco(
+                  new Endereco()
+                    //.comLogradouro(transito.ENDERECO)
+                    //.comNumero(transito.NUMERO)
+                    //.comComplemento(transito.COMPLEMENTO)
+                    //.comCep(transito.CEP)
+                    //.comBairro(transito.BAIRRO)
+                    //.comMunicipio(transito.CIDADE)
+                    //.comCidade(transito.CIDADE)
+                    .comUf("SP")
+                    //.comCodMunicipio(transito.CODIBGE)
+                );
+            }
+            catch (error) {
+              observable.error(error);
+            }
+
+
           }
+
 
 
           this.transportador
@@ -636,6 +681,7 @@ export class ModalNfeComponent implements OnInit {
 
               // this.caixaService.getTributosIbpt(item.NCM, this.danfe.getDestinatario().getEndereco().getUf().toLowerCase()).subscribe(tributos => {
               // })
+              let UF = this.danfe.getDestinatario().getEndereco().getUf() || 'SP'
               this.danfe.adicionarItem(
                 new Item()
                   .comCodigo(item.CODPROFISCAL)
@@ -643,13 +689,13 @@ export class ModalNfeComponent implements OnInit {
                   .comDescricao(item.DESCRICAO)
                   .comNcmSh(item.NCM)
                   .comIcms(icms)
-                  .comTributoAproximado(item.BASECALC,this.danfe.getDestinatario().getEndereco().getUf(),item.NCM,item.ORIG)
+                  .comTributoAproximado(item.BASECALC,UF,item.NCM,item.ORIG)
                   // .comOCst('020')
                   // .comCfop('6101')
                   .comUnidade(item.UNIDADE)
                   .comQuantidade(item.QTDFISCAL)
-                  .comValorDaCofins(item.BASECALC)
-                  .comValorDoPis(item.BASECALC)
+                  .comValorDaCofins(item.BASECALC - icms.getValorDoIcms(), 3, '01')
+                  .comValorDoPis(item.BASECALC - icms.getValorDoIcms(), 0.65, '01')
                   .comValorUnitario(item.VALORUNITFISCAL)
                   .comValorDoFrete(item.FRETEPROD)
                   .comValorDoIpiDevolucao(
@@ -848,7 +894,426 @@ export class ModalNfeComponent implements OnInit {
     });
   }
 
-  enviaNota() {
+
+
+
+comunicaSat(comando):any {
+  return new Promise (function (resolve, reject)  {
+
+    const socketClient = net.connect(
+      { host: configSat.host, port: configSat.port },
+      () => {
+        //console.log("executa comando " + comando);
+
+      })
+
+      socketClient.on("data", data => {
+        let retorno = ini.parse(data.toString());
+        console.log(retorno)
+        if (retorno["Esperando por comandos."] == true) {
+          
+          console.log("tá esperando maluco")
+          socketClient.write(`SAT.${comando}\r\n.\r\n`);
+        }
+        else if (retorno["OK: Erro|Erro na abertura da porta de comunicacao com o S@T"] == true) {
+          reject(retorno);
+        }
+        else {
+          console.log("to no timaout") ;
+           resolve(retorno)
+           //socketClient.end();
+        }
+
+        //console.log( "retornou ", data.toString());
+      });
+      socketClient.on("error", error => {
+        console.log( "erro ", error.toString());
+        reject(error.toString());
+        //socketClient.end();
+      })
+  })
+
+}
+
+
+
+
+
+  
+
+  enviaCFe() { 
+    /*/  
+      inicializar o SAT
+      enviar o documento fical ao sat
+      pegar o retorno, e se correto pegar o numero do cupom e chave e gravar os dados
+      estando tudo certo fazer a impressão
+      desinicializar o SAT
+    /*/
+
+
+    //this.danfe.comNumero(numNota);
+    if (this.danfe.getImpostos().getValorDoIcms() > 0) {
+      this.tributos.push({
+        CODIGO: null,
+        CODDEC: null,
+        EMPRESA: this.empresa,
+        CODPARC: this.venda.CODCLI,
+        LCTO: this.venda.LCTO,
+        TIPOLCTO: "V",
+        DOCUMENTO: this.transito.toString(),
+        DATAEMISSAO: this.venda.DATA,
+        DATAVCTO: this.venda.DATA,
+        DATALIQUID: this.venda.DATA,
+        DEBITO: this.contasEmpresas[this.empresa].ICMSVENDA,
+        CREDITO: this.contasEmpresas[this.empresa].ICMSRECOLHER,
+        VALOR: this.danfe.getImpostos().getValorDoIcms(),
+        PROJECAO: 0,
+        OBS: "",
+        PERMITEAPAGA: null,
+        TIPOOPERACAO: 12,
+        TRAVACREDITO: null
+      });
+    }
+    const dados = {
+      EMPRESA: this.empresa, // EMPRESA
+      NOTA: this.danfe.getNumero(), // NOTA
+      DATA: dataFirebird(this.danfe.getDataDaEmissao()), // DATA
+      CODCLI: this.danfe.getDestinatario().getCodigo() || 1, // CODCLI
+      DT_EMISSAO: dataFirebird(this.danfe.getDataDaEmissao()), // DT_EMISSAO
+      DT_FISCAL: dataFirebird(this.danfe.getDataDaEmissao()), // DT_FISCAL
+      ESPECIE: 1, // ESPECIE
+      DESPACES: this.danfe.getOutrasDespesas(), // DESPACES
+      DESCONTO: this.danfe.getDesconto(), // DESCONTO
+      CODIGODEBARRAS: "", // CODIGODEBARRAS  -  TODO
+      FRETENOTA: this.danfe.getValorDoFrete(), // FRETENOTA
+      FRETEFOB: 0, // FRETEFOB
+      VPROD: this.danfe.getValorTotalDosProdutos(), // VPROD
+      BCICMS: this.danfe.getImpostos().getBaseDeCalculoDoIcms(), // BCICMS
+      VICMS: this.danfe.getImpostos().getValorDoIcms(), // VICMS
+      VICMSST: this.danfe.getImpostos().getValorDoIcmsSt(), // VICMSST
+      BCICMSST: this.danfe.getImpostos().getBaseDeCalculoDoIcmsSt(), // BCICMSST
+      VNF: this.danfe.getValorTotalDaNota(), // VNF
+      UF: this.danfe
+        .getDestinatario()
+        .getEndereco()
+        .getUf(), // UF
+      CHAVE: this.danfe.getChaveDeAcesso(), // CHAVE
+      TOMADORFRETE: this.danfe.getCodigoModalidadeDoFrete(), // TOMADORFRETE
+      MODELO: "58", // MODELO
+      SERIE: '', // SERIE
+      CODPARC: this.danfe.getDestinatario().getCodigo() || 1, // CODPARC
+      PROTOCOLO: this.danfe.getProtocolo().getCodigo(), // PROTOCOLO
+      PROTOCOLOCANCELA: "", // PROTOCOLOCANCELA,
+      ARQUIVO: "",
+      VPIS: this.danfe.getImpostos().getValorDoPis().valor, // VPIS
+      VCOFINS: this.danfe.getImpostos().getValorDaCofins().valor // VCOFINS
+    };
+    const itensx = [];
+    
+    function sign () {
+      return configSat.signAC ;
+    };
+
+    for (const item of this.danfe.getItens()) {
+      // insert into PRODSAIDA (VBCICMS,PICMSST,VBCICMSST,VICMS,VICMSST,PICMS,CFOP,NCM,ORIG,CEST,SITTRIB)
+      itensx.push({
+        CODPRODVENDA: item.getCodProdVenda(), // CODPRODVENDA
+        VBCICMS: item.getIcms().getBaseDeCalculoDoIcms() || "null", // VBCICMS
+        PICMSST: item.getIcms().getAliquotaDoIcmsSt() || "null", // PICMSST
+        VBCICMSST: item.getIcms().getBaseDeCalculoDoIcmsSt() || "null", // VBCICMSST
+        VICMS: item.getIcms().getValorDoIcms() || "null", // VICMS
+        VICMSST: item.getIcms().getValorDoIcmsSt() || "null", // VICMSST
+        PICMS: item.getIcms().getAliquotaDoIcms() || "null", // PICMS
+        CFOP: item.getIcms().getCfop(), // CFOP
+        NCM: item.getNcmSh(), // NCM
+        ORIG: item.getIcms().getOrigem(), // ORIG
+        CEST: item.getCodigoCest() || "null", // CEST
+        SITTRIB: item.getIcms().getSituacaoTributaria(), // SITTRIB
+        PPIS: item.getPercentualDoPis(), //PPIS
+        CSTPIS: item.getCstDoPis(), //CSTPIS
+        VPIS: item.getValorDoPis(), //VPIS
+        VBCPIS: item.getBaseDeCalculoDoPis(),// VBCPIS
+        PCOFINS: item.getPercentualDaCofins(), //PPIS
+        CSTCOFINS: item.getCstDaCofins(), //CSTPIS
+        VCOFINS: item.getValorDaCofins(), //VPIS,
+        VBCCOFINS: item.getBaseDeCalculoDaCofins() // VBCCOFINS
+      });
+    }
+    console.log("gravaNfe");
+    console.log(this.transito);
+
+
+    let impostoFed = this.danfe.getItens().reduce(function (a, item) {
+      console.log('reducefed', item.getTributoAproximadoFederal())
+      return a.soma(item.getTributoAproximadoFederal());
+    }, new dinheiro(0))
+    let impostoEst = this.danfe.getItens().reduce(function (a, item) {
+      console.log('reduce est', item.getTributoAproximadoEstadual())
+      return a.soma(item.getTributoAproximadoEstadual());
+    }, new dinheiro(0))
+    let impostoMun = this.danfe.getItens().reduce(function (a, item) {
+      console.log('reduce mun', item.getTributoAproximadoMunicipal())
+      return a.soma(item.getTributoAproximadoMunicipal());
+    }, new dinheiro(0))
+
+
+    let imposto = impostoFed.soma(impostoEst).soma(impostoMun)
+
+    const Geraini = {
+      infCFe: {
+        versao: "0.07"
+      },
+      Identificacao: {
+        CNPJ: this.nota.getEmitente().getRegistroNacional(),
+        signAC: sign(),
+        numeroCaixa: 1
+      },
+
+      Emitente: {
+        CNPJ: this.nota.getEmitente().getRegistroNacional(),
+        // xNome: this.nota.getEmitente().getNome(),
+        // xFant: this.nota.getEmitente().getNome(),
+        IE: this.nota.getEmitente().getInscricaoEstadual(),
+        indRatISSQN: "",
+        IM: "",
+        cRegTrib: this.nota.getEmitente().getCodigoRegimeTributario(),
+
+      },
+      Destinatario: {},
+      Total: {
+        vICMS: this.nota.getImpostos().getValorDoIcms(),
+        vProd: this.nota.getValorTotalDosProdutos(),
+        vDesc: this.nota.getDesconto(),
+        vPIS: this.nota.getImpostos().getValorDoPis().valor || 0,
+        vCOFINS: this.nota.getImpostos().getValorDaCofins().valor || 0,
+        vPISST: 0, // ver pis ST
+        vCOFINSST: 0, //ver confis ST
+        vOutro: this.nota.getOutrasDespesas(),
+        vCFe: this.nota.getValorTotalDaNota(),
+        vCFeLei12741: imposto.valor ,
+        vBC: this.nota.getImpostos().getBaseDeCalculoDoIcms(),
+        vISS: 0,
+        vAcresSubtot:0,
+        vDescSubtot:0,
+        vTroco:0
+      },
+      DadosAdicionais: {
+        infCpl: ""
+        // pgtoavista +';'+ infoAdic+ '
+      }
+    };
+
+    if (this.permiteNfe) {
+      Geraini.Destinatario = {
+          CNPJCPF: this.nota.getDestinatario().getRegistroNacional(),
+          xNome: this.nota.getDestinatario().getNome(),
+    }
+  };
+
+
+    const pagtos = this.nota.getPagamento();
+    if (pagtos.length) {
+    for (let i = 0; i < pagtos.length; i++) {
+      console.log (pagtos[i])
+      Geraini["Pagto" + zeroEsq(i + 1, 3, 0)] = {
+        cMP: "01",
+        vMP: pagtos[i].getValor(),
+        cAdmC: ""
+      };
+    }
+  }
+  else {
+    Geraini["Pagto001"] = {
+      cMP: "01",
+      vMP: this.nota.getValorTotalDosProdutos(),
+      cAdmC: ""
+    }
+  }
+
+    const itens = this.nota.getItens();
+    for (let i = 0; i < itens.length; i++) {
+      Geraini["Produto" + zeroEsq(i + 1, 3, 0)] = {
+        cProd: itens[i].getCodigo(),
+        infAdProd: "", // ** TODO: criar campo
+//          cEAN: itens[i].getCodigoDeBarras(),
+        xProd: itens[i].getDescricao(),
+        NCM: itens[i].getNcmSh(),
+        CEST: "",
+        CFOP: itens[i].getIcms().getCfop(),
+        uCom: itens[i].getUnidade(),
+        Combustivel: 0,
+        qCom: itens[i].getQuantidade(),
+        vUnCom: itens[i].getValorUnitario(),
+        vProd: itens[i].getValorTotal(),
+        indRegra: "A",
+        vDesc: 0,
+        vOutro: 0,
+        vItem12741: (itens[i].getTributoAproximadoFederal()+
+        itens[i].getTributoAproximadoEstadual()+
+        itens[i].getTributoAproximadoMunicipal()).toFixed(2), // ** TODO: pegar o valor dos tributos.
+        vItem: itens[i].getValorUnitario(),
+        vRatDesc:0,
+        vRatAcr:0
+      };
+
+      Geraini["ICMS" + zeroEsq(i + 1, 3, 0)] = {
+        orig: itens[i].getIcms().getOrigem(),
+        CST:  
+           this.nota.getEmitente().getCodigoRegimeTributario() === "1"
+             ? ""
+            : itens[i].getIcms().getSituacaoTributaria(),
+        CSOSN:
+          this.nota.getEmitente().getCodigoRegimeTributario() === "1"
+            ? itens[i].getIcms().getSituacaoTributaria()
+            : "",
+        pICMS: itens[i].getIcms().getAliquotaDoIcms(),
+        //vICMS: itens[i].getIcms().getValorDoIcms()
+      };
+
+
+
+      Geraini["PIS" + zeroEsq(i + 1, 3, 0)] = {
+        CST: itens[i].getCstDoPis(),
+        vBC: itens[i].getBaseDeCalculoDoPis(),
+        pPIS: itens[i].getPercentualDoPis()/100,
+        //vPIS: itens[i].getValorDoPis(),
+        qBCProd:"",
+        vAliqProd:""
+      };
+
+
+
+      Geraini["COFINS" + zeroEsq(i + 1, 3, 0)] = {
+        CST: itens[i].getCstDaCofins(),
+        vBC: itens[i].getBaseDeCalculoDaCofins(),
+        pCOFINS: itens[i].getPercentualDaCofins()/100,
+        //vCOFINS: itens[i].getValorDaCofins(),
+        qBCProd:"",
+        vAliqProd:""
+
+      };
+    }
+
+    // grava o arquivo ini
+    console.log(Geraini)
+    const textoini: string = ini.stringify(Geraini);
+
+    let cupomsat = textoini.replace('"','').replace('"','') 
+    let arq = 'Arqs\\SAT\\Vendas\\18477591000158\\202103\\AD35210318477591000158590005782210000090809392.xml';
+
+    this.comunicaSat("Inicializar").then(result => {
+       console.log(new Date() +" iniciou "  )
+       console.log(result)
+
+      return this.comunicaSat(`CriarEnviarCFe(${cupomsat})`)
+
+      }).then(result => {
+        let arq = result.ENVIO.Arquivo;
+        dados.NOTA = arq.slice( -17,-11);
+        dados.MODELO = "59";
+        dados.PROTOCOLO = result.ENVIO.NumeroSessao;
+        dados.CHAVE = arq.slice( -48,-4);
+        dados.SERIE = null,
+        console.log("antes de gravar a nota")
+        this.caixaService
+        .gravaNfe(dados, this.tributos, itensx, this.transito.TRANSITO)
+        .subscribe(resposta => {
+          console.log(resposta);
+          this.comunicaSat(`ImprimirExtratoVenda(${configSat.folder+arq.split("\\").join("\\\\")})`).then(result => {
+            console.log(result)
+            return this.comunicaSat("Desinicializar")
+            //GerarImpressaoFiscalMFe
+          }).then(result => {
+            console.log("desinicializou")
+            alert("cupom emitido com sucesso");
+            this.dialogRef.close(this.transito);
+          })
+        }, error => { alert("erros no processo, cupom cancelado"); return this.comunicaSat(`CancelarCFe(${configSat.folder+arq.split("\\").join("\\\\")})`)})})
+      .catch(error => {
+        alert(Object.keys(error))
+      })
+    // const socketClient = net.connect(
+    //   { host: "localhost", port: 3434 },
+    //   () => {
+    //     console.log("executa comando");
+    //     socketClient.write(
+    //       `SAT.CriarEnviarCFe("${xxx}")\r\n.\r\n`
+    //     );
+    //     socketClient.on("data", data => {
+    //       console.log(data.toString());
+    //       this.leituraRetornoSAT(dados,itensx, data.toString());
+    //     });
+
+    // });
+  }
+  leituraRetornoSAT = function (dados, itens, res) {
+    console.log("chamou leitura retorno");
+
+    const nota = this.nota.getNumero();
+    const retorno = ini.parse(res);
+
+    console.log(retorno);
+
+
+    if (retorno.ERRO) {
+      alert(retorno.ERRO);
+    }
+    if (retorno.Resultado) {
+      console.log(retorno)
+    }
+    else if (retorno.Retorno) {
+      if (retorno.Retorno.XMotivo === "Autorizado o uso da NF-e") {
+        this.caixaService
+        .gravaNfe(dados, this.tributos, itens, this.transito.TRANSITO)
+        .subscribe(resposta => {
+          console.log(resposta);
+        }).th
+
+      } else {
+        alert(retorno.RETORNO.XMotivo);
+      }
+    }
+    console.log(retorno);
+    // });
+  };
+  //  myPromise = new Promise(function(myResolve, myReject) {
+  //   // "Producing Code" (May take some time)
+    
+  //     myResolve(); // when successful
+  //     myReject();  // when error
+  //   });
+
+  
+  imprimeCFe() {
+
+    let caminhopasta = "D:\\ACBrMonitorPLUS\\";
+
+    const socketClient = net.connect(
+      
+      { host: "localhost", port: 3434 },
+      () => {
+        console.log("executa comando");
+        socketClient.write( `SAT.CancelarCFe(${caminhopasta}Arqs\\SAT\\Vendas\\18477591000158\\202103\\AD35210318477591000158590005782210000247465389.xml)\r\n.\r\n`
+        //  `SAT.GerarImpressaoFiscalMFe("D:\\ACBrMonitorPLUS\\Arqs\\SAT\\Vendas\\18477591000158\\202102\\AD35210218477591000158590005782210000035742903.xml")\r\n.\r\n`
+        );
+        socketClient.on("data", data => {
+          console.log(data.toString());
+          this.leituraRetorno(data.toString());
+        });
+      }
+    );
+
+
+
+  }
+
+
+
+
+
+
+
+  enviaNFe() {
     this.caixaService.getNumNota(this.empresa).subscribe(numNota => {
       console.log("numNota", numNota);
       this.danfe.comNumero(numNota);
@@ -891,6 +1356,9 @@ export class ModalNfeComponent implements OnInit {
         VPROD: this.danfe.getValorTotalDosProdutos(), // VPROD
         BCICMS: this.danfe.getImpostos().getBaseDeCalculoDoIcms(), // BCICMS
         VICMS: this.danfe.getImpostos().getValorDoIcms(), // VICMS
+        
+
+        // *****
         VICMSST: this.danfe.getImpostos().getValorDoIcmsSt(), // VICMSST
         BCICMSST: this.danfe.getImpostos().getBaseDeCalculoDoIcmsSt(), // BCICMSST
         VNF: this.danfe.getValorTotalDaNota(), // VNF
@@ -904,7 +1372,9 @@ export class ModalNfeComponent implements OnInit {
         SERIE: this.danfe.getSerie(), // SERIE
         CODPARC: this.danfe.getDestinatario().getCodigo(), // CODPARC
         PROTOCOLO: this.danfe.getProtocolo().getCodigo(), // PROTOCOLO
-        PROTOCOLOCANCELA: "" // PROTOCOLOCANCELA
+        PROTOCOLOCANCELA: "", // PROTOCOLOCANCELA
+        VPIS: this.danfe.getImpostos().getValorDoIcms(), // VPIS
+        VCOFINS: this.danfe.getImpostos().getValorDaCofins().valor // VCOFINS
       };
       const itens = [];
       for (const item of this.danfe.getItens()) {
@@ -921,10 +1391,18 @@ export class ModalNfeComponent implements OnInit {
           NCM: item.getNcmSh(), // NCM
           ORIG: item.getIcms().getOrigem(), // ORIG
           CEST: item.getCodigoCest() || "null", // CEST
-          SITTRIB: item.getIcms().getSituacaoTributaria() // SITTRIB
+          SITTRIB: item.getIcms().getSituacaoTributaria(), // SITTRIB
+          PPIS: item.getPercentualDoPis(), //PPIS
+          CSTPIS: item.getCstDoPis(), //CSTPIS
+          VPIS: item.getValorDoPis(), //VPIS
+          PCOFINS: item.getPercentualDaCofins(), //PPIS
+          CSTCOFINS: item.getCstDaCofins(), //CSTPIS
+          VCOFINS: item.getValorDaCofins() //VPIS
         });
       }
       console.log("gravaNfe");
+      console.log(dados);
+      console.log(itens);
       console.log(this.transito);
       this.caixaService
         .gravaNfe(dados, this.tributos, itens, this.transito.TRANSITO)
@@ -1301,7 +1779,7 @@ export class ModalNfeComponent implements OnInit {
           const textoini = ini.stringify(Geraini);
 
           const socketClient = net.connect(
-            { host: "localhost", port: 3434 },
+            { host: configSat.host, port: configSat.port},
             () => {
               console.log("executa comando");
               socketClient.write(
@@ -1357,10 +1835,17 @@ export class ModalNfeComponent implements OnInit {
     // }
     const nota = this.nota.getNumero();
     const retorno = ini.parse(res);
+
+    console.log(retorno);
+
+
     if (retorno.ERRO) {
       alert(retorno.ERRO);
     }
-    if (retorno.Retorno) {
+    if (retorno.Resultado) {
+      console.log(retorno)
+    }
+    else if (retorno.Retorno) {
       if (retorno.Retorno.XMotivo === "Autorizado o uso da NF-e") {
         const protocoloretorno = retorno["NFe" + nota].nProt;
         const chave = retorno["NFe" + nota].chNFe;

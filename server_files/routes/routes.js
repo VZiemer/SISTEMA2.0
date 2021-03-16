@@ -4,7 +4,7 @@ function converteData(texto) {
   }
   var data = texto
     .match(/(\d{2,4})(\/|-|\.)(\d{2})\2(\d{2,4})/)
-    .filter(function (elem, index, array) {
+    .filter(function(elem, index, array) {
       return Number(elem);
     });
   if (data[2].length === 4) {
@@ -33,13 +33,25 @@ function dataFirebird(data) {
 const routes = require("express").Router();
 //biblioteca de comunicação com Firebird
 const Firebird = require("node-firebird");
+// const options = {
+//   host: "sistema.florestalferragens.com.br",
+//   port: 3050,
+//   database: "c:\\bessani softwares\\florestal\\base\\estoque.fdb",
+//   user: "SYSDBA",
+//   password: "masterkey"
+// };
+
+
+
 const options = {
-  host: "sistema.florestalferragens.com.br",
+  host: "127.0.0.1",
   port: 3050,
-  database: "c:\\bessani softwares\\florestal\\base\\estoque.fdb",
+  database: "d:\\estoque.fdb",
   user: "SYSDBA",
   password: "masterkey"
 };
+
+
 //cria a conexão com o banco
 const estoque = Firebird.pool(15, options);
 
@@ -63,12 +75,12 @@ routes.route("/produto").get((req, res) => {
         `;
 
   //Consulta ao firebird
-  estoque.get(function (err, db) {
+  estoque.get(function(err, db) {
     if (err) throw err;
     // db = DATABASE
-    db.query(queryString, function (err, result) {
+    db.query(queryString, function(err, result) {
       // IMPORTANT: close the connection
-      db.detach(function () {
+      db.detach(function() {
         console.log("retornou produtos");
         res.status(200).json(result);
       });
@@ -81,14 +93,14 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `select CODIGO,DESCRICAO,QTD,UNIDADE,PRVENDA AS VALOR from produto where codigo = ${req.params.id}`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
-          db.detach(function () {
+          db.detach(function() {
             console.log("retornou", result);
             res.status(200).json(result[0]);
           });
@@ -102,15 +114,15 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `update produto set DESCRICAO=${req.body.descricao}  where codigo = ${req.params.id}`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
           if (err) res.status(500).send(err);
-          db.detach(function () {
+          db.detach(function() {
             res.status(200).json(result);
           });
         }
@@ -129,170 +141,74 @@ routes.route("/confirmavenda").post((req, res) => {
   const sql = `execute block as begin
       update venda set status = 'F', empresa= ${empresa} where VENDA.LCTO = ${
     venda.LCTO
-    };
-
+  };
+      ${cartao
+        .map((item, i) => {
+          console.log("cartao", item);
+          const string = `INSERT INTO CARTAO
+        (ID, LCTO, ESTABELECIMENTO, ADQUIRENTE, BANDEIRA, PARCELAS, TID, AUTORIZACAO)
+        VALUES
+        (${item.ID},${item.LCTO},${item.ESTABELECIMENTO},${item.ADQUIRENTE},'${item.BANDEIRA}',${item.PARCELAS},${item.TID},${item.AUTORIZACAO});
+        `;
+          return string;
+        })
+        .join("")}
         ${boleto
-      .map((item, i) => {
-        console.log("cartao", item);
-        const string = `INSERT INTO BOLETO
+          .map((item, i) => {
+            console.log("cartao", item);
+            const string = `INSERT INTO BOLETO
           (CODIGO, STATUS, DOCUMENTO, LCTO, VALOR, VENCIMENTO)
           VALUES
           (${item.CODIGO},'${item.STATUS}','${item.DOCUMENTO}',${item.LCTO},'${item.VALOR.valor}',${dataFirebird(item.VENCIMENTO)});
           `;
-        return string;
-      })
-      .join("")}
+            return string;
+          })
+          .join("")}
       ${pagamentos
-      .map((item, i) => {
-        let string = `INSERT INTO DEUS
-        (CODIGO, CODDEC, EMPRESA, CODPARC, LCTO, TIPOLCTO, DOCUMENTO, DATAEMISSAO, DATAVCTO, DATALIQUID, DEBITO, CREDITO, VALOR, PROJECAO, OBS,PERMITEAPAGA,TIPOOPERACAO,TRAVACREDITO,TARIFA)
+        .map((item, i) => {
+          const string = `INSERT INTO DEUS
+        (CODIGO, CODDEC, EMPRESA, CODPARC, LCTO, TIPOLCTO, DOCUMENTO, DATAEMISSAO, DATAVCTO, DATALIQUID, DEBITO, CREDITO, VALOR, PROJECAO, OBS,PERMITEAPAGA,TIPOOPERACAO,TRAVACREDITO)
         VALUES
         (${item.CODIGO},${
           item.CODDEC //deixa o coddec nulo na operação
-          // ultimoDoc === item.DOCUMENTO
-          //   ? `(select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador}`
-          //   : item.CODDEC
+            // ultimoDoc === item.DOCUMENTO
+            //   ? `(select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador}`
+            //   : item.CODDEC
           },${item.EMPRESA},${item.CODPARC},${item.LCTO},'${item.TIPOLCTO}','${
-          item.DOCUMENTO
+            item.DOCUMENTO
           }',${dataFirebird(item.DATAEMISSAO)},${dataFirebird(
             item.DATAVCTO
           )},${dataFirebird(item.DATALIQUID)},${item.DEBITO},${item.CREDITO},${
-          item.VALOR.valor
+            item.VALOR.valor
           },${item.PROJECAO},'${item.OBS}',${item.PERMITEAPAGA},${
-          item.TIPOOPERACAO
-          },${item.TRAVACREDITO},${item.TARIFA.valor});`;
-
-
-        if (item.hasOwnProperty('CARTAO')) {
-          string += item.CARTAO.map(itemcartao => {
-            return `INSERT INTO CARTAO
-              (ID, LCTO, ESTABELECIMENTO, ADQUIRENTE, BANDEIRA, PARCELAS, TID, AUTORIZACAO,VENDA,TARIFA,VALOR)
-              VALUES
-              (${itemcartao.ID},(select gen_id(gen_codigo_deus,0) from rdb$database),${itemcartao.ESTABELECIMENTO},${itemcartao.ADQUIRENTE},'${itemcartao.BANDEIRA}',${itemcartao.PARCELAS},${itemcartao.TID},${itemcartao.AUTORIZACAO},${item.LCTO},${itemcartao.TARIFA},${itemcartao.VALOR});`
-          }).join("")
-        }
-
-
-
-        item.DOCUMENTO === ultimoDoc ? acumulador++ : (acumulador = 0);
-        ultimoDoc = item.DOCUMENTO;
-
-        return string;
-      })
-      .join("")}
+            item.TIPOOPERACAO
+          },${item.TRAVACREDITO});
+        `;
+          item.DOCUMENTO === ultimoDoc ? acumulador++ : (acumulador = 0);
+          ultimoDoc = item.DOCUMENTO;
+          return string;
+        })
+        .join("")}
       end;`;
   console.log(sql);
-  estoque.get(function (err, db) {
-    if (err) throw sql;
-    // res.status(200).send({ sql: sql });
+  estoque.get(function(err, db) {
+    if (err) throw err;
     // db = DATABASE
-    db.execute(sql, function (err, result) {
+    db.execute(sql, function(err, result) {
       // IMPORTANT: close the connection
-      db.detach(function () {
+      db.detach(function() {
         res.status(200).send({ sql: sql });
       });
     });
   });
 });
-
-
-
-
-
-routes.route("/lancaEntradaCeld").post((req, res) => {
-  let pagamentos = req.body.pagamentos;
-  let acumulador = -1;
-  let ultimoDoc = "";
-  const sql = `execute block as begin
-
-      ${pagamentos
-      .map((item, i) => {
-        let string;
-        // if (item.CODIGO != 'REGCOMP') {
-        string = `UPDATE OR INSERT INTO DEUS
-          (CODIGO, CODDEC, EMPRESA, CODPARC, LCTO, TIPOLCTO, DOCUMENTO, DATAEMISSAO, DATAVCTO, DATALIQUID, DEBITO, CREDITO, VALOR, PROJECAO, OBS,PERMITEAPAGA)
-          VALUES
-          (${item.CODIGO},
-            ${item.CODDEC},
-            ${item.EMPRESA},${item.CODPARC},${item.LCTO},'${item.TIPOLCTO}','${
-          item.DOCUMENTO
-          }',${dataFirebird(item.DATAEMISSAO)},${dataFirebird(
-            item.DATAVCTO
-          )},${dataFirebird(item.DATALIQUID)},${item.DEBITO},${item.CREDITO},${
-          item.VALOR
-          },${item.PROJECAO},'${item.OBS}',${item.PERMITEAPAGA}); 
-            ${item.CODIGO ?
-
-            `INSERT INTO COMPENSACAO
-              (LCTOVENDA, CODDEUS,CODLIQUIDACAO, VLBRUTO, VLLIQUIDO, TARIFA, TAXACELD)
-              VALUES
-              (${item.LCTO},${item.CODIGO},(select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador},'${item.VALOR}','${item.VALOR - item.TARIFA - item.TAXACELD}',${item.TARIFA},'${item.TAXACELD}');`
-            : ``
-          }
-          `;
-        item.DOCUMENTO === ultimoDoc ? acumulador++ : '';
-        ultimoDoc = item.DOCUMENTO;
-
-        // }
-        // else {
-        //   string = `UPDATE COMPENSACAO SET CODCOMPENSACAO = (select gen_id(gen_codigo_deus,0) from rdb$database)-${acumulador} WHERE CODIGO IN (${item.REGISTROSCOMPENSACAO.toString()}); `;
-        // }
-        if (item.hasOwnProperty('REGISTROSCOMPENSACAO')) {
-          string += `UPDATE COMPENSACAO SET CODCOMPENSACAO = (select gen_id(gen_codigo_deus,0) from rdb$database) WHERE CODIGO IN (${item.REGISTROSCOMPENSACAO.toString()}); `;
-
-        }
-
-        return string;
-      })
-      .join("")}
-      end;`;
-  console.log(sql);
-  // res.status(200).send({ sql: sql });
-  estoque.get(function (err, db) {
-    if (err) throw sql;
-    db.execute(sql, function (err, result) {
-      db.detach(function () {
-        res.status(200).send({ sql: sql });
-      });
-    });
-  });
-});
-
-routes
-  .route("/compensacao")
-  //buscas
-  .get((req, res) => {
-    //Consulta ao firebird
-    estoque.get(function (err, db) {
-      if (err) throw err;
-      // db = DATABASE
-      db.query(
-        `select
-        3 as empresa,'' as obs,c.codigo,c.lctovenda,c.coddeus,c.vlbruto,c.vlliquido,c.tarifa,c.taxaceld,c.codparc,
-        cli.fantasia
-        from compensacao c
-        join cliente cli on cli.codigo = c.codparc
-        where  c.codcompensacao is null`,
-        function (err, result) {
-          // IMPORTANT: close the connection
-          db.detach(function () {
-            console.log("retornou", result);
-            res.status(200).json(result);
-          });
-        }
-      );
-    });
-  });
-
-
-
 
 routes
   .route("/venda/:id")
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
@@ -312,9 +228,9 @@ routes
         left join transp on tr.codtransp = transp.codigo
         left join prazocompra on v.cdcondpagto = prazocompra.codigo
         where lcto = ${req.params.id} order by tr.documento`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
-          db.detach(function () {
+          db.detach(function() {
             console.log("retornou", result);
             res.status(200).json(result);
           });
@@ -327,7 +243,7 @@ routes
   //buscas
   .post((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       console.log("insere prodvenda");
       if (err) throw err;
       // db = DATABASE
@@ -336,7 +252,7 @@ routes
         left join pacote on pacote.id_produto = produto.codigo and pacote.ativo = 1 and pacote.estoque=3
         where produto.codbar=${req.body.id}
         group by codigo,unidade,valor,descricao`,
-        function (err, result) {
+        function(err, result) {
           console.log(result);
           if (result[0].SUM && result[0].SUM >= req.body.qtd) {
             console.log("sum maior");
@@ -350,7 +266,7 @@ routes
                 id_transito_s=(select id_transito from transito where documento = ${req.body.venda} and tipo=5)
                 WHERE pacote.situacao =1 and pacote.estoque=3 AND pacote.ID_PRODUTO = ${req.body.id} ROWS ${req.body.qtd};
                 end;`,
-              function (err, result1) {
+              function(err, result1) {
                 console.log("inseriu na venda");
                 db.query(
                   `select PRODUTO.CODIGO,PRODUTO.CODINTERNO,PRODUTO.ALIQ,PRODUTO.IPI as aliqipi,PRODUTO.SITTRIB,PRODUTO.LOCAL,PRODUTO.DESCRICAO,
@@ -361,10 +277,10 @@ routes
                 FROM PRODVENDA
                 JOIN PRODUTO ON PRODVENDA.CODPRO = PRODUTO.CODIGO
                 WHERE PRODVENDA.codigo = (select gen_id(gen_codigo_prodvenda,0) from rdb$database)`,
-                  function (err, result2) {
+                  function(err, result2) {
                     if (err) throw err;
                     console.log("res2", result2);
-                    db.detach(function () {
+                    db.detach(function() {
                       res.status(200).json(result2[0]);
                     });
                   }
@@ -373,7 +289,7 @@ routes
             );
           } else {
             console.log("sum menor");
-            db.detach(function () {
+            db.detach(function() {
               console.log("retornou", result);
               res.status(404).send("quantidade não disponivel");
             });
@@ -388,15 +304,15 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
-      db.query(`select * from LISTAPRODVENDAS(${req.params.id})`, function (
+      db.query(`select * from LISTAPRODVENDAS(${req.params.id})`, function(
         err,
         result
       ) {
         // IMPORTANT: close the connection
-        db.detach(function () {
+        db.detach(function() {
           console.log("retornou", result);
           res.status(200).json(result);
         });
@@ -444,7 +360,7 @@ routes
       }
     }
 
-    console.log('sql', sql)
+    console.log('sql',sql)
     estoque.get(function (err, db) {
       if (err)
         throw err;
@@ -504,11 +420,11 @@ routes
         }
       }
     }
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, termos, function (err, result) {
+      db.query(sql, termos, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           res.json(result);
         });
       });
@@ -520,14 +436,14 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `select CODIGO,NOME from FUNC where codparc = ${req.params.id}`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
-          db.detach(function () {
+          db.detach(function() {
             console.log("retornou", result);
             res.status(200).json(result[0]);
           });
@@ -541,11 +457,11 @@ routes
   //buscas
   .get((req, res) => {
     var sql = `select * from PARAM_CARTAO WHERE ESTABELECIMENTO = ${req.query.estabelecimento}`;
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           console.log("buscou cartao");
           res.send(result);
         });
@@ -558,11 +474,11 @@ routes
   //buscas
   .get((req, res) => {
     var sql = `select * from PARAM_BOLETO WHERE ESTABELECIMENTO = ${req.query.estabelecimento}`;
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           console.log("buscou boletos");
           res.send(result);
         });
@@ -575,11 +491,11 @@ routes
   //buscas
   .get((req, res) => {
     var sql = `select p.crt,c.razao,c.cgc,c.insc,c.endereco,c.bairro,c.cep,c.fone,c.email,ci.nom_cidade as cidade,ci.codibge,ci.estado,p.icms_simples from param p  join cliente c on p.codparc = c.codigo  join cidade ci on c.codcidade = ci.cod_cidade where p.codigo=${req.query.empresa}`;
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           res.send(result[0]);
         });
       });
@@ -591,23 +507,23 @@ routes
   //buscas
   .get((req, res) => {
     var sql = `select p.crt,c.razao,c.cgc,c.insc,c.endereco,c.bairro,c.cep,c.fone,c.email,ci.nom_cidade as cidade,ci.codibge,ci.estado,p.icms_simples from param p  join cliente c on p.codparc = c.codigo  join cidade ci on c.codcidade = ci.cod_cidade where p.codigo=${req.query.empresa}`;
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(function (err, result) {
+      db.query(function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           res.send(result[0]);
         });
       });
     });
   });
 routes.route("/numnfe/:id").get((req, res) => {
-  estoque.get(function (err, db) {
+  estoque.get(function(err, db) {
     if (err) throw err;
     db.query(
       `SELECT FIRST 1 NOTA FROM SAIDA WHERE EMPRESA = ${req.params.id} ORDER BY NOTA DESC`,
-      function (err, result) {
-        db.detach(function () {
+      function(err, result) {
+        db.detach(function() {
           res.json(Number(result[0].NOTA) + 1);
         });
         // IMPORTANT: close the connection
@@ -622,31 +538,35 @@ routes
     let dados = req.body.dados;
     let itens = req.body.itens;
     let tributos = req.body.tributos;
+
+     let tipoDoc = dados.MODELO == 59 ? 'CUPOM' :  'NFE'
+
+
     console.log(dados);
     let sql = `execute block as begin
     update or insert into SAIDA
     (EMPRESA,NOTA,DATA,CODCLI,DT_EMISSAO,DT_FISCAL,ESPECIE,DESPACES,DESCONTO,CODIGOBARRAS,
       FRETENOTA,FRETEFOB,VPROD,BCICMS,VICMS,VICMSST,BCICMSST,VNF,UF,CHAVE,TOMADORFRETE,
-      MODELO,SERIE,CODPARC,PROTOCOLO,PROTOCOLOCANCELA)
+      MODELO,SERIE,CODPARC,PROTOCOLO,PROTOCOLOCANCELA,VPIS,VCOFINS)
     VALUES (${dados.EMPRESA},${dados.NOTA},${dados.DATA},${dados.CODCLI},${
       dados.DT_EMISSAO
-      },
+    },
       ${dados.DT_FISCAL},${dados.ESPECIE},${dados.DESPACES},${
       dados.DESCONTO
-      },'',
+    },'',
       ${dados.FRETENOTA},${dados.FRETEFOB},${dados.VPROD},${dados.BCICMS},
       ${dados.VICMS},${dados.VICMSST},${dados.BCICMSST},${dados.VNF},
       '${dados.UF}','${dados.CHAVE}',${dados.TOMADORFRETE},
       ${dados.MODELO},${dados.SERIE},${dados.CODPARC},'${dados.PROTOCOLO}','${
       dados.PROTOCOLOCANCELA
-      }')
+    }',${dados.VPIS || 0},${dados.VCOFINS || 0})
     MATCHING (EMPRESA,NOTA);
-    UPDATE TRANSITO SET NFE = ${dados.NOTA} WHERE ID_TRANSITO = ${
+    UPDATE TRANSITO SET ${tipoDoc} = ${dados.NOTA} WHERE ID_TRANSITO = ${
       req.body.transito
-      };
+    };
     ${itens
-        .map(
-          (item, i) => `
+      .map(
+        (item, i) => `
     update prodvenda set
     VBCICMS=${item.VBCICMS},
     PICMSST=${item.PICMSST},
@@ -658,20 +578,26 @@ routes
     NCM='${item.NCM}',
     ORIG=${item.ORIG},
     CEST='${item.CEST}',
-    SITTRIB='${item.SITTRIB}'
+    SITTRIB='${item.SITTRIB}',
+    VBCPIS=${item.VBCPIS || 0},
+    VBCCOFINS=${item.VBCCOFINS || 0},
+    VPIS=${item.VPIS || 0},
+    VCOFINS=${item.VCOFINS || 0},
+    PPIS=${item.PPIS || 0},
+    PCOFINS=${item.PCOFINS || 0}
     where CODIGO=${item.CODPRODVENDA};
   `
-        )
-        .join("")}
+      )
+      .join("")}
   end`;
     console.log(sql);
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
 
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         console.log("executou", result);
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           res.json({ resposta: "OK" });
         });
       });
@@ -691,19 +617,19 @@ routes
     '${dados.PROTOCOLO}','${dados.PROTOCOLOCANCELA}')
     MATCHING (EMPRESA,NOTA)`;
     console.log(sql);
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         console.log("gravou");
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           res.json("ok");
         });
       });
       // IMPORTANT: close the connection
     });
   });
-routes
+  routes
   .route("/numerocupom")
   // funçao da do cupom fiscal
   .post((req, res) => {
@@ -714,12 +640,12 @@ routes
     SET CUPOM = ${Number(dados.cupom)}
     where ID_TRANSITO = ${dados.transito}`;
     console.log(sql);
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         console.log("gravou");
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           res.json("ok");
         });
       });
@@ -731,15 +657,15 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `select codigo,sigla from tipooperacao where sigla <> ''`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
           if (err) res.status(500).send(err);
-          db.detach(function () {
+          db.detach(function() {
             res.status(200).json(result);
           });
         }
@@ -751,7 +677,7 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
@@ -759,10 +685,10 @@ routes
           select sum(valor) as valor,coddec, datavcto from deus where lcto=${req.query.lcto} and tipooperacao <> 5 group by deus.coddec ,deus.datavcto ) as deus
           join deus as dd on deus.coddec = dd.codigo
           join tipooperacao on dd.tipooperacao=tipooperacao.codigo`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
           if (err) res.status(500).send(err);
-          db.detach(function () {
+          db.detach(function() {
             res.status(200).json(result);
           });
         }
@@ -777,7 +703,7 @@ function converteData(texto) {
   }
   var data = texto
     .match(/(\d{2,4})(\/|-|\.)(\d{2})\2(\d{2,4})/)
-    .filter(function (elem, index, array) {
+    .filter(function(elem, index, array) {
       return Number(elem);
     });
   if (data[2].length === 4) {
@@ -822,12 +748,12 @@ routes.route("/produto").get((req, res) => {
         `;
 
   //Consulta ao firebird
-  estoque.get(function (err, db) {
+  estoque.get(function(err, db) {
     if (err) throw err;
     // db = DATABASE
-    db.query(queryString, function (err, result) {
+    db.query(queryString, function(err, result) {
       // IMPORTANT: close the connection
-      db.detach(function () {
+      db.detach(function() {
         console.log("retornou produtos");
         res.status(200).json(result);
       });
@@ -840,14 +766,14 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `select CODIGO,DESCRICAO,QTD,UNIDADE,PRVENDA AS VALOR from produto where codigo = ${req.params.id}`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
-          db.detach(function () {
+          db.detach(function() {
             console.log("retornou", result);
             res.status(200).json(result[0]);
           });
@@ -861,15 +787,15 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `update produto set DESCRICAO=${req.body.descricao}  where codigo = ${req.params.id}`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
           if (err) res.status(500).send(err);
-          db.detach(function () {
+          db.detach(function() {
             res.status(200).json(result);
           });
         }
@@ -887,14 +813,14 @@ routes
     let cliente = req.query.codcli ? `CODCLI= ${req.query.codcli}` : ` `;
     let where = status != ` ` || cliente != ` ` ? `where` : ` `;
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `select LCTO,CODCLI,NOMECLI,DATA,CODVEND,TOTAL,FRETE from VENDA ${where} ${status} ${cliente}`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
-          db.detach(function () {
+          db.detach(function() {
             console.log("retornou", result);
             res.status(200).json(result);
           });
@@ -905,12 +831,12 @@ routes
   //insere
   .post((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `insert into venda (codcli,codvend,data,status) values (${req.body.CODCLI},${req.body.CODVEND},current_date,'U') returning LCTO`,
-        function (err, result) {
+        function(err, result) {
           console.log(result);
           db.query(
             `select v.lcto,v.data,v.codcli,v.nomecli,v.empresa,v.codvend,v.frete,v.total,
@@ -926,10 +852,10 @@ routes
             left join transp on tr.codtransp = transp.codigo
             left join prazocompra on v.cdcondpagto = prazocompra.codigo
             where lcto =${result.LCTO} order by tr.id_transito`,
-            function (err, result1) {
+            function(err, result1) {
               console.log("result1", result1);
               // IMPORTANT: close the connection
-              db.detach(function () {
+              db.detach(function() {
                 console.log("retornou", result1);
                 res.status(200).json(result1);
               });
@@ -967,11 +893,11 @@ routes
         }
       }
     }
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, termos, function (err, result) {
+      db.query(sql, termos, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           res.json(result);
         });
       });
@@ -983,14 +909,14 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `select CODIGO,RAZAO,CGC,INSC,LIBERAFAT,LIBERANP from CLIENTE where codigo = ${req.params.id}`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
-          db.detach(function () {
+          db.detach(function() {
             console.log("retornou", result);
             res.status(200).json(result[0]);
           });
@@ -1023,11 +949,11 @@ routes
         }
       }
     }
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, termos, function (err, result) {
+      db.query(sql, termos, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           res.json(result);
         });
       });
@@ -1039,14 +965,14 @@ routes
   //buscas
   .get((req, res) => {
     //Consulta ao firebird
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
       // db = DATABASE
       db.query(
         `select CODIGO,NOME from FUNC where codigo = ${req.params.id}`,
-        function (err, result) {
+        function(err, result) {
           // IMPORTANT: close the connection
-          db.detach(function () {
+          db.detach(function() {
             console.log("retornou", result);
             res.status(200).json(result[0]);
           });
@@ -1062,59 +988,34 @@ routes
     console.log("estou no /SaldoContaDataIni");
     var conta = req.query.conta;
     var dataInicio = req.query.dataInicio;
-    var parceiro = req.query.parceiro;
-    var parceirofiltradeus = ``;
-    
-    if (parceiro>1) { 
-      parceirofiltradeus = ` deus.codparc=${parceiro} and `;
-      parceirofiltracontas_saldo = `contas_saldo.codparc=${parceiro} and `
-      }
 
+    // BUSCA CONTAS PARA PAGMENTO DE TÍTULOS E DESPESAS SEPARADAS POR EMPRESA E TIPO PROJEÇÃO
 
-        // BUSCA CONTAS PARA PAGMENTO DE TÍTULOS E DESPESAS SEPARADAS POR EMPRESA E TIPO PROJEÇÃO
+    var sql = `
+      select  sum(uniao.valordebito) - sum(uniao.valorcredito) as saldo from (
+      select  contas.saldo as valorcredito, 0 as valordebito from contas
+      where contas.codigo=${conta}
 
-    var sql= `
-    
-    select (sum(uniao.saldobase) + sum(uniao.valor)) as saldo from
-    (
-    select 0 as saldobase, sum (case when deus.credito=${conta} then -deus.valor else deus.valor end)  as valor  from deus
+      union all
 
-    where
-     (${parceirofiltradeus}
-      deus.debito=${conta} and
-      deus.dataliquid is not null and
-      deus.dataliquid<${dataFirebird(dataInicio)} and
-      deus.dataliquid>= (select contas_saldo.datasaldo from contas_saldo where ${parceirofiltracontas_saldo} contas_saldo.conta=${conta})
-     )
-
-    or
-
-     (${parceirofiltradeus}
-      deus.credito=${conta} and
-      deus.dataliquid is not null and
-      deus.dataliquid<${dataFirebird(dataInicio)} and
-      deus.dataliquid>= (select contas_saldo.datasaldo from contas_saldo where ${parceirofiltracontas_saldo} contas_saldo.conta=${conta})
-     )
-
-    union
-
-    select contas_saldo.saldo as saldobase, 0 as valor from contas_saldo
-    where
-    ${parceirofiltracontas_saldo} 
-     contas_saldo.conta=${conta}           
-    ) as uniao  
-    
-    
-    `
-     
-
+      select sum(deus.valor) as valorcredito, 0 as valordebito from deus
+      where credito=${conta} and deus.dataliquid<${dataFirebird(
+      dataInicio
+    )} and deus.dataliquid>=(select contas.datasaldo from contas where contas.codigo=${conta})
+      union all
+      select 0 as valorcredito, sum(deus.valor) as valordebito from deus
+      where debito=${conta}  and deus.dataliquid<${dataFirebird(
+      dataInicio
+    )} and deus.dataliquid>=(select contas.datasaldo from contas where contas.codigo=${conta})
+      ) as uniao
+     `;
     console.log("sqlsaldo", sql);
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
 
-        db.detach(function () {
+        db.detach(function() {
           res.send(result);
         });
       });
@@ -1128,8 +1029,6 @@ routes
     console.log("estou no /SaldoConta");
     var conta = req.query.conta;
 
-
-    
     // BUSCA CONTAS PARA PAGMENTO DE TÍTULOS E DESPESAS SEPARADAS POR EMPRESA E TIPO PROJEÇÃO
 
     var sql = `
@@ -1147,12 +1046,12 @@ routes
       ) as uniao
      `;
     console.log("sqlsaldo", sql);
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
 
-        db.detach(function () {
+        db.detach(function() {
           res.send(result);
         });
       });
@@ -1228,7 +1127,7 @@ routes
 
 
 
-    if (parametroBusca == 1000) { tipoSelect = "," + codigoConta + "," }
+    if (parametroBusca == 1000) { tipoSelect= ","+codigoConta+","}
 
 
 
@@ -1241,12 +1140,12 @@ routes
       order by contas.descricao
      `;
     console.log("sql", sql);
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
 
-        db.detach(function () {
+        db.detach(function() {
           res.send(result);
         });
       });
@@ -1258,11 +1157,11 @@ routes
   //buscas
   .get((req, res) => {
     var sql = `select * from param`;
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           console.log("buscou param");
           res.send(result);
         });
@@ -1280,13 +1179,11 @@ routes
     var dataFim = req.query.dataFim;
     var empresa = req.query.empresa;
     var conta = req.query.conta;
-    var parceiro = req.query.parceiro;
     var whereDeus = ``;
-    var parceirofiltra = ``;
 
-    if (parceiro>1) { parceirofiltra = ` and uniao.codparc= ${parceiro} ` }
     if (paremetro == 1) { whereDeus = ` where uniao.tipolcto in ('E','D','F') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
-    if (paremetro == 2) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)} ${parceirofiltra}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)} ${parceirofiltra}) ` }
+
+    if (paremetro == 2) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) ` }
     if (paremetro == 3) { whereDeus = ` where ( uniao.empresa=${empresa} and uniao.credito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) or (uniao.empresa=${empresa} and uniao.debito=${conta} and uniao.dataliquid >=${dataFirebird(dataInicio)}) ` }
     if (paremetro == 5) { whereDeus = ` where uniao.tipolcto in ('V') and uniao.empresa=${empresa} and uniao.dataliquid is null and uniao.datavcto<=${dataFirebird(dataFim)} ` }
 
@@ -1306,9 +1203,7 @@ routes
   order by uniao.dataliquid, uniao.datavcto, uniao.codigo
 
   `
-    console.log('parceiro', parceiro)
     console.log('sql', sql)
-
 
     estoque.get(function (err, db) {
       if (err)
@@ -1344,11 +1239,11 @@ routes
       order by uniao.codigo
 
   `;
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           console.log("buscou lctodeus");
           res.send(result);
         });
@@ -1370,25 +1265,25 @@ routes.route("/Atualizadeuslcto").post((req, res) => {
                                  deus.dataliquid=${dataFirebird(dados[i].DATALIQUID)},
                                  deus.datavcto=${dataFirebird(dados[i].DATAVCTO)}
          where deus.codigo=${dados[i].CODIGO} ; `
-  }
-  sql += `end`
+    }
+    sql += `end`
 
-  console.log('sql', sql)
+    console.log('sql', sql)
 
-  estoque.get(function (err, db) {
-    if (err)
-      throw err;
-    db.query(sql, function (err, result) {
+    estoque.get(function (err, db) {
       if (err)
         throw err;
-      db.detach(function () {
-        console.log('buscou lctodeus')
-        res.send(result);
-      });
+      db.query(sql, function (err, result) {
+        if (err)
+          throw err;
+        db.detach(function () {
+          console.log('buscou lctodeus')
+          res.send(result);
+        });
 
+      });
     });
   });
-});
 
 
 routes.route("/Deletedeus").post((req, res) => {
@@ -1399,11 +1294,11 @@ routes.route("/Deletedeus").post((req, res) => {
 
   console.log("sql", sql);
 
-  estoque.get(function (err, db) {
+  estoque.get(function(err, db) {
     if (err) throw err;
-    db.query(sql, function (err, result) {
+    db.query(sql, function(err, result) {
       if (err) throw err;
-      db.detach(function () {
+      db.detach(function() {
         res.send(result);
       });
     });
@@ -1426,21 +1321,21 @@ routes.route("/Insertdeus").post((req, res) => {
     )},${dataFirebird(dados[i].DATAVCTO)},${dados[i].DEBITO},
           '${dados[i].DOCUMENTO}',${dados[i].EMPRESA},${dados[i].LCTO},'${
       dados[i].OBS
-      }',
+    }',
           ${dados[i].PROJECAO},'${dados[i].TIPOLCTO}',${dados[i].VALOR},${
       dados[i].PERMITEAPAGA
-      },${dados[i].TIPOOPERACAO});
+    },${dados[i].TIPOOPERACAO});
           `;
   }
   sql += `end`;
 
   console.log("sql", sql);
 
-  estoque.get(function (err, db) {
+  estoque.get(function(err, db) {
     if (err) throw err;
-    db.query(sql, function (err, result) {
+    db.query(sql, function(err, result) {
       if (err) throw err;
-      db.detach(function () {
+      db.detach(function() {
         console.log("buscou lctodeus");
         res.send(result);
       });
@@ -1459,11 +1354,11 @@ routes
     `;
 
     console.log("sql", sql);
-    estoque.get(function (err, db) {
+    estoque.get(function(err, db) {
       if (err) throw err;
-      db.query(sql, function (err, result) {
+      db.query(sql, function(err, result) {
         if (err) throw err;
-        db.detach(function () {
+        db.detach(function() {
           console.log("buscou deusGenerator");
           res.send(result);
         });
@@ -1471,46 +1366,17 @@ routes
     });
   });
 
-
-routes
-  .route("/taxasVendas")
-
-  .get((req, res) => {
-    var vendas = req.query.vendas;
-
-    var sql = `
-    select venda.lcto,venda.txceld,venda.empresa,venda.totalgeral,cartao.tarifa,cartao.valor,cartao.parcelas 
-    from venda
-    left join cartao on venda.lcto= cartao.venda
-    where 
-    venda.lcto in (${vendas})
-
-  `;
-    estoque.get(function (err, db) {
-      if (err) throw err;
-      db.query(sql, function (err, result) {
-        if (err) throw err;
-        db.detach(function () {
-          console.log("buscou lctodeus");
-          res.send(result);
-        });
-      });
-    });
-  });
-
-
-
 routes.route("/deuslcto").get((req, res) => {
   var sql = `
     select * from deus where codparc=19662 and documento=   '167007-3'
     `;
   //Consulta ao firebird
-  estoque.get(function (err, db) {
+  estoque.get(function(err, db) {
     if (err) throw err;
     // db = DATABASE
-    db.query(sql, function (err, result) {
+    db.query(sql, function(err, result) {
       // IMPORTANT: close the connection
-      db.detach(function () {
+      db.detach(function() {
         console.log("retornou", result);
         res.status(200).json(result[0]);
       });

@@ -1,9 +1,8 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { HttpHeaders } from "@angular/common/http";
 
 import { Observable } from "rxjs";
-import { catchError } from "rxjs/operators";
 import { Produto } from "../shared/models/produto";
 import { Venda } from "../shared/models/venda";
 import { Cliente } from "../shared/models/cliente";
@@ -11,7 +10,6 @@ import { Cliente } from "../shared/models/cliente";
 import { Param } from "../shared/models/param";
 import { Deus } from "../shared/models/deus";
 import { Vendedor } from "../shared/models/vendedor";
-// import { HttpErrorHandler, HandleError } from '';
 
 const httpOptions = {
   headers: new HttpHeaders({
