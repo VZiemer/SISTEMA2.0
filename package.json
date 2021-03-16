@@ -91,7 +91,7 @@
     "angular2-hotkeys": "^2.1.5",
     "electron-log": "^4.0.3",
     "electron-updater": "^4.2.0",
-    "ini": "^1.3.5",
+    "ini": "^1.3.6",
     "moment": "^2.24.0",
     "node-nfe": "^1.0.24"
   }
