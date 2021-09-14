@@ -9,7 +9,7 @@
   "devDependencies": {},
   "dependencies": {
     "body-parser": "^1.18.2",
-    "body-parser-xml": "^1.1.0",
+    "body-parser-xml": "^2.0.3",
     "cookie-parser": "^1.4.3",
     "encoding": "^0.1.12",
     "express": "^4.16.3",
