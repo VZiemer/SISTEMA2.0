@@ -2787,9 +2787,9 @@ decamelize@^1.1.0, decamelize@^1.1.1, decamelize@^1.1.2, decamelize@^1.2.0:
   integrity sha1-9lNNFRSCabIDUue+4m9QH5oZEpA=
 
 decode-uri-component@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
-  integrity sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.2.tgz#e69dbe25d37941171dd540e024c444cd5188e1e9"
+  integrity sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==
 
 decompress-response@^3.3.0:
   version "3.3.0"
@@ -6678,10 +6678,10 @@ node-libs-browser@^2.0.0:
     util "^0.11.0"
     vm-browserify "^1.0.1"
 
-node-nfe@^1.0.23:
-  version "1.0.23"
-  resolved "https://registry.yarnpkg.com/node-nfe/-/node-nfe-1.0.23.tgz#e6e02c5b48038371c88cd4249ae631a85fda5ca4"
-  integrity sha512-uWXaxDsPuvO8PJD/2qqj4T7jPw4BdT5zK27LfgmXm4BbDEnqKIkuYMrFSCOBXkEJ3CZdxrLxzTd2ixwKo1yA+g==
+node-nfe@^1.0.24:
+  version "1.0.24"
+  resolved "https://registry.yarnpkg.com/node-nfe/-/node-nfe-1.0.24.tgz#2c4d1415af3e09b44a495f8eddfacf7f4d925de3"
+  integrity sha512-efKuc9y1NEC996VczdhvohRqM+9W6Ty124PVSqfmfVgKjiojM0xl/cK/engPbotyehvHDHKMhO0490zaVbnedQ==
   dependencies:
     busca-cep "^0.5.0"
     gammautils "^0.0.81"
